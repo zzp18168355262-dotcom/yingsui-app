@@ -178,7 +178,7 @@ class _PadSidebarState extends ConsumerState<PadSidebar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            '语言避难所',
+                            'YingSui',
                             style: TextStyle(
                               fontSize: compact ? 16 : 18,
                               fontWeight: FontWeight.w900,

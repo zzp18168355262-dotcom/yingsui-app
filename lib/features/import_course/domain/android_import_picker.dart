@@ -16,7 +16,7 @@ class AndroidImportDirectorySelection {
 }
 
 const MethodChannel _channel = MethodChannel(
-  'com.shadowing.english/import_picker',
+  'com.yingsui.app/import_picker',
 );
 
 Future<AndroidImportDirectorySelection?> pickAndroidImportDirectory({

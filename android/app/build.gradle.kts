@@ -6,7 +6,7 @@ plugins {
 }
 
 android {
-    namespace = "com.shadowing.english"
+    namespace = "com.yingsui.app"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
 
@@ -20,7 +20,7 @@ android {
     }
 
     defaultConfig {
-        applicationId = "com.shadowing.english"
+        applicationId = "com.yingsui.app"
         // You can update the following values to match your application needs.
         // For more information, see: https://flutter.dev/to/review-gradle-config.
         minSdk = 26
@@ -36,17 +36,17 @@ android {
             dimension = "env"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            resValue("string", "app_name", "语言避难所 Dev")
+            resValue("string", "app_name", "YingSui Dev")
         }
         create("staging") {
             dimension = "env"
             applicationIdSuffix = ".staging"
             versionNameSuffix = "-staging"
-            resValue("string", "app_name", "语言避难所 Staging")
+            resValue("string", "app_name", "YingSui Staging")
         }
         create("prod") {
             dimension = "env"
-            resValue("string", "app_name", "语言避难所")
+            resValue("string", "app_name", "YingSui")
         }
     }
 

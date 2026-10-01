@@ -1,7 +1,7 @@
 import 'dart:io';
 
-import 'package:common_learn_english/features/player/presentation/asr_subtitle_cache.dart';
-import 'package:common_learn_english/features/settings/presentation/settings_provider.dart';
+import 'package:yingsui/features/player/presentation/asr_subtitle_cache.dart';
+import 'package:yingsui/features/settings/presentation/settings_provider.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -54,7 +54,7 @@ void main() {
       videoPath: '/videos/Lesson01.mp4',
     );
 
-    expect(exported.path, contains('Shadowing English'));
+    expect(exported.path, contains('YingSui'));
     expect(exported.path, contains('AI Subtitles'));
     expect(exported.path.endsWith('Lesson01.words.json'), isTrue);
     expect(exported.readAsStringSync(), '{"lines":[]}');
@@ -110,7 +110,7 @@ void main() {
     expect(count, 1);
     expect(
       File(
-        '${downloadsDir.path}${Platform.pathSeparator}Shadowing English'
+        '${downloadsDir.path}${Platform.pathSeparator}YingSui'
         '${Platform.pathSeparator}AI Subtitles'
         '${Platform.pathSeparator}Lesson01.words.json',
       ).existsSync(),

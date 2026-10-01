@@ -1,5 +1,5 @@
-import 'package:common_learn_english/features/player/presentation/player_mock_state.dart';
-import 'package:common_learn_english/features/player/presentation/subtitle_word_alignment.dart';
+import 'package:yingsui/features/player/presentation/player_mock_state.dart';
+import 'package:yingsui/features/player/presentation/subtitle_word_alignment.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

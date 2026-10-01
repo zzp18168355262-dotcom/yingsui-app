@@ -269,7 +269,7 @@ class AsrSubtitleCache {
     final Directory? downloads = await downloadsDirectory();
     final Directory targetDir = Directory(
       '${(downloads ?? await appSupportDirectory()).path}'
-      '${Platform.pathSeparator}Shadowing English'
+      '${Platform.pathSeparator}YingSui'
       '${Platform.pathSeparator}AI Subtitles',
     )..createSync(recursive: true);
     return targetDir;

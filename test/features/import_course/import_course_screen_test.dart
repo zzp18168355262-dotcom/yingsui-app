@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:common_learn_english/features/import_course/domain/android_import_picker.dart';
-import 'package:common_learn_english/features/import_course/presentation/widgets/import_course_flow.dart';
-import 'package:common_learn_english/features/library/presentation/library_catalog_provider.dart';
+import 'package:yingsui/features/import_course/domain/android_import_picker.dart';
+import 'package:yingsui/features/import_course/presentation/widgets/import_course_flow.dart';
+import 'package:yingsui/features/library/presentation/library_catalog_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

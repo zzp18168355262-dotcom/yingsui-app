@@ -1,8 +1,8 @@
 import 'dart:io';
 
-import 'package:common_learn_english/features/player/presentation/asr_subtitle_cache.dart';
-import 'package:common_learn_english/features/settings/presentation/ai_subtitle_management_screen.dart';
-import 'package:common_learn_english/features/settings/presentation/settings_provider.dart';
+import 'package:yingsui/features/player/presentation/asr_subtitle_cache.dart';
+import 'package:yingsui/features/settings/presentation/ai_subtitle_management_screen.dart';
+import 'package:yingsui/features/settings/presentation/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -37,7 +37,7 @@ void main() {
       await tester.tap(find.text('导出所选'));
       await _pumpFrames(tester);
       final Directory exportDirectory = Directory(
-        '${fixture.downloads.path}${Platform.pathSeparator}Shadowing English'
+        '${fixture.downloads.path}${Platform.pathSeparator}YingSui'
         '${Platform.pathSeparator}AI Subtitles',
       );
       expect(

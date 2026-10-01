@@ -1,4 +1,4 @@
-import 'package:common_learn_english/features/phrases/presentation/phrase_book_provider.dart';
+import 'package:yingsui/features/phrases/presentation/phrase_book_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

@@ -1,11 +1,11 @@
 import 'dart:io';
 
-import 'package:common_learn_english/features/library/presentation/library_catalog_provider.dart';
-import 'package:common_learn_english/features/library/presentation/library_mock_data.dart';
-import 'package:common_learn_english/features/library/presentation/library_screen.dart';
-import 'package:common_learn_english/features/library/presentation/widgets/library_course_card.dart';
-import 'package:common_learn_english/features/library/presentation/widgets/library_course_poster.dart';
-import 'package:common_learn_english/router/app_router.dart';
+import 'package:yingsui/features/library/presentation/library_catalog_provider.dart';
+import 'package:yingsui/features/library/presentation/library_mock_data.dart';
+import 'package:yingsui/features/library/presentation/library_screen.dart';
+import 'package:yingsui/features/library/presentation/widgets/library_course_card.dart';
+import 'package:yingsui/features/library/presentation/widgets/library_course_poster.dart';
+import 'package:yingsui/router/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

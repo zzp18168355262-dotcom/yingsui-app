@@ -1,4 +1,4 @@
-import 'package:common_learn_english/features/player/presentation/desktop_ffmpeg.dart';
+import 'package:yingsui/features/player/presentation/desktop_ffmpeg.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
@@ -6,12 +6,12 @@ void main() {
     final List<String> candidates = desktopFfmpegCandidates(
       operatingSystem: 'macos',
       resolvedExecutable:
-          '/Applications/Shadowing English.app/Contents/MacOS/app',
+          '/Applications/YingSui.app/Contents/MacOS/app',
     );
 
     expect(
       candidates.first,
-      '/Applications/Shadowing English.app/Contents/Resources/ffmpeg/ffmpeg',
+      '/Applications/YingSui.app/Contents/Resources/ffmpeg/ffmpeg',
     );
     expect(candidates, contains('ffmpeg'));
   });
@@ -19,18 +19,18 @@ void main() {
   test('Windows checks the packaged executable next to the app', () {
     final List<String> candidates = desktopFfmpegCandidates(
       operatingSystem: 'windows',
-      resolvedExecutable: r'C:\Shadowing English\common_learn_english.exe',
+      resolvedExecutable: r'C:\YingSui\yingsui.exe',
     );
 
-    expect(candidates.first, r'C:\Shadowing English\ffmpeg\ffmpeg.exe');
+    expect(candidates.first, r'C:\YingSui\ffmpeg\ffmpeg.exe');
   });
 
   test('Linux checks the relocatable bundle library directory', () {
     final List<String> candidates = desktopFfmpegCandidates(
       operatingSystem: 'linux',
-      resolvedExecutable: '/opt/shadowing-english/common_learn_english',
+      resolvedExecutable: '/opt/yingsui-app/yingsui',
     );
 
-    expect(candidates.first, '/opt/shadowing-english/lib/ffmpeg/ffmpeg');
+    expect(candidates.first, '/opt/yingsui-app/lib/ffmpeg/ffmpeg');
   });
 }

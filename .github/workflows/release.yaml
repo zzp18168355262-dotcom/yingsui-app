@@ -38,7 +38,7 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           mkdir release-assets
-          cp build/app/outputs/flutter-apk/app-prod-release.apk "release-assets/shadowing-english-${TAG}-android.apk"
+          cp build/app/outputs/flutter-apk/app-prod-release.apk "release-assets/yingsui-app-${TAG}-android.apk"
       - uses: actions/upload-artifact@v4
         with:
           name: android
@@ -86,7 +86,7 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           mkdir release-assets
-          tar -C build/linux/x64/release -czf "release-assets/shadowing-english-${TAG}-linux-x64.tar.gz" bundle
+          tar -C build/linux/x64/release -czf "release-assets/yingsui-app-${TAG}-linux-x64.tar.gz" bundle
       - uses: actions/upload-artifact@v4
         with:
           name: linux
@@ -136,8 +136,8 @@ jobs:
           codesign --verify --deep --strict "$app_path"
           cp -R "$app_path" dmg-root/
           ln -s /Applications dmg-root/Applications
-          hdiutil create -volname "Shadowing English" -srcfolder dmg-root -ov -format UDZO \
-            "${GITHUB_WORKSPACE}/release-assets/shadowing-english-${TAG}-macos.dmg"
+          hdiutil create -volname "YingSui" -srcfolder dmg-root -ov -format UDZO \
+            "${GITHUB_WORKSPACE}/release-assets/yingsui-app-${TAG}-macos.dmg"
       - uses: actions/upload-artifact@v4
         with:
           name: macos
@@ -195,7 +195,7 @@ jobs:
           TAG: ${{ github.ref_name }}
         run: |
           New-Item -ItemType Directory -Force release-assets
-          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath "release-assets/shadowing-english-$env:TAG-windows-x64.zip"
+          Compress-Archive -Path build/windows/x64/runner/Release/* -DestinationPath "release-assets/yingsui-app-$env:TAG-windows-x64.zip"
       - uses: actions/upload-artifact@v4
         with:
           name: windows

@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/img/app_icon.png" alt="Shadowing English app icon" width="112" />
+  <img src="assets/img/app_icon.png" alt="YingSui app icon" width="112" />
 </p>
 
-<h1 align="center">Shadowing English</h1>
+<h1 align="center">YingSui</h1>
 
 > A local-first English shadowing app for listening and speaking practice with your own videos and subtitles.
 
@@ -11,14 +11,14 @@
 English · [中文](README.md)
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-0F766E.svg)](LICENSE)
-[![CI](https://github.com/MarkYuanGo/shadowing-english/actions/workflows/lint.yaml/badge.svg)](https://github.com/MarkYuanGo/shadowing-english/actions/workflows/lint.yaml)
+[![CI](https://github.com/MarkYuanGo/yingsui-app/actions/workflows/lint.yaml/badge.svg)](https://github.com/MarkYuanGo/yingsui-app/actions/workflows/lint.yaml)
 [![Flutter 3.44.4](https://img.shields.io/badge/Flutter-3.44.4-02569B?logo=flutter&logoColor=white)](.fvmrc)
-[![Latest release](https://img.shields.io/github/v/release/MarkYuanGo/shadowing-english?display_name=tag&sort=semver)](https://github.com/MarkYuanGo/shadowing-english/releases/latest)
-[![Release platforms](https://img.shields.io/badge/Release-Android%20%7C%20macOS%20%7C%20Linux%20%7C%20Windows-475569)](https://github.com/MarkYuanGo/shadowing-english/releases/latest)
-[![GitHub stars](https://img.shields.io/github/stars/MarkYuanGo/shadowing-english?style=flat)](https://github.com/MarkYuanGo/shadowing-english/stargazers)
-[![GitHub issues](https://img.shields.io/github/issues/MarkYuanGo/shadowing-english)](https://github.com/MarkYuanGo/shadowing-english/issues)
+[![Latest release](https://img.shields.io/github/v/release/MarkYuanGo/yingsui-app?display_name=tag&sort=semver)](https://github.com/MarkYuanGo/yingsui-app/releases/latest)
+[![Release platforms](https://img.shields.io/badge/Release-Android%20%7C%20macOS%20%7C%20Linux%20%7C%20Windows-475569)](https://github.com/MarkYuanGo/yingsui-app/releases/latest)
+[![GitHub stars](https://img.shields.io/github/stars/MarkYuanGo/yingsui-app?style=flat)](https://github.com/MarkYuanGo/yingsui-app/stargazers)
+[![GitHub issues](https://img.shields.io/github/issues/MarkYuanGo/yingsui-app)](https://github.com/MarkYuanGo/yingsui-app/issues)
 
-[Download the latest release](https://github.com/MarkYuanGo/shadowing-english/releases/latest) · [Subtitle guide](#subtitles-from-import-to-word-level-shadowing) · [Run from source](#run-from-source) · [Import learning materials](#import-learning-materials)
+[Download the latest release](https://github.com/MarkYuanGo/yingsui-app/releases/latest) · [Subtitle guide](#subtitles-from-import-to-word-level-shadowing) · [Run from source](#run-from-source) · [Import learning materials](#import-learning-materials)
 
 ## Screenshots
 
@@ -33,7 +33,7 @@ English · [中文](README.md)
 | <img src="assets/showcase/video-subtitle-lookup.png" alt="Translation popup after tapping a word in the video subtitle" width="100%" /> | |
 | Look up a word directly from the subtitle over the playing video. | |
 | The three-pass method | Learning journey and levels |
-| <img src="assets/showcase/learning-guide.jpg" alt="The three-pass method in Shadowing English" width="100%" /> | <img src="assets/showcase/growth.png" alt="Learning journey, levels, and study roadmap" width="100%" /> |
+| <img src="assets/showcase/learning-guide.jpg" alt="The three-pass method in YingSui" width="100%" /> | <img src="assets/showcase/growth.png" alt="Learning journey, levels, and study roadmap" width="100%" /> |
 | Understand first, listen closely, then shadow the line. | Track practice, gain experience, and see the next step clearly. |
 | Wordbook | Saved phrases |
 | <img src="assets/showcase/words.jpg" alt="Wordbook and dictionary lookup" width="100%" /> | <img src="assets/showcase/phrases.jpg" alt="Saved phrases and review space" width="100%" /> |
@@ -42,9 +42,9 @@ English · [中文](README.md)
 | <img src="assets/showcase/settings.jpg" alt="Settings for subtitles, translation, and playback" width="100%" /> | |
 | Configure support around the way you study. | |
 
-Shadowing English is an English shadowing app for turning videos you already own into deliberate listening and speaking practice. Import local videos and subtitles, work through real scenes sentence by sentence, and keep your media on your own device. This project does not provide videos, courses, or subtitle packs.
+YingSui is an English shadowing app for turning videos you already own into deliberate listening and speaking practice. Import local videos and subtitles, work through real scenes sentence by sentence, and keep your media on your own device. This project does not provide videos, courses, or subtitle packs.
 
-## What is Shadowing English
+## What is YingSui
 
 English shadowing is more than repeating a line once. It puts listening and speaking in the same real-video context: understand the scene, identify what you hear, then imitate the speaker's timing, connected speech, intonation, and pronunciation.
 
@@ -76,7 +76,7 @@ Short loops keep auditory recognition and spoken output together. A few lines at
 
 ## Subtitles: from import to word-level shadowing
 
-Shadowing English does more than display one subtitle line over a video. It turns subtitles into a learning timeline you can navigate, loop, search, and shadow. Choose the workflow that fits your material:
+YingSui does more than display one subtitle line over a video. It turns subtitles into a learning timeline you can navigate, loop, search, and shadow. Choose the workflow that fits your material:
 
 - **Import external subtitles**: `.srt` and `.vtt` files are supported. This is the most direct option when you already have good subtitles; English and Chinese tracks can be matched automatically by filename.
 - **Switch embedded subtitle tracks**: If a video contains selectable subtitle tracks, choose one from the player's subtitle menu without extracting it first.
@@ -114,7 +114,7 @@ When usable English external or embedded subtitles are available, the app can us
 
 AI recognition can still be affected by background music, overlapping speakers, accents, and recording quality. For important material, use an existing subtitle as a reference and review the result in Manage AI Subtitles before relying on it long-term.
 
-## Why use Shadowing English
+## Why use YingSui
 
 - **Start with videos you want to watch**: Learn English with videos you care about instead of a fixed course pack.
 - **Keep language in context**: Words, lines, and phrases come from real dialogue.
@@ -126,14 +126,14 @@ AI recognition can still be affected by background music, overlapping speakers, 
 
 ### Download
 
-The latest release is [v0.1.1](https://github.com/MarkYuanGo/shadowing-english/releases/tag/v0.1.1). It includes packages for:
+The latest release is [v0.1.1](https://github.com/MarkYuanGo/yingsui-app/releases/tag/v0.1.1). It includes packages for:
 
 - Android: APK
 - macOS: DMG
 - Linux: x64 `.tar.gz`
 - Windows: x64 `.zip`
 
-Visit [Releases](https://github.com/MarkYuanGo/shadowing-english/releases/latest) to download the package for your platform.
+Visit [Releases](https://github.com/MarkYuanGo/yingsui-app/releases/latest) to download the package for your platform.
 
 Starting with v0.1.2, each release includes `SHA256SUMS.txt` to verify downloaded files.
 
@@ -142,8 +142,8 @@ Starting with v0.1.2, each release includes `SHA256SUMS.txt` to verify downloade
 Flutter 3.44.4 is required and pinned through FVM. Install [FVM](https://fvm.app/documentation/getting-started/installation) before the first run.
 
 ```bash
-git clone https://github.com/MarkYuanGo/shadowing-english.git
-cd shadowing-english
+git clone https://github.com/MarkYuanGo/yingsui-app.git
+cd yingsui-app
 fvm use 3.44.4
 fvm flutter pub get
 fvm flutter run
@@ -180,10 +180,10 @@ Read [RESOURCE_SETUP.md](RESOURCE_SETUP.md) for more detail. This repository doe
 
 ## Contributing
 
-[Issues](https://github.com/MarkYuanGo/shadowing-english/issues) are welcome, especially for subtitle matching, playback, and cross-platform problems. Please open an Issue before a substantial pull request, and do not submit unauthorized video, subtitle, or course resources.
+[Issues](https://github.com/MarkYuanGo/yingsui-app/issues) are welcome, especially for subtitle matching, playback, and cross-platform problems. Please open an Issue before a substantial pull request, and do not submit unauthorized video, subtitle, or course resources.
 
 ## License
 
-Shadowing English is available under the [MIT License](LICENSE).
+YingSui is available under the [MIT License](LICENSE).
 
-For English listening practice, English speaking practice, and English shadowing with local videos, Shadowing English is ready for your own learning library.
+For English listening practice, English speaking practice, and English shadowing with local videos, YingSui is ready for your own learning library.

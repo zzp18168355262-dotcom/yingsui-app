@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../config/app_links.dart';
 import '../../../utils/url_utils.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../shared/data/word_pronunciation_service.dart';
@@ -604,26 +605,28 @@ class SettingsScreen extends ConsumerWidget {
             title: '系统',
             icon: Icons.settings_system_daydream_rounded,
             children: <Widget>[
-              _ActionRow(
-                title: updateState.downloadedPath != null
-                    ? (updateState.isInstalling
-                          ? '正在打开安装包…'
-                          : '安装 v${updateState.update!.version}')
-                    : updateState.update == null
-                    ? (updateState.isChecking ? '正在检查更新…' : '检查更新')
-                    : (updateState.isDownloading
-                          ? _downloadTitle(updateState)
-                          : '更新到 v${updateState.update!.version}'),
-                description: updateState.isDownloading
-                    ? _downloadDescription(updateState)
-                    : updateState.downloadedPath != null
-                    ? '安装包已校验完成，点击开始安装。'
-                    : updateState.update == null
-                    ? '从 GitHub Release 检查当前平台的最新安装包。'
-                    : '已找到适用于当前平台的安装包。',
-                icon: Icons.system_update_rounded,
-                onTap: () => _handleUpdateAction(ref, updateState),
-              ),
+              // 未配置发布源时隐藏更新入口，避免用户点到无效功能。
+              if (AppLinks.isUpdateCheckEnabled)
+                _ActionRow(
+                  title: updateState.downloadedPath != null
+                      ? (updateState.isInstalling
+                            ? '正在打开安装包…'
+                            : '安装 v${updateState.update!.version}')
+                      : updateState.update == null
+                      ? (updateState.isChecking ? '正在检查更新…' : '检查更新')
+                      : (updateState.isDownloading
+                            ? _downloadTitle(updateState)
+                            : '更新到 v${updateState.update!.version}'),
+                  description: updateState.isDownloading
+                      ? _downloadDescription(updateState)
+                      : updateState.downloadedPath != null
+                      ? '安装包已校验完成，点击开始安装。'
+                      : updateState.update == null
+                      ? '检查当前平台的最新安装包。'
+                      : '已找到适用于当前平台的安装包。',
+                  icon: Icons.system_update_rounded,
+                  onTap: () => _handleUpdateAction(ref, updateState),
+                ),
               _ActionRow(
                 title: '管理 AI 字幕',
                 description: '查看、编辑、导出、重新生成或删除已生成的字幕。',

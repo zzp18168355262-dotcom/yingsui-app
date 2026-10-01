@@ -1,9 +1,9 @@
-import 'package:common_learn_english/features/navigation/presentation/floating_bottom_nav.dart';
-import 'package:common_learn_english/features/navigation/presentation/navigation_destination.dart';
-import 'package:common_learn_english/features/shared/data/daily_english_service.dart';
-import 'package:common_learn_english/features/shared/data/word_pronunciation_service.dart';
-import 'package:common_learn_english/features/shared/presentation/pad/pad_sidebar.dart';
-import 'package:common_learn_english/router/app_router.dart';
+import 'package:yingsui/features/navigation/presentation/floating_bottom_nav.dart';
+import 'package:yingsui/features/navigation/presentation/navigation_destination.dart';
+import 'package:yingsui/features/shared/data/daily_english_service.dart';
+import 'package:yingsui/features/shared/data/word_pronunciation_service.dart';
+import 'package:yingsui/features/shared/presentation/pad/pad_sidebar.dart';
+import 'package:yingsui/router/app_router.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

@@ -7,8 +7,7 @@ import 'package:open_filex/open_filex.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:path_provider/path_provider.dart';
 
-const String _releasesUrl =
-    'https://api.github.com/repos/MarkYuanGo/shadowing-english/releases?per_page=100';
+import '../../../../config/app_links.dart';
 
 class AppUpdate {
   const AppUpdate({
@@ -30,9 +29,14 @@ class AppUpdateService {
   final Dio _dio;
 
   Future<AppUpdate?> checkForUpdate() async {
+    // 未配置发布源时直接跳过，不发起任何网络请求。
+    if (!AppLinks.isUpdateCheckEnabled) {
+      return null;
+    }
+
     final PackageInfo packageInfo = await PackageInfo.fromPlatform();
     final Response<List<dynamic>> response = await _dio.get<List<dynamic>>(
-      _releasesUrl,
+      AppLinks.releasesUrl,
       options: Options(
         headers: <String, String>{
           'Accept': 'application/vnd.github+json',
@@ -76,7 +80,7 @@ class AppUpdateService {
         await getDownloadsDirectory() ??
         await getApplicationDocumentsDirectory();
     final Directory destination = Directory(
-      '${root.path}${Platform.pathSeparator}Shadowing English',
+      '${root.path}${Platform.pathSeparator}YingSui',
     );
     await destination.create(recursive: true);
     final File file = File(

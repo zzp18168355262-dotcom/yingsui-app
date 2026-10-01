@@ -1,6 +1,6 @@
-import 'package:common_learn_english/features/settings/presentation/settings_provider.dart';
-import 'package:common_learn_english/features/settings/presentation/settings_screen.dart';
-import 'package:common_learn_english/features/settings/presentation/widgets/settings_group_card.dart';
+import 'package:yingsui/features/settings/presentation/settings_provider.dart';
+import 'package:yingsui/features/settings/presentation/settings_screen.dart';
+import 'package:yingsui/features/settings/presentation/widgets/settings_group_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

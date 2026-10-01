@@ -1,13 +1,13 @@
 import 'dart:async';
 
-import 'package:common_learn_english/features/player/presentation/full_transcript_reader.dart';
-import 'package:common_learn_english/features/player/presentation/player_mock_state.dart';
-import 'package:common_learn_english/features/player/presentation/transcript_reader_session.dart';
-import 'package:common_learn_english/features/settings/presentation/settings_provider.dart';
-import 'package:common_learn_english/features/shared/data/word_lookup_service.dart';
-import 'package:common_learn_english/features/shared/data/word_pronunciation_service.dart';
-import 'package:common_learn_english/features/shared/domain/word_lookup_entry.dart';
-import 'package:common_learn_english/features/words/data/offline_word_dictionary.dart';
+import 'package:yingsui/features/player/presentation/full_transcript_reader.dart';
+import 'package:yingsui/features/player/presentation/player_mock_state.dart';
+import 'package:yingsui/features/player/presentation/transcript_reader_session.dart';
+import 'package:yingsui/features/settings/presentation/settings_provider.dart';
+import 'package:yingsui/features/shared/data/word_lookup_service.dart';
+import 'package:yingsui/features/shared/data/word_pronunciation_service.dart';
+import 'package:yingsui/features/shared/domain/word_lookup_entry.dart';
+import 'package:yingsui/features/words/data/offline_word_dictionary.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';

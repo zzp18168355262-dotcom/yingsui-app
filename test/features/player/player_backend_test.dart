@@ -1,4 +1,4 @@
-import 'package:common_learn_english/features/player/presentation/player_backend.dart';
+import 'package:yingsui/features/player/presentation/player_backend.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

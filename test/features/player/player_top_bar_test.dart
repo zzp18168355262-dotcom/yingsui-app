@@ -1,4 +1,4 @@
-import 'package:common_learn_english/features/player/presentation/widgets/player_top_bar.dart';
+import 'package:yingsui/features/player/presentation/widgets/player_top_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';

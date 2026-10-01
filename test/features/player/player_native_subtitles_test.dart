@@ -1,4 +1,4 @@
-import 'package:common_learn_english/features/player/presentation/player_native_subtitles.dart';
+import 'package:yingsui/features/player/presentation/player_native_subtitles.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:media_kit/media_kit.dart';
 

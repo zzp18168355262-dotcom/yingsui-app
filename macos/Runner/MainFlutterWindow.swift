@@ -27,7 +27,7 @@ class MainFlutterWindow: NSWindow, NSSpeechSynthesizerDelegate {
 
   private func configureSystemMediaControls(with controller: FlutterViewController) {
     let channel = FlutterMethodChannel(
-      name: "com.shadowing.english/system_media_controls",
+      name: "com.yingsui.app/system_media_controls",
       binaryMessenger: controller.engine.binaryMessenger
     )
     channel.setMethodCallHandler { [weak self] call, result in
@@ -73,7 +73,7 @@ class MainFlutterWindow: NSWindow, NSSpeechSynthesizerDelegate {
     let infoCenter = MPNowPlayingInfoCenter.default()
     infoCenter.nowPlayingInfo = [
       MPMediaItemPropertyTitle: "英语学习",
-      MPMediaItemPropertyArtist: "语言避难所",
+      MPMediaItemPropertyArtist: "YingSui",
       MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1 : 0
     ]
     infoCenter.playbackState = isPlaying ? .playing : .paused
@@ -81,7 +81,7 @@ class MainFlutterWindow: NSWindow, NSSpeechSynthesizerDelegate {
 
   private func configureNativeTts(with controller: FlutterViewController) {
     let channel = FlutterMethodChannel(
-      name: "com.shadowing.english/native_tts",
+      name: "com.yingsui.app/native_tts",
       binaryMessenger: controller.engine.binaryMessenger
     )
     channel.setMethodCallHandler { [weak self] call, result in

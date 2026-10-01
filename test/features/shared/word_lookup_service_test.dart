@@ -1,6 +1,6 @@
-import 'package:common_learn_english/features/settings/presentation/settings_provider.dart';
-import 'package:common_learn_english/features/shared/data/word_lookup_service.dart';
-import 'package:common_learn_english/features/shared/domain/word_lookup_entry.dart';
+import 'package:yingsui/features/settings/presentation/settings_provider.dart';
+import 'package:yingsui/features/shared/data/word_lookup_service.dart';
+import 'package:yingsui/features/shared/domain/word_lookup_entry.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 

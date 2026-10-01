@@ -1,5 +1,5 @@
 #include "Release.xcconfig"
-BUNDLE_ID = com.shadowing.english.staging
-APP_DISPLAY_NAME = 语言避难所 Staging
-APP_NAME = 语言避难所Staging
+BUNDLE_ID = com.yingsui.app.staging
+APP_DISPLAY_NAME = YingSui Staging
+APP_NAME = YingSuiStaging
 FLAVOR = staging

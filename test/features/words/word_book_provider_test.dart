@@ -1,5 +1,5 @@
-import 'package:common_learn_english/features/words/data/offline_word_dictionary.dart';
-import 'package:common_learn_english/features/words/presentation/word_book_provider.dart';
+import 'package:yingsui/features/words/data/offline_word_dictionary.dart';
+import 'package:yingsui/features/words/presentation/word_book_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 

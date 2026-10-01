@@ -18,22 +18,22 @@ class FlavorConfig {
   static String get appName {
     switch (_flavor) {
       case AppFlavor.dev:
-        return '语言避难所 Dev';
+        return 'YingSui Dev';
       case AppFlavor.staging:
-        return '语言避难所 Staging';
+        return 'YingSui Staging';
       case AppFlavor.prod:
-        return '语言避难所';
+        return 'YingSui';
     }
   }
 
   static String get bundleId {
     switch (_flavor) {
       case AppFlavor.dev:
-        return 'com.shadowing.english.dev';
+        return 'com.yingsui.app.dev';
       case AppFlavor.staging:
-        return 'com.shadowing.english.staging';
+        return 'com.yingsui.app.staging';
       case AppFlavor.prod:
-        return 'com.shadowing.english';
+        return 'com.yingsui.app';
     }
   }
 }

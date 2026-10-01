@@ -36,7 +36,7 @@ const Duration _ttsBindRetryDelay = Duration(milliseconds: 150);
 const int _ttsBindRetryAttempts = 2;
 const double _defaultPronunciationSpeechRate = 0.75;
 const MethodChannel _nativeTtsChannel = MethodChannel(
-  'com.shadowing.english/native_tts',
+  'com.yingsui.app/native_tts',
 );
 
 class WordPronunciationException implements Exception {

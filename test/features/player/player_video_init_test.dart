@@ -1,6 +1,6 @@
 import 'dart:async';
 
-import 'package:common_learn_english/features/player/presentation/player_video_init.dart';
+import 'package:yingsui/features/player/presentation/player_video_init.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

@@ -9,7 +9,7 @@ import '../../settings/presentation/settings_provider.dart';
 import 'desktop_ffmpeg.dart';
 
 const MethodChannel _audioToolsChannel = MethodChannel(
-  'com.shadowing.english/audio_tools',
+  'com.yingsui.app/audio_tools',
 );
 
 typedef AsrPostTranscriptionOverride =

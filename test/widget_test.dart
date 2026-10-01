@@ -1,11 +1,11 @@
-import 'package:common_learn_english/features/home/presentation/pad_home_screen.dart';
-import 'package:common_learn_english/features/player/presentation/full_transcript_reader.dart';
-import 'package:common_learn_english/features/player/presentation/pad_landscape_player_screen.dart';
-import 'package:common_learn_english/features/player/presentation/pad_portrait_player_screen.dart';
-import 'package:common_learn_english/features/player/presentation/player_mock_state.dart';
-import 'package:common_learn_english/features/player/presentation/player_screen.dart';
-import 'package:common_learn_english/features/player/presentation/widgets/player_subtitle_list.dart';
-import 'package:common_learn_english/features/player/presentation/widgets/player_video_panel.dart';
+import 'package:yingsui/features/home/presentation/pad_home_screen.dart';
+import 'package:yingsui/features/player/presentation/full_transcript_reader.dart';
+import 'package:yingsui/features/player/presentation/pad_landscape_player_screen.dart';
+import 'package:yingsui/features/player/presentation/pad_portrait_player_screen.dart';
+import 'package:yingsui/features/player/presentation/player_mock_state.dart';
+import 'package:yingsui/features/player/presentation/player_screen.dart';
+import 'package:yingsui/features/player/presentation/widgets/player_subtitle_list.dart';
+import 'package:yingsui/features/player/presentation/widgets/player_video_panel.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
@@ -76,7 +76,7 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('语言避难所'), findsWidgets);
+    expect(find.text('YingSui'), findsWidgets);
     expect(find.text('晚上好 Mark 👋'), findsOneWidget);
     expect(find.text('导入你的第一套英语视频课程'), findsOneWidget);
     expect(find.text('去导入课程'), findsOneWidget);

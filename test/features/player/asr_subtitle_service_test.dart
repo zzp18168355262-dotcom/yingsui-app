@@ -1,10 +1,10 @@
 import 'dart:convert';
 import 'dart:io';
 
-import 'package:common_learn_english/features/player/presentation/asr_subtitle_service.dart';
-import 'package:common_learn_english/features/player/presentation/player_mock_state.dart';
-import 'package:common_learn_english/features/player/presentation/player_subtitle_loader.dart';
-import 'package:common_learn_english/features/settings/presentation/settings_provider.dart';
+import 'package:yingsui/features/player/presentation/asr_subtitle_service.dart';
+import 'package:yingsui/features/player/presentation/player_mock_state.dart';
+import 'package:yingsui/features/player/presentation/player_subtitle_loader.dart';
+import 'package:yingsui/features/settings/presentation/settings_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 

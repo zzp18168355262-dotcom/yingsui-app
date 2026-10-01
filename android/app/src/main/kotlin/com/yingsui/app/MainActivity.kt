@@ -1,4 +1,4 @@
-package com.shadowing.english
+package com.yingsui.app
 
 import android.app.Activity
 import android.content.Intent
@@ -49,17 +49,17 @@ class MainActivity : FlutterActivity(), MethodChannel.MethodCallHandler {
         super.configureFlutterEngine(flutterEngine)
         importPickerChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            "com.shadowing.english/import_picker",
+            "com.yingsui.app/import_picker",
         )
         importPickerChannel.setMethodCallHandler(this)
         nativeTtsChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            "com.shadowing.english/native_tts",
+            "com.yingsui.app/native_tts",
         )
         nativeTtsChannel.setMethodCallHandler(this)
         audioToolsChannel = MethodChannel(
             flutterEngine.dartExecutor.binaryMessenger,
-            "com.shadowing.english/audio_tools",
+            "com.yingsui.app/audio_tools",
         )
         audioToolsChannel.setMethodCallHandler(this)
     }

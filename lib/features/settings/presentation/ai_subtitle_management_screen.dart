@@ -244,7 +244,7 @@ class _AiSubtitleManagementScreenState
   Future<void> _export(AiSubtitleCacheEntry entry) async {
     try {
       await _cache.exportEntry(entry);
-      _message('已导出到 Downloads/Shadowing English/AI Subtitles。');
+      _message('已导出到 Downloads/YingSui/AI Subtitles。');
     } catch (_) {
       _message('导出失败，请稍后重试。');
     }

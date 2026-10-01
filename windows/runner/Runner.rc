@@ -89,13 +89,13 @@ BEGIN
     BEGIN
         BLOCK "040904e4"
         BEGIN
-            VALUE "CompanyName", "com.tidesparrow" "\0"
-            VALUE "FileDescription", "common_learn_english" "\0"
+            VALUE "CompanyName", "YingSui" "\0"
+            VALUE "FileDescription", "YingSui 影随 - 英语影子跟读" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "common_learn_english" "\0"
-            VALUE "LegalCopyright", "Copyright (C) 2026 com.tidesparrow. All rights reserved." "\0"
-            VALUE "OriginalFilename", "common_learn_english.exe" "\0"
-            VALUE "ProductName", "common_learn_english" "\0"
+            VALUE "InternalName", "YingSui" "\0"
+            VALUE "LegalCopyright", "Copyright (C) 2026 YingSui. All rights reserved." "\0"
+            VALUE "OriginalFilename", "yingsui.exe" "\0"
+            VALUE "ProductName", "YingSui" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

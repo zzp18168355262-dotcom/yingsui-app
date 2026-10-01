@@ -1,4 +1,4 @@
-import 'package:common_learn_english/features/import_course/domain/video_cover_extractor.dart';
+import 'package:yingsui/features/import_course/domain/video_cover_extractor.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {

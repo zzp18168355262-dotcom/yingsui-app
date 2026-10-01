@@ -6,7 +6,7 @@ class PlayerSystemMediaControls {
   PlayerSystemMediaControls._();
 
   static const MethodChannel _channel = MethodChannel(
-    'com.shadowing.english/system_media_controls',
+    'com.yingsui.app/system_media_controls',
   );
 
   static void bind({

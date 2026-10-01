@@ -1,5 +1,5 @@
-import 'package:common_learn_english/features/library/presentation/library_mock_data.dart';
-import 'package:common_learn_english/features/player/presentation/player_course_lookup.dart';
+import 'package:yingsui/features/library/presentation/library_mock_data.dart';
+import 'package:yingsui/features/player/presentation/player_course_lookup.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 void main() {
