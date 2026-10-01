@@ -40,10 +40,13 @@ common_flags=(
   --enable-avformat
   --enable-swresample
   --enable-protocol=file,pipe
-  --enable-demuxer=aac,ac3,aiff,asf,avi,flac,flv,matroska,mov,mp3,mpegps,mpegts,ogg,srt,wav
-  --enable-decoder=aac,aac_latm,ac3,eac3,alac,flac,mp3,opus,vorbis,wmav1,wmav2,pcm_s16le,pcm_s16be,pcm_s24le,pcm_s24be,pcm_s32le,pcm_s32be,pcm_f32le,pcm_f64le,ass,ssa,movtext,subrip,webvtt
+  --enable-demuxer=aac,ac3,aiff,asf,avi,dts,flac,flv,matroska,mov,mp3,mpegps,mpegts,ogg,srt,wav
+  # 音频解码器：必须覆盖真实影视资源里常见的音轨编码。
+  # 之前漏了 dts —— 很多 1080p/4K 影视资源的音轨是 DTS，
+  # 缺了它会直接报 "no decoder found for: dts" 导致 AI 字幕失败。
+  --enable-decoder=aac,aac_latm,ac3,eac3,dca,dts,dts_lbr,eac3,alac,flac,mp3,mp2,opus,vorbis,wmav1,wmav2,wmapro,wmalossless,cook,truehd,mlp,pcm_s16le,pcm_s16be,pcm_s24le,pcm_s24be,pcm_s32le,pcm_s32be,pcm_f32le,pcm_f64le,pcm_u8,pcm_alaw,pcm_mulaw,adpcm_ima_wav,adpcm_ms,ass,ssa,movtext,subrip,webvtt
   --enable-encoder=aac,movtext,pcm_s16le,srt
-  --enable-parser=aac,aac_latm,ac3,flac,mpegaudio,opus,vorbis
+  --enable-parser=aac,aac_latm,ac3,flac,mpegaudio,opus,vorbis,dca,mlp
   --enable-muxer=ipod,segment,srt,wav
   --enable-filter=aformat,aresample,anull,sine
   --enable-indev=lavfi
@@ -88,6 +91,34 @@ build_one() {
       if [[ "$(uname -m)" != "x86_64" ]]; then
         extra_flags+=(--enable-cross-compile)
       fi
+      ;;
+    ios-arm64)
+      # iOS 真机（arm64）。用 iphoneos SDK 交叉编译。
+      # 注意：iOS 不允许动态链接自编译库，必须静态链接到可执行文件，
+      # 且产物需要可执行权限并被嵌入到 .app 内。
+      ios_sdk="$(xcrun --sdk iphoneos --show-sdk-path)"
+      extra_flags+=(
+        --target-os=darwin
+        --arch=arm64
+        --enable-cross-compile
+        --cc=clang
+        --host-cc=clang
+        --extra-cflags="-arch arm64 -isysroot $ios_sdk -miphoneos-version-min=13.0"
+        --extra-ldflags="-arch arm64 -isysroot $ios_sdk -miphoneos-version-min=13.0"
+      )
+      ;;
+    ios-sim-arm64)
+      # iOS 模拟器（Apple Silicon）。
+      sim_sdk="$(xcrun --sdk iphonesimulator --show-sdk-path)"
+      extra_flags+=(
+        --target-os=darwin
+        --arch=arm64
+        --enable-cross-compile
+        --cc=clang
+        --host-cc=clang
+        --extra-cflags="-arch arm64 -isysroot $sim_sdk -mios-simulator-version-min=13.0"
+        --extra-ldflags="-arch arm64 -isysroot $sim_sdk -mios-simulator-version-min=13.0"
+      )
       ;;
     *)
       echo "Unsupported FFmpeg target: $target" >&2

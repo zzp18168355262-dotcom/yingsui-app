@@ -1,5 +1,7 @@
-# Uncomment this line to define a global platform for your project
-# platform :ios, '13.0'
+# 必须显式声明平台，否则 CocoaPods 会报
+# "Automatically assigning platform iOS ... because no platform was specified"
+# 并中断 pod install。
+platform :ios, '13.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -39,5 +41,15 @@ end
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
+
+    # 与 macOS 同理：部分插件的 podspec 声明了偏低的部署目标，
+    # 新版 Xcode 会直接报错。这里统一抬到 13.0；只升不降，
+    # 避免覆盖插件有意声明的更高版本。
+    target.build_configurations.each do |config|
+      current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
+      if current.nil? || current.to_f < 13.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      end
+    end
   end
 end
