@@ -198,6 +198,7 @@ class AsrSubtitleJobRunner {
     this.translateSentence,
     this.wordLookupService = const WordLookupService(),
     this.translationRequestInterval = _translationRequestInterval,
+    this.translationBatchSize = _translationBatchSize,
   });
 
   final Future<Directory> Function()? supportDirectory;
@@ -213,6 +214,9 @@ class AsrSubtitleJobRunner {
   /// 逐句翻译之间的间隔。测试可传 Duration.zero 避免真实等待。
   final Duration translationRequestInterval;
 
+  /// 批量翻译的批大小。测试可传 1 强制走逐句路径。
+  final int translationBatchSize;
+
   static const int _repairableOverlapMs = 500;
 
   /// 逐句翻译之间的间隔。
@@ -224,6 +228,12 @@ class AsrSubtitleJobRunner {
   static const Duration _translationRequestInterval = Duration(
     milliseconds: 200,
   );
+
+  /// 批量翻译的默认批大小。
+  ///
+  /// 取值权衡：过大时模型容易漏译或错位，过小时请求次数下降有限。
+  /// 20 句一次可将 500 句的长字幕从约 500 次请求降到约 25 次。
+  static const int _translationBatchSize = 20;
 
   static final Set<String> _activeJobs = <String>{};
 
@@ -715,30 +725,30 @@ class AsrSubtitleJobRunner {
       checkpoint,
       signature,
     );
-    // 逐句翻译。
+    // 翻译流程。
     //
-    // 原先的实现有一个严重缺陷：任何一句翻译失败就直接 break，
-    // 后续所有句子永远没有中文（表现为「前十几分钟正常，之后只有英文」），
-    // 而且这个「翻译了一半」的结果会被缓存，重新生成也不会补齐。
+    // 历史问题（两个都已修）：
+    //   1) 任何一句失败就 break，后续所有句子永远没有中文
+    //      —— 表现为「前十几分钟正常，之后只有英文」
+    //   2) 逐句各发一次请求，长字幕动辄数百次调用，又慢又容易触发限流，
+    //      个别请求挂起还会拖住整个任务
     //
-    // 现在改为：
-    //   1) 失败时按指数退避重试（应对第三方接口的限流/瞬时抖动）
-    //   2) 仍失败则跳过该句、继续翻译后面的句子，不再整段放弃
-    //   3) 记录未完成数量，并在警告里体现，便于用户判断是否需要重试
+    // 现在的策略：
+    //   1) 先按批次打包翻译（AI 类接口一次可翻多句），500 句约降到 25 次请求
+    //   2) 某批失败则回退到逐句翻译，保证正确性
+    //   3) 仍失败的句子跳过、继续后面的句子，不再整段放弃
+    //   4) 成功的句子立即落盘缓存，重试时只补缺的部分
     int untranslated = 0;
     Object? lastTranslationError;
+
+    // 收集待翻译的句子（跳过已缓存与已有中文的）。
+    final List<Map<String, dynamic>> pending = <Map<String, dynamic>>[];
+    final List<String> pendingEnglish = <String>[];
     for (final dynamic line in lines) {
-      if (line is! Map<String, dynamic>) {
-        continue;
-      }
-      if ((line['chinese'] as String? ?? '').trim().isNotEmpty) {
-        continue;
-      }
+      if (line is! Map<String, dynamic>) continue;
+      if ((line['chinese'] as String? ?? '').trim().isNotEmpty) continue;
       final String english = (line['english'] as String? ?? '').trim();
-      if (english.isEmpty) {
-        continue;
-      }
-      cancellationToken?.throwIfCancelled();
+      if (english.isEmpty) continue;
       final String key = _translationLineKey(line, english);
       final String? cached = translations[key];
       if (cached != null) {
@@ -746,16 +756,52 @@ class AsrSubtitleJobRunner {
         line['chinese'] = cached;
         continue;
       }
-      final String? chinese = await _translateOnce(
-        english: english,
-        settings: settings,
-        cancellationToken: cancellationToken,
-        onError: (Object error) => lastTranslationError = error,
-      );
-      if (chinese == null || chinese.trim().isEmpty) {
-        // 这一句没翻出来：跳过，继续后面的句子（不再整段放弃）。
-        untranslated += 1;
-      } else {
+      pending.add(line);
+      pendingEnglish.add(english);
+    }
+
+    for (int offset = 0; offset < pending.length; offset += translationBatchSize) {
+      cancellationToken?.throwIfCancelled();
+      final int end = offset + translationBatchSize < pending.length
+          ? offset + translationBatchSize
+          : pending.length;
+      final List<Map<String, dynamic>> batchLines = pending.sublist(offset, end);
+      final List<String> batchEnglish = pendingEnglish.sublist(offset, end);
+
+      // 批量尝试。
+      List<String?>? batchResult;
+      if (batchEnglish.length > 1) {
+        batchResult = await wordLookupService.translateSentences(
+          sentences: batchEnglish,
+          settings: settings,
+          onError: (Object error) => lastTranslationError = error,
+        );
+        cancellationToken?.throwIfCancelled();
+      }
+
+      for (int i = 0; i < batchLines.length; i += 1) {
+        cancellationToken?.throwIfCancelled();
+        final Map<String, dynamic> line = batchLines[i];
+        final String english = batchEnglish[i];
+        final String key = _translationLineKey(line, english);
+
+        String? chinese = batchResult != null && i < batchResult.length
+            ? batchResult[i]
+            : null;
+        if (chinese == null || chinese.trim().isEmpty) {
+          // 批量没给结果（或该句缺失）时回退到逐句。
+          chinese = await _translateOnce(
+            english: english,
+            settings: settings,
+            cancellationToken: cancellationToken,
+            onError: (Object error) => lastTranslationError = error,
+          );
+        }
+
+        if (chinese == null || chinese.trim().isEmpty) {
+          untranslated += 1;
+          continue;
+        }
         line['chinese'] = chinese.trim();
         translations[key] = chinese.trim();
         await _writeJsonAtomically(checkpoint, <String, Object?>{
@@ -764,12 +810,11 @@ class AsrSubtitleJobRunner {
           'translations': translations,
         });
       }
-      cancellationToken?.throwIfCancelled();
-      // 逐句之间留出间隔，避免把第三方翻译接口打到限流。
-      // 大模型翻译接口尤其常见：短时间大量请求会被限流，
-      // 表现为「翻了一阵之后突然全部失败」。这里的间隔会让长字幕
-      // 多花一点时间，但能显著降低触发限流的概率。
-      await Future<void>.delayed(translationRequestInterval);
+
+      // 批次之间留出间隔，避免把第三方接口打到限流。
+      if (end < pending.length) {
+        await Future<void>.delayed(translationRequestInterval);
+      }
     }
 
     if (untranslated > 0) {

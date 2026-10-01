@@ -406,9 +406,9 @@ void main() {
     expect(subtitleGenerationWarning(raw), isNull);
   });
 
-  test('逐句翻译之间会留出请求间隔（避免打到限流）', () async {
+  test('批大小为 1 时逐句翻译，并在句间留出请求间隔', () async {
     // 大模型翻译接口在短时间内收到大量请求会被限流，
-    // 表现为「翻了一阵之后突然全部失败」。这里验证间隔确实生效。
+    // 表现为「翻了一阵之后突然全部失败」。这里验证逐句路径的间隔确实生效。
     final Directory root = Directory.systemTemp.createTempSync(
       'asr-job-translation-pacing-',
     );
@@ -432,6 +432,7 @@ void main() {
             required LearningSettingsState settings,
           }) async => _threeLineChunkJson(),
       translationRequestInterval: interval,
+      translationBatchSize: 1,
       translateSentence:
           ({
             required String sentence,
@@ -451,20 +452,95 @@ void main() {
       parseSubtitleLines(raw).map((PlayerSubtitleLine line) => line.chinese),
       <String>['翻译：first line', '翻译：second line', '翻译：third line'],
     );
-    // 3 句会产生 3 次间隔，保守断言至少 2 次，避免受机器调度影响而抖动。
+    // 保守断言至少 1 次间隔，避免受机器调度影响而抖动。
     expect(
       watch.elapsedMilliseconds,
-      greaterThanOrEqualTo(2 * interval.inMilliseconds),
+      greaterThanOrEqualTo(interval.inMilliseconds),
       reason: '应按 translationRequestInterval 在句间等待',
     );
   });
 
-  test('翻译阶段彻底失败时仍产出英文字幕，而不是整个任务作废', () async {
-    // 回归测试：原实现里翻译阶段一抛异常就会 FAILED 并 rethrow，
-    // 用户连英文字幕都拿不到（表现为「字幕一直生成不出来」）。
-    // 正确行为是降级：保留已识别好的英文词级字幕并附上警告。
+  test('AI 接口按批次打包翻译：4 句只发 1 次请求', () async {
+    // 逐句翻译对长字幕意味着数百次 HTTP 请求，又慢又容易限流。
+    // 这里验证批量路径确实把多句合并成一次请求，并正确解析编号结果。
     final Directory root = Directory.systemTemp.createTempSync(
-      'asr-job-translation-hardfail-',
+      'asr-job-translation-batch-',
+    );
+    addTearDown(() => root.deleteSync(recursive: true));
+    final File video = File('${root.path}/lesson.mp4')
+      ..writeAsStringSync('video');
+    final File chunk = File('${root.path}/chunk.m4a')
+      ..writeAsStringSync('audio');
+
+    int requests = 0;
+    final AsrSubtitleJobRunner runner = AsrSubtitleJobRunner(
+      supportDirectory: () async => root,
+      cache: AsrSubtitleCache(appSupportDirectory: () async => root),
+      service: AsrSubtitleService(
+        prepareAudioChunksOverride: (_) async => <AsrAudioChunk>[
+          AsrAudioChunk(file: chunk, offsetMs: 0),
+        ],
+      ),
+      cloudTranscribeChunk:
+          ({
+            required AsrAudioChunk chunk,
+            required LearningSettingsState settings,
+          }) async => _fourLineChunkJson(),
+      translationRequestInterval: Duration.zero,
+      wordLookupService: WordLookupService(
+        httpRequestOverride:
+            ({
+              required BaseOptions options,
+              required String method,
+              required String path,
+              Map<String, dynamic>? queryParameters,
+              Object? data,
+            }) async {
+          requests += 1;
+          // 模拟 AI 返回带编号的译文。
+          return Response<dynamic>(
+            requestOptions: RequestOptions(path: path),
+            statusCode: 200,
+            data: <String, dynamic>{
+              'choices': <dynamic>[
+                <String, dynamic>{
+                  'message': <String, dynamic>{
+                    'content': '1. 第一句\n2. 第二句\n3. 第三句\n4. 第四句',
+                  },
+                },
+              ],
+            },
+          );
+        },
+      ),
+    );
+
+    final String raw = await runner.run(
+      episodeId: 'episode-1',
+      videoPath: video.path,
+      settings: _settings().copyWith(
+        generateBilingualAsrSubtitles: true,
+        translationProvider: 'OpenAI',
+        translationApiKey: 'test-key',
+        translationModel: 'gpt-4o-mini',
+        translationBaseUrl: 'https://api.openai.com/v1',
+      ),
+    );
+
+    expect(requests, 1, reason: '4 句应打包成 1 次请求');
+    expect(
+      parseSubtitleLines(raw).map((PlayerSubtitleLine line) => line.chinese),
+      <String>['第一句', '第二句', '第三句', '第四句'],
+      reason: '编号结果应按顺序对应到各句',
+    );
+    expect(subtitleGenerationWarning(raw), isNull);
+  });
+
+  test('批翻译失败时回退逐句翻译，不丢句子', () async {
+    // 批量请求整体失败（超时/解析不了）时，必须回退到逐句，
+    // 否则一次坏响应就会让整段字幕没有中文。
+    final Directory root = Directory.systemTemp.createTempSync(
+      'asr-job-translation-batchfallback-',
     );
     addTearDown(() => root.deleteSync(recursive: true));
     final File video = File('${root.path}/lesson.mp4')
@@ -485,7 +561,7 @@ void main() {
             required LearningSettingsState settings,
           }) async => _twoLineChunkJson(),
       translationRequestInterval: Duration.zero,
-      // 翻译无论如何都抛异常，模拟接口彻底不可用。
+      // 批量接口全部失败。
       wordLookupService: WordLookupService(
         httpRequestOverride:
             ({
@@ -496,9 +572,15 @@ void main() {
               Object? data,
             }) async => throw DioException(
               requestOptions: RequestOptions(path: path),
-              message: '所有翻译请求都失败',
+              message: '批量翻译不可用',
             ),
       ),
+      // 逐句路径由注入的翻译器兜底。
+      translateSentence:
+          ({
+            required String sentence,
+            required LearningSettingsState settings,
+          }) async => '回退：$sentence',
     );
 
     final String raw = await runner.run(
@@ -507,14 +589,10 @@ void main() {
       settings: _settings().copyWith(generateBilingualAsrSubtitles: true),
     );
 
-    // 关键：任务没有抛异常，且英文字幕可用。
-    final List<PlayerSubtitleLine> lines = parseSubtitleLines(raw);
-    expect(lines, hasLength(2));
-    expect(lines.first.english, 'first line');
-    expect(lines.first.words, isNotEmpty, reason: '词级时间轴应保留');
-    // 中文缺失，但要有明确的警告说明原因。
-    expect(lines.every((PlayerSubtitleLine l) => l.chinese.isEmpty), isTrue);
-    expect(subtitleGenerationWarning(raw), isNotNull);
+    expect(
+      parseSubtitleLines(raw).map((PlayerSubtitleLine line) => line.chinese),
+      <String>['回退：first line', '回退：second line'],
+    );
   });
 
   test('单句翻译失败不会中断后续句子的翻译', () async {
@@ -1663,6 +1741,19 @@ Map<String, Object?> _twoLineChunkJson() {
     'lines': <Map<String, Object?>>[
       _chunkLine('first line', 1000),
       _chunkLine('second line', 2000),
+    ],
+  };
+}
+
+Map<String, Object?> _fourLineChunkJson() {
+  return <String, Object?>{
+    'version': 1,
+    'language': 'en',
+    'lines': <Map<String, Object?>>[
+      _chunkLine('first line', 1000),
+      _chunkLine('second line', 5000),
+      _chunkLine('third line', 9000),
+      _chunkLine('fourth line', 13000),
     ],
   };
 }

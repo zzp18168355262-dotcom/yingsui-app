@@ -36,6 +36,16 @@ class WordLookupService {
   final WordLookupRemoteLookup? remoteLookupOverride;
   final WordLookupHttpRequest? httpRequestOverride;
 
+  /// 网络超时。
+  ///
+  /// Dio 默认**不设超时**，单个请求可能永久挂起。字幕翻译会发起数百次请求，
+  /// 只要少数几次挂住，连接与 socket 就会持续堆积，
+  /// 用户看到的现象就是「一直卡在生成中」。
+  /// 因此所有外发请求都必须显式带上超时。
+  static const Duration _connectTimeout = Duration(seconds: 10);
+  static const Duration _receiveTimeout = Duration(seconds: 30);
+  static const Duration _sendTimeout = Duration(seconds: 15);
+
   Future<WordLookupEntry> lookupWord({
     required String rawWord,
     String? contextSentence,
@@ -93,17 +103,16 @@ class WordLookupService {
           settings: settings,
         )).definitionCn;
       }
-      final Response<dynamic> response =
-          await Dio(
-            BaseOptions(
+      final Response<dynamic> response = await _sendRequest(
+            options: BaseOptions(
               baseUrl: settings.translationBaseUrl,
               headers: <String, String>{
                 'Authorization': 'Bearer ${settings.translationApiKey}',
                 'Content-Type': 'application/json',
               },
             ),
-          ).post<dynamic>(
-            '/chat/completions',
+            method: 'POST',
+            path: '/chat/completions',
             data: <String, dynamic>{
               'model': settings.translationModel,
               'temperature': 0.1,
@@ -136,6 +145,114 @@ class WordLookupService {
     }
   }
 
+  /// 批量翻译多句（仅适用于 AI 类接口）。
+  ///
+  /// 为什么需要它：逐句翻译对长字幕意味着数百次 HTTP 请求，
+  /// 又慢又容易触发限流，还会因个别请求挂起而拖住整个任务。
+  /// 打包成一次请求后，500 句大约只需 25 次调用。
+  ///
+  /// 返回与入参等长的列表；某句未翻译出来对应位置为 null。
+  /// 只要整体请求失败或无法解析，就整体返回 null，由调用方回退到逐句模式。
+  Future<List<String?>?> translateSentences({
+    required List<String> sentences,
+    required LearningSettingsState settings,
+    ValueChanged<Object>? onError,
+  }) async {
+    if (sentences.isEmpty) return const <String?>[];
+    // 直连类服务（阿里云/百度/Google）单次只翻一句，不适用批量。
+    if (_isDirectProvider(settings.translationProvider)) return null;
+    if (!_canUseRemoteProvider(settings)) return null;
+
+    final String numbered = <String>[
+      for (int i = 0; i < sentences.length; i += 1)
+        '${i + 1}. ${sentences[i]}',
+    ].join('\n');
+
+    try {
+      final Response<dynamic> response = await _sendRequest(
+            options: BaseOptions(
+              baseUrl: settings.translationBaseUrl,
+              headers: <String, String>{
+                'Authorization': 'Bearer ${settings.translationApiKey}',
+                'Content-Type': 'application/json',
+              },
+            ),
+            method: 'POST',
+            path: '/chat/completions',
+            data: <String, dynamic>{
+              'model': settings.translationModel,
+              'temperature': 0.1,
+              'messages': <Map<String, String>>[
+                <String, String>{
+                  'role': 'system',
+                  'content':
+                      'You translate English subtitle lines into concise Simplified Chinese. '
+                      'The user sends numbered lines. Reply with exactly the same numbering, '
+                      'one translation per line, in the form "1. 译文". '
+                      'Do not merge lines, do not add notes, do not output the English.',
+                },
+                <String, String>{'role': 'user', 'content': numbered},
+              ],
+            },
+          );
+      final Map<String, dynamic> data = response.data as Map<String, dynamic>;
+      final List<dynamic> choices = data['choices'] as List<dynamic>;
+      final Map<String, dynamic> first = choices.first as Map<String, dynamic>;
+      final Map<String, dynamic> message =
+          first['message'] as Map<String, dynamic>;
+      final String content = (message['content'] as String? ?? '').trim();
+      if (content.isEmpty) {
+        onError?.call(
+          StateError('批量翻译返回空内容（响应片段：${_snippet(data)}）'),
+        );
+        return null;
+      }
+      return _parseNumberedTranslations(content, sentences.length);
+    } catch (error) {
+      onError?.call(error);
+      return null;
+    }
+  }
+
+  /// 解析形如「1. 译文」的编号结果。
+  ///
+  /// 容错处理：模型有时会写成「1) 译文」「1、译文」或省略编号，
+  /// 因此优先按编号匹配，匹配不到再按行顺序兜底；
+  /// 行数明显不足时返回 null，让调用方回退到逐句翻译（宁可慢，不能错位）。
+  static List<String?>? _parseNumberedTranslations(
+    String content,
+    int expected,
+  ) {
+    final List<String> rawLines = content
+        .split('\n')
+        .map((String line) => line.trim())
+        .where((String line) => line.isNotEmpty)
+        .toList(growable: false);
+    if (rawLines.isEmpty) return null;
+
+    final List<String?> result = List<String?>.filled(expected, null);
+    final RegExp numbered = RegExp(r'^(\d+)\s*[.、)\]:：]\s*(.+)$');
+    int matched = 0;
+    for (final String line in rawLines) {
+      final RegExpMatch? match = numbered.firstMatch(line);
+      if (match == null) continue;
+      final int index = int.tryParse(match.group(1) ?? '') ?? -1;
+      final String text = (match.group(2) ?? '').trim();
+      if (index < 1 || index > expected || text.isEmpty) continue;
+      result[index - 1] = text;
+      matched += 1;
+    }
+
+    if (matched == expected) return result;
+
+    // 没有编号（或编号不全）时按顺序兜底，但要求行数与句数一致，
+    // 否则会张冠李戴，不如回退逐句。
+    if (matched == 0 && rawLines.length == expected) {
+      return rawLines.cast<String?>().toList(growable: false);
+    }
+    return null;
+  }
+
   /// 截断响应内容，避免把超长响应塞进错误提示。
   static String _snippet(Object? value) {
     final String text = value?.toString() ?? '';
@@ -163,6 +280,10 @@ class WordLookupService {
           'Content-Type': 'application/json',
           'Accept': 'application/json',
         },
+        // 同 translateSentence：必须显式设超时，否则请求可能永久挂起。
+        connectTimeout: _connectTimeout,
+        receiveTimeout: _receiveTimeout,
+        sendTimeout: _sendTimeout,
       ),
     );
     final Response<dynamic> response = await dio.post<dynamic>(
@@ -252,7 +373,12 @@ class WordLookupService {
     required LearningSettingsState settings,
   }) async {
     final Response<dynamic> response = await _sendRequest(
-      options: BaseOptions(baseUrl: settings.translationBaseUrl),
+      options: BaseOptions(
+        baseUrl: settings.translationBaseUrl,
+        connectTimeout: _connectTimeout,
+        receiveTimeout: _receiveTimeout,
+        sendTimeout: _sendTimeout,
+      ),
       method: 'POST',
       path: '/language/translate/v2',
       queryParameters: <String, dynamic>{
@@ -292,7 +418,12 @@ class WordLookupService {
         )
         .toString();
     final Response<dynamic> response = await _sendRequest(
-      options: BaseOptions(baseUrl: settings.translationBaseUrl),
+      options: BaseOptions(
+        baseUrl: settings.translationBaseUrl,
+        connectTimeout: _connectTimeout,
+        receiveTimeout: _receiveTimeout,
+        sendTimeout: _sendTimeout,
+      ),
       method: 'POST',
       path: '/api/trans/vip/translate',
       queryParameters: <String, dynamic>{
@@ -344,7 +475,12 @@ class WordLookupService {
     );
 
     final Response<dynamic> response = await _sendRequest(
-      options: BaseOptions(baseUrl: settings.translationBaseUrl),
+      options: BaseOptions(
+        baseUrl: settings.translationBaseUrl,
+        connectTimeout: _connectTimeout,
+        receiveTimeout: _receiveTimeout,
+        sendTimeout: _sendTimeout,
+      ),
       method: 'GET',
       path: '/',
       queryParameters: params,
