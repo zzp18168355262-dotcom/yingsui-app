@@ -196,6 +196,7 @@ class AsrSubtitleJobRunner {
     this.service = const AsrSubtitleService(),
     this.cloudTranscribeChunk,
     this.translateSentence,
+    this.wordLookupService = const WordLookupService(),
     this.translationRequestInterval = _translationRequestInterval,
   });
 
@@ -204,6 +205,10 @@ class AsrSubtitleJobRunner {
   final AsrSubtitleService service;
   final AsrChunkTranscriber? cloudTranscribeChunk;
   final AsrSentenceTranslator? translateSentence;
+
+  /// 真实翻译服务。测试可注入带桩的实现，
+  /// 用于验证「翻译彻底不可用时仍产出英文字幕」等降级行为。
+  final WordLookupService wordLookupService;
 
   /// 逐句翻译之间的间隔。测试可传 Duration.zero 避免真实等待。
   final Duration translationRequestInterval;
@@ -553,17 +558,41 @@ class AsrSubtitleJobRunner {
       );
       completedRaw = _repairFinalWordTimelines(translatedRaw, report: report);
     } catch (error) {
-      await report.write(jobDir, 'FAILED');
-      await _writeJob(
-        jobDir: jobDir,
-        episodeId: episodeId,
-        videoPath: videoPath,
-        settings: settings,
-        totalChunks: chunks.length,
-        status: 'failed',
-        error: error.toString(),
-      );
-      rethrow;
+      // 取消失败要如实抛出，交回 UI 处理。
+      cancellationToken?.throwIfCancelled();
+      // 翻译阶段出问题不应让整个任务作废。
+      //
+      // 此时语音识别已经完成、英文词级字幕是完好的，属于「可用但缺中文」。
+      // 原实现会直接 FAILED 并 rethrow，用户连英文字幕都拿不到，
+      // 表现为「字幕一直生成不出来」—— 代价远大于少一层中文。
+      // 因此降级：保留英文结果、附上警告，让用户先能用，之后再补翻译。
+      // （重试成本也低：断点续传会复用已识别分片，只补缺的中文。）
+      final String warning =
+          '英文词级字幕已生成，但中文翻译阶段出错：${_errorMessage(error)}。'
+          '可以先使用英文字幕；稍后重新生成即可补上中文，'
+          '已识别的内容会被复用。';
+      try {
+        final Map<String, dynamic> decoded =
+            jsonDecode(raw) as Map<String, dynamic>;
+        decoded['translationWarning'] = warning;
+        completedRaw = _repairFinalWordTimelines(
+          const JsonEncoder.withIndent('  ').convert(decoded),
+          report: report,
+        );
+      } catch (_) {
+        // 连解析 raw 都失败才真正作废。
+        await report.write(jobDir, 'FAILED');
+        await _writeJob(
+          jobDir: jobDir,
+          episodeId: episodeId,
+          videoPath: videoPath,
+          settings: settings,
+          totalChunks: chunks.length,
+          status: 'failed',
+          error: error.toString(),
+        );
+        rethrow;
+      }
     }
     final File part = File(
       '${jobDir.path}${Platform.pathSeparator}final.words.json.part',
@@ -769,29 +798,38 @@ class AsrSubtitleJobRunner {
     required void Function(Object error) onError,
     AsrSubtitleCancellationToken? cancellationToken,
   }) async {
+    // 错误上报只用于诊断，绝不能因为回调本身出问题而让整个字幕任务失败。
+    void report(Object error) {
+      try {
+        onError(error);
+      } catch (_) {
+        // 忽略上报过程中的任何异常。
+      }
+    }
+
     cancellationToken?.throwIfCancelled();
     try {
       // 走真实服务时把底层错误原样上报（例如阿里云的 Code/Message、
       // HTTP 状态码），否则用户只能看到「翻译未完成」而无法判断原因。
-      // 测试注入的 translateSentence 没有该参数，故用位点判断分流。
+      // 测试注入的 translateSentence 没有 onError 参数，故分流处理。
       final AsrSentenceTranslator? injected = translateSentence;
       final String? result = injected != null
           ? await injected(sentence: english, settings: settings).timeout(
               const Duration(seconds: 45),
             )
-          : await const WordLookupService()
+          : await wordLookupService
                 .translateSentence(
                   sentence: english,
                   settings: settings,
-                  onError: onError,
+                  onError: report,
                 )
                 .timeout(const Duration(seconds: 45));
       if (result != null && result.trim().isNotEmpty) {
         return result.trim();
       }
-      onError(StateError('翻译服务返回空结果'));
+      report(StateError('翻译服务返回空结果'));
     } catch (error) {
-      onError(error);
+      report(error);
     }
     return null;
   }

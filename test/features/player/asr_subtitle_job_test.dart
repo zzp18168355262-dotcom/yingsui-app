@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:convert';
 import 'dart:io';
+import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:yingsui/features/player/presentation/asr_subtitle_cache.dart';
 import 'package:yingsui/features/player/presentation/asr_subtitle_job.dart';
@@ -8,6 +9,7 @@ import 'package:yingsui/features/player/presentation/asr_subtitle_service.dart';
 import 'package:yingsui/features/player/presentation/player_mock_state.dart';
 import 'package:yingsui/features/player/presentation/player_subtitle_loader.dart';
 import 'package:yingsui/features/settings/presentation/settings_provider.dart';
+import 'package:yingsui/features/shared/data/word_lookup_service.dart';
 
 void main() {
   test(
@@ -455,6 +457,64 @@ void main() {
       greaterThanOrEqualTo(2 * interval.inMilliseconds),
       reason: '应按 translationRequestInterval 在句间等待',
     );
+  });
+
+  test('翻译阶段彻底失败时仍产出英文字幕，而不是整个任务作废', () async {
+    // 回归测试：原实现里翻译阶段一抛异常就会 FAILED 并 rethrow，
+    // 用户连英文字幕都拿不到（表现为「字幕一直生成不出来」）。
+    // 正确行为是降级：保留已识别好的英文词级字幕并附上警告。
+    final Directory root = Directory.systemTemp.createTempSync(
+      'asr-job-translation-hardfail-',
+    );
+    addTearDown(() => root.deleteSync(recursive: true));
+    final File video = File('${root.path}/lesson.mp4')
+      ..writeAsStringSync('video');
+    final File chunk = File('${root.path}/chunk.m4a')
+      ..writeAsStringSync('audio');
+    final AsrSubtitleJobRunner runner = AsrSubtitleJobRunner(
+      supportDirectory: () async => root,
+      cache: AsrSubtitleCache(appSupportDirectory: () async => root),
+      service: AsrSubtitleService(
+        prepareAudioChunksOverride: (_) async => <AsrAudioChunk>[
+          AsrAudioChunk(file: chunk, offsetMs: 0),
+        ],
+      ),
+      cloudTranscribeChunk:
+          ({
+            required AsrAudioChunk chunk,
+            required LearningSettingsState settings,
+          }) async => _twoLineChunkJson(),
+      translationRequestInterval: Duration.zero,
+      // 翻译无论如何都抛异常，模拟接口彻底不可用。
+      wordLookupService: WordLookupService(
+        httpRequestOverride:
+            ({
+              required BaseOptions options,
+              required String method,
+              required String path,
+              Map<String, dynamic>? queryParameters,
+              Object? data,
+            }) async => throw DioException(
+              requestOptions: RequestOptions(path: path),
+              message: '所有翻译请求都失败',
+            ),
+      ),
+    );
+
+    final String raw = await runner.run(
+      episodeId: 'episode-1',
+      videoPath: video.path,
+      settings: _settings().copyWith(generateBilingualAsrSubtitles: true),
+    );
+
+    // 关键：任务没有抛异常，且英文字幕可用。
+    final List<PlayerSubtitleLine> lines = parseSubtitleLines(raw);
+    expect(lines, hasLength(2));
+    expect(lines.first.english, 'first line');
+    expect(lines.first.words, isNotEmpty, reason: '词级时间轴应保留');
+    // 中文缺失，但要有明确的警告说明原因。
+    expect(lines.every((PlayerSubtitleLine l) => l.chinese.isEmpty), isTrue);
+    expect(subtitleGenerationWarning(raw), isNotNull);
   });
 
   test('单句翻译失败不会中断后续句子的翻译', () async {
