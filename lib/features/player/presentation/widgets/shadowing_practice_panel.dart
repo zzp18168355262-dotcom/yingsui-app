@@ -8,8 +8,9 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_theme.dart';
 import '../shadowing_recorder.dart';
 
-/// 跟读练习面板：录下这一遍，和原声 A/B 对照着听。
+/// 跟读练习面板。
 ///
+/// 核心是让用户能**听到自己的跟读**：录下来，然后与原声来回对照。
 /// 产品定位是不打分 —— 用户自己的耳朵就是判断标准。
 class ShadowingPracticePanel extends ConsumerStatefulWidget {
   const ShadowingPracticePanel({
@@ -45,9 +46,9 @@ class _ShadowingPracticePanelState
   @override
   void didUpdateWidget(ShadowingPracticePanel oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // 切句后上一句的录音不再适用，直接作废，防止误对比。
+    // 换句后上一句的录音不再适用，直接作废，防止误对比。
     if (oldWidget.lineKey != widget.lineKey) {
-      _stopRecordingPlayback();
+      unawaited(_stopRecordingPlayback());
       WidgetsBinding.instance.addPostFrameCallback((_) {
         if (!mounted) {
           return;
@@ -59,30 +60,44 @@ class _ShadowingPracticePanelState
 
   @override
   void dispose() {
-    _completedSub?.cancel();
-    _player?.dispose();
+    unawaited(_completedSub?.cancel());
+    unawaited(_player?.dispose());
     super.dispose();
   }
 
   Player get _audioPlayer => _player ??= Player();
 
+  /// 把本地路径转成合法的 file URI。
+  ///
+  /// 不能直接写 'file://$path'：路径中出现空格、中文等字符时需要百分号编码，
+  /// 否则底层解码器会找不到文件（表现为点了播放却没有任何声音）。
+  String _fileUri(String path) => Uri.file(path).toString();
+
   Future<void> _playRecording(String path) async {
+    // 先停掉原声，避免两路声音重叠、听不清自己的。
     widget.onStopOriginal();
+    await _completedSub?.cancel();
+
     try {
-      await _audioPlayer.open(Media('file://$path'));
-      setState(() => _playingRecording = true);
-      await _completedSub?.cancel();
+      // 关键：监听器必须在 open 之前注册。
+      // 放在 open 之后会漏掉极短录音的 completed 事件，
+      // 导致按钮永远停在「停止」状态。
       _completedSub = _audioPlayer.stream.completed.listen((bool done) {
         if (done && mounted) {
           setState(() => _playingRecording = false);
         }
       });
+
+      await _audioPlayer.open(Media(_fileUri(path)));
+      if (mounted) {
+        setState(() => _playingRecording = true);
+      }
     } catch (e) {
       if (mounted) {
         setState(() => _playingRecording = false);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('回放失败：$e')),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('回放失败：$e')));
       }
     }
   }
@@ -122,16 +137,15 @@ class _ShadowingPracticePanelState
     final AppPalette palette = AppColors.of(context);
     final bool active = state.isRecording || state.isPaused;
 
-    // 错误提示用 SnackBar 呈现，避免占位撑高面板。
     ref.listen<ShadowingRecordState>(shadowingRecorderProvider, (
       ShadowingRecordState? prev,
       ShadowingRecordState next,
     ) {
       final String? error = next.error;
       if (error != null && error != prev?.error) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text(error)),
-        );
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(error)));
         ref.read(shadowingRecorderProvider.notifier).clearError();
       }
     });
@@ -150,6 +164,7 @@ class _ShadowingPracticePanelState
         crossAxisAlignment: CrossAxisAlignment.start,
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
+          // ── 标题 ──
           Row(
             children: <Widget>[
               Icon(
@@ -175,12 +190,15 @@ class _ShadowingPracticePanelState
             ],
           ),
           SizedBox(height: widget.compact ? 10 : 14),
+
+          // ── 录制控制 ──
           _RecordButton(
             state: state,
             palette: palette,
             onPressed: () => _toggleRecord(state),
           ),
-          if (state.isRecording || state.isPaused) ...<Widget>[
+
+          if (active) ...<Widget>[
             const SizedBox(height: 8),
             Align(
               alignment: Alignment.centerRight,
@@ -196,24 +214,78 @@ class _ShadowingPracticePanelState
               ),
             ),
           ],
+
+          // ── 听自己的跟读 ──
           if (state.hasRecording) ...<Widget>[
             const SizedBox(height: 14),
             Divider(color: palette.divider, height: 1),
-            const SizedBox(height: 14),
-            Text(
-              '对比着听',
-              style: Theme.of(context).textTheme.labelMedium?.copyWith(
-                color: palette.textTertiary,
-                letterSpacing: 0.4,
+            const SizedBox(height: 12),
+            Row(
+              children: <Widget>[
+                Icon(
+                  Icons.headphones_rounded,
+                  size: 15,
+                  color: palette.textTertiary,
+                ),
+                const SizedBox(width: 6),
+                Text(
+                  '听一遍，和原声对照',
+                  style: Theme.of(context).textTheme.labelMedium?.copyWith(
+                    color: palette.textTertiary,
+                    letterSpacing: 0.3,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 10),
+
+            // 主操作：听自己的跟读。做成整行大按钮，避免用户找不到。
+            SizedBox(
+              width: double.infinity,
+              child: FilledButton.icon(
+                onPressed: () {
+                  final String? path = state.filePath;
+                  if (path == null) {
+                    return;
+                  }
+                  if (_playingRecording) {
+                    unawaited(_stopRecordingPlayback());
+                  } else {
+                    unawaited(_playRecording(path));
+                  }
+                },
+                icon: Icon(
+                  _playingRecording
+                      ? Icons.stop_rounded
+                      : Icons.play_arrow_rounded,
+                  size: 22,
+                ),
+                label: Text(_playingRecording ? '停止播放' : '听听我的跟读'),
+                style: FilledButton.styleFrom(
+                  backgroundColor: palette.accent,
+                  foregroundColor: palette.isDark
+                      ? const Color(0xFF231705)
+                      : const Color(0xFF241A02),
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.w700,
+                    fontSize: 15,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(AppRadius.pill),
+                  ),
+                ),
               ),
             ),
             const SizedBox(height: 10),
+
+            // 次要操作：再听原声、重录
             Row(
               children: <Widget>[
                 Expanded(
                   child: _CompareButton(
                     icon: Icons.volume_up_rounded,
-                    label: '原声',
+                    label: '再听原声',
                     palette: palette,
                     emphasized: false,
                     onPressed: widget.onPlayOriginal,
@@ -222,22 +294,17 @@ class _ShadowingPracticePanelState
                 const SizedBox(width: 10),
                 Expanded(
                   child: _CompareButton(
-                    icon: _playingRecording
-                        ? Icons.stop_rounded
-                        : Icons.mic_rounded,
-                    label: _playingRecording ? '停止' : '我的',
+                    icon: Icons.refresh_rounded,
+                    label: '重录一遍',
                     palette: palette,
-                    emphasized: true,
+                    emphasized: false,
                     onPressed: () {
-                      final String? path = state.filePath;
-                      if (path == null) {
-                        return;
-                      }
-                      if (_playingRecording) {
-                        _stopRecordingPlayback();
-                      } else {
-                        _playRecording(path);
-                      }
+                      unawaited(_stopRecordingPlayback());
+                      unawaited(
+                        ref
+                            .read(shadowingRecorderProvider.notifier)
+                            .discard(),
+                      );
                     },
                   ),
                 ),
@@ -263,8 +330,14 @@ class _ElapsedChip extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String mm = elapsed.inMinutes.remainder(60).toString().padLeft(2, '0');
-    final String ss = elapsed.inSeconds.remainder(60).toString().padLeft(2, '0');
+    final String mm = elapsed.inMinutes.remainder(60).toString().padLeft(
+      2,
+      '0',
+    );
+    final String ss = elapsed.inSeconds.remainder(60).toString().padLeft(
+      2,
+      '0',
+    );
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
@@ -313,8 +386,9 @@ class _RecordButton extends StatelessWidget {
       label = '继续录';
       icon = Icons.play_arrow_rounded;
     } else if (state.hasRecording) {
-      label = '重录一遍';
-      icon = Icons.refresh_rounded;
+      // 已有录音时，主按钮让位给「听自己的跟读」，这里只提示状态。
+      label = '已录好';
+      icon = Icons.check_circle_outline_rounded;
     } else {
       label = '按下开始跟读';
       icon = Icons.mic_rounded;
@@ -323,7 +397,7 @@ class _RecordButton extends StatelessWidget {
     return SizedBox(
       width: double.infinity,
       child: FilledButton.icon(
-        onPressed: onPressed,
+        onPressed: active ? onPressed : (state.hasRecording ? null : onPressed),
         icon: Icon(icon, size: 20),
         label: Text(label),
         style: FilledButton.styleFrom(
@@ -333,6 +407,8 @@ class _RecordButton extends StatelessWidget {
                     ? const Color(0xFF231705)
                     : const Color(0xFF241A02))
               : palette.onBrand,
+          disabledBackgroundColor: palette.surfaceAlt,
+          disabledForegroundColor: palette.textSecondary,
           padding: const EdgeInsets.symmetric(vertical: 14),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.pill),
