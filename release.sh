@@ -1,22 +1,46 @@
 #!/usr/bin/env bash
-
-# 参考：./release.sh v0.1.5
+#
+# 英语角 / English Corner —— 版本号发布
+#
+# 用法：
+#   ./release.sh v0.2.5
+#
+# 它做什么：
+#   校验版本号递增 → 更新 pubspec.yaml 的 version → 本地提交并打 tag
+#
+# 它不做什么（刻意的）：
+#   - 不推送到远端。本项目未配置 git remote，
+#     原先的 `git push origin` 会在已删除的上游仓库上失败。
+#   - 不构建分发包。构建请用：
+#       ./scripts/build-all.sh          # 构建三平台
+#       ./scripts/package-release.sh    # 汇总到 dist/
+#
+# 完整发版流程：./release.sh v0.2.5 && ./scripts/build-all.sh && ./scripts/package-release.sh
 
 set -euo pipefail
+
+# 加载本机工具链（Flutter/CocoaPods/JDK/Android SDK 都在仓库同级的 .toolchain 下）。
+# 不加载的话 PATH 里没有 flutter，后续 analyze/test 会直接失败。
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+if [[ -f "$ROOT/../toolchain-env.sh" ]]; then
+  # shellcheck disable=SC1091
+  source "$ROOT/../toolchain-env.sh" >/dev/null 2>&1 || true
+fi
+cd "$ROOT"
 
 die() {
   echo "Error: $*" >&2
   exit 1
 }
 
-[[ $# -eq 1 ]] || die "Usage: scripts/release.sh vMAJOR.MINOR.PATCH"
+[[ $# -eq 1 ]] || die "Usage: ./release.sh vMAJOR.MINOR.PATCH"
 
 tag="$1"
 tag="v${tag#v}"
 version="${tag#v}"
 
 [[ "$version" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || \
-  die "Version must be vMAJOR.MINOR.PATCH, for example v0.1.5."
+  die "Version must be vMAJOR.MINOR.PATCH, for example v0.2.5."
 
 [[ -f pubspec.yaml ]] || die "Run this script from the repository root."
 [[ -z "$(git status --porcelain)" ]] || die "Working tree must be clean."
@@ -35,9 +59,6 @@ branch="$(git branch --show-current)"
 
 if git rev-parse -q --verify "refs/tags/$tag" >/dev/null; then
   die "Local tag $tag already exists."
-fi
-if git ls-remote --exit-code --tags origin "refs/tags/$tag" >/dev/null 2>&1; then
-  die "Remote tag $tag already exists."
 fi
 
 current_version="$(sed -nE 's/^version: ([^[:space:]]+).*/\1/p' pubspec.yaml)"
@@ -62,17 +83,23 @@ rm pubspec.yaml.bak
 version_changed=true
 
 flutter_bin="flutter"
-if [[ -x .fvm/flutter_sdk/bin/flutter ]]; then
-  flutter_bin=".fvm/flutter_sdk/bin/flutter"
+if ! command -v "$flutter_bin" >/dev/null 2>&1; then
+  die "找不到 flutter。请先执行：source \$ROOT/../toolchain-env.sh"
 fi
 
+echo "==> 静态分析"
 "$flutter_bin" analyze --no-pub
+echo "==> 运行测试"
 "$flutter_bin" test
 
 git add pubspec.yaml
 git commit -m "chore: release $tag"
 committed=true
 git tag "$tag"
-git push origin "$branch" "$tag"
 
-echo "Published $tag with app version $next_version."
+echo
+echo "已发布 $tag（应用版本 $next_version）"
+echo
+echo "下一步：构建并打包分发包"
+echo "  ./scripts/build-all.sh"
+echo "  ./scripts/package-release.sh"
