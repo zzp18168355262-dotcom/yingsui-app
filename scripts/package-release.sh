@@ -11,7 +11,7 @@
 #
 # 产物结构：
 #   dist/
-#     EnglishCorner-<版本>-macos.dmg             macOS 安装包
+#     EnglishCorner-<版本>-macos.zip             macOS 安装包
 #     EnglishCorner-<版本>-android.apk           Android 安装包
 #     EnglishCorner-<版本>-ios-unsigned.ipa      iOS（需签名服务重签）
 #     SHA256SUMS.txt                       校验文件
@@ -48,18 +48,56 @@ mkdir -p "$DIST"
 copied=()
 
 # ---- macOS ----
+# 产出 ZIP：用户解压后把 .app 拖进「应用程序」即可。
+#
+# 为什么要在 /tmp 里签名再打包：
+#   仓库位于 iCloud 托管目录（~/Documents）时，文件系统会持续给 .app 贴上
+#   com.apple.FinderInfo 扩展属性，导致 codesign 报
+#     "resource fork, Finder information, or similar detritus not allowed"
+#   并且写入工作区的包无法通过签名校验。结果是：ZIP 里的 app 未签名，
+#   用户解压后双击直接报 Launch failed / code object is not signed at all。
+#
+#   因此流程是：工作区产物 → ditto 干净拷贝到 /tmp → 在 /tmp 签名
+#   （签名后不再被贴属性）→ 就地打包 ZIP → ZIP 拷回 dist。
 MAC_APP="build/macos/Build/Products/Release/EnglishCorner.app"
 if [[ -d "$MAC_APP" ]]; then
-  DMG="$DIST/EnglishCorner-${VERSION}-macos.dmg"
-  echo "    打包 macOS DMG"
-  rm -rf build/macos/dmg-root
-  mkdir -p build/macos/dmg-root
-  # 先做干净拷贝，避免 iCloud 扩展属性带进 DMG
-  ditto --norsrc --noextattr "$MAC_APP" build/macos/dmg-root/EnglishCorner.app
-  ln -sf /Applications build/macos/dmg-root/Applications
-  hdiutil create -volname "英语角 English Corner" \
-    -srcfolder build/macos/dmg-root -ov -format UDZO "$DMG" >/dev/null
-  copied+=("$DMG")
+  MAC_ZIP="$DIST/EnglishCorner-${VERSION}-macos.zip"
+  STAGE_DIR="$(mktemp -d /tmp/EnglishCorner-pkg-XXXXXX)"
+  STAGE_APP="$STAGE_DIR/EnglishCorner.app"
+
+  echo "    准备 macOS 包（干净拷贝到 /tmp 后签名）"
+  ditto --norsrc --noextattr "$MAC_APP" "$STAGE_APP"
+
+  if codesign --force --deep --sign - "$STAGE_APP" 2>/dev/null &&
+     codesign --verify --deep --strict "$STAGE_APP" 2>/dev/null; then
+    echo "      签名校验通过"
+  else
+    echo "      ! 警告：签名校验未通过，产出的 app 可能无法直接打开"
+  fi
+
+  echo "    打包 macOS ZIP"
+  rm -f "$MAC_ZIP"
+  ditto -c -k --sequesterRsrc --keepParent "$STAGE_APP" "$MAC_ZIP"
+  copied+=("$MAC_ZIP")
+
+  if [[ "${MAKE_DMG:-0}" == "1" ]]; then
+    DMG="$DIST/EnglishCorner-${VERSION}-macos.dmg"
+    echo "    尝试打包 macOS DMG"
+    rm -rf build/macos/dmg-root
+    mkdir -p build/macos/dmg-root
+    ditto "$STAGE_APP" build/macos/dmg-root/EnglishCorner.app
+    ln -sf /Applications build/macos/dmg-root/Applications
+    if hdiutil create -volname "英语角 English Corner" \
+        -srcfolder build/macos/dmg-root -ov -format UDZO "$DMG" >/dev/null 2>&1; then
+      copied+=("$DMG")
+      echo "      DMG 打包成功"
+    else
+      echo "      ! DMG 打包失败（当前环境不支持 hdiutil），已跳过。ZIP 可正常使用。"
+      rm -f "$DMG"
+    fi
+  fi
+
+  rm -rf "$STAGE_DIR"
 else
   echo "    ! 跳过 macOS：未找到 $MAC_APP"
 fi
@@ -95,11 +133,18 @@ fi
 
 # ---- SHA256 校验文件 ----
 # 应用内的更新检查会寻找 SHA256SUMS.txt，命名与格式需保持一致。
+# 注意要覆盖所有分发包格式（zip/dmg/apk/ipa），否则会漏掉校验项。
 echo
 echo "==> 生成 SHA256SUMS.txt"
 (
   cd "$DIST"
-  shasum -a 256 ./*.dmg ./*.apk ./*.ipa 2>/dev/null > SHA256SUMS.txt || true
+  found=0
+  for f in ./*.zip ./*.dmg ./*.apk ./*.ipa; do
+    [[ -f "$f" ]] || continue
+    shasum -a 256 "$f"
+    found=1
+  done > SHA256SUMS.txt
+  [[ "$found" == "1" ]] || echo "（没有可分发的文件）" > SHA256SUMS.txt
 )
 cat "$DIST/SHA256SUMS.txt" | sed 's/^/    /'
 
@@ -172,10 +217,10 @@ Android 手机 / 平板
 ────────────────────────────────
 macOS 电脑
 ────────────────────────────────
-文件：EnglishCorner-${VERSION}-macos.dmg
+文件：EnglishCorner-${VERSION}-macos.zip
 
 安装步骤：
-  1. 双击 dmg，把「英语角」拖进「应用程序」
+  1. 双击 zip 解压，把「英语角」拖进「应用程序」
   2. 首次打开会提示「无法验证开发者」—— 这是正常的
      （本应用未做 Apple 公证）
   3. 解决办法（任选其一）：

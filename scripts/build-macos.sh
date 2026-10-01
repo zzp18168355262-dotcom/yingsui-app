@@ -83,11 +83,31 @@ codesign --force --deep --sign - "$STAGE_APP"
 codesign --verify --deep --strict "$STAGE_APP" && echo "    签名校验通过"
 
 FINAL="$APP"
-if codesign --force --deep --sign - "$APP" 2>/dev/null; then
+if codesign --force --deep --sign - "$APP" 2>/dev/null &&
+   codesign --verify --deep --strict "$APP" 2>/dev/null; then
   echo "==> 原件也已签名（当前目录未受 iCloud 影响）"
 else
-  echo "==> 原件所在目录受 iCloud 影响，使用 /tmp 下的已签名产物"
-  FINAL="$STAGE_APP"
+  # 原件的目录受 iCloud 影响，签名无法通过校验。
+  # 关键：此时必须把「已签名的 /tmp 产物」覆盖回构建目录，
+  # 否则后续打包（ZIP/DMG）会拿到未签名的包 —— 用户解压后无法启动，
+  # 报 "Launch failed / code object is not signed at all"。
+  echo "==> 原目录签名不通过，用 /tmp 下的已签名产物的干净拷贝覆盖"
+  xattr -cr "$APP" 2>/dev/null || true
+  rm -rf "${APP}.unsigned"
+  # 先把有问题的原件移开，再用 ditto 把已签名版本放回原位。
+  mv "$APP" "${APP}.unsigned"
+  if ditto --norsrc --noextattr "$STAGE_APP" "$APP" 2>/dev/null; then
+    rm -rf "${APP}.unsigned"
+    echo "    已覆盖为已签名版本"
+  else
+    # 覆盖失败则回退：保留原件，并明确告知最终产物位置。
+    mv "${APP}.unsigned" "$APP"
+    echo "    ! 覆盖失败，最终产物为 $STAGE_APP"
+  fi
+  FINAL="$APP"
+  if ! codesign --verify --deep --strict "$FINAL" 2>/dev/null; then
+    echo "    ! 警告：$FINAL 仍未通过签名校验，打包脚本将改用 $STAGE_APP"
+  fi
 fi
 
 if [[ "$PACKAGE_DMG" == "dmg" ]]; then
