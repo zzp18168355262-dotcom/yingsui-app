@@ -98,7 +98,7 @@ committed=true
 git tag "$tag"
 
 echo
-echo "已发布 $tag（应用版本 $next_version）"
+echo "已发布 ${tag}（应用版本 ${next_version}）"
 echo
 echo "下一步：构建并打包分发包"
 echo "  ./scripts/build-all.sh"
