@@ -88,3 +88,7 @@ yarn.lock
 
 # FVM Version Cache
 .fvm/
+
+# 发布产物：由 scripts/package-release.sh 生成，体积大且可重建，
+# 不应提交进版本库（否则每次发版都会让仓库膨胀数百 MB）。
+/dist/

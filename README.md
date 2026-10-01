@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/img/app_icon.png" alt="YingSui app icon" width="112" />
+  <img src="assets/img/app_icon.png" alt="英语角 English Corner app icon" width="112" />
 </p>
 
-<h1 align="center">YingSui</h1>
+<h1 align="center">英语角 English Corner</h1>
 
 > A local-first English shadowing app for listening and speaking practice with your own videos and subtitles.
 
@@ -33,7 +33,7 @@
 | <img src="assets/showcase/video-subtitle-lookup.png" alt="直接点按视频字幕中的单词后显示的翻译弹窗" width="100%" /> | |
 | 视频正在播放时，也能直接点按画面字幕里的单词查看释义。 | |
 | 三遍学习法 | 学习成长与等级 |
-| <img src="assets/showcase/learning-guide.jpg" alt="YingSui 的三遍学习法页面" width="100%" /> | <img src="assets/showcase/growth.png" alt="学习成长、等级和学习路线" width="100%" /> |
+| <img src="assets/showcase/learning-guide.jpg" alt="英语角 English Corner 的三遍学习法页面" width="100%" /> | <img src="assets/showcase/growth.png" alt="学习成长、等级和学习路线" width="100%" /> |
 | 先理解，再精听，最后跟读。 | 记录练习、积累经验，清楚看到下一步。 |
 | 单词本 | 短语复习 |
 | <img src="assets/showcase/words.jpg" alt="单词本与词义查看" width="100%" /> | <img src="assets/showcase/phrases.jpg" alt="短语收藏与复习空间" width="100%" /> |
@@ -42,9 +42,9 @@
 | <img src="assets/showcase/settings.jpg" alt="字幕、翻译和播放相关设置" width="100%" /> | |
 | 按自己的学习方式配置字幕与辅助能力。 | |
 
-YingSui 是一个 English shadowing app：你导入自己有权使用的本地视频和字幕，用真实场景完成听懂、重复、模仿和开口表达。项目不提供任何影视、课程或字幕资源；学习素材保留在你的设备上。
+英语角 English Corner 是一个 English shadowing app：你导入自己有权使用的本地视频和字幕，用真实场景完成听懂、重复、模仿和开口表达。项目不提供任何影视、课程或字幕资源；学习素材保留在你的设备上。
 
-## 什么是 YingSui
+## 什么是 英语角 English Corner
 
 影子跟读不是只跟着念一遍台词。它把英语听力练习和英语口语练习放在同一段真实视频里：先理解内容，再辨认声音，最后模仿说话者的节奏、连读、语调和发音。
 
@@ -76,7 +76,7 @@ YingSui 是一个 English shadowing app：你导入自己有权使用的本地�
 
 ## 字幕功能：从导入到逐词跟读
 
-YingSui 不只是在视频上显示一句字幕，而是把字幕变成可以定位、循环、查词和跟读的学习时间轴。你可以按素材情况选择以下方式：
+英语角 English Corner 不只是在视频上显示一句字幕，而是把字幕变成可以定位、循环、查词和跟读的学习时间轴。你可以按素材情况选择以下方式：
 
 - **导入外部字幕**：支持 `.srt` 和 `.vtt`。已有质量较好的字幕时，这是最直接的方式；英文和中文字幕可以按文件名自动匹配。
 - **切换视频内置字幕**：如果视频文件本身带有可切换字幕轨道，可以在播放器的字幕菜单中选择，不需要先把字幕从视频中导出。
@@ -186,6 +186,6 @@ Friends-S01E01.zh.srt
 
 ## License
 
-YingSui 使用 [MIT License](LICENSE) 开源。
+英语角 English Corner 使用 [MIT License](LICENSE) 开源。
 
-如果你正在寻找一个用本地视频练习英语听力、英语跟读和英语口语表达的工具，欢迎试试 YingSui。
+如果你正在寻找一个用本地视频练习英语听力、英语跟读和英语口语表达的工具，欢迎试试 英语角 English Corner。

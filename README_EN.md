@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="assets/img/app_icon.png" alt="YingSui app icon" width="112" />
+  <img src="assets/img/app_icon.png" alt="英语角 English Corner app icon" width="112" />
 </p>
 
-<h1 align="center">YingSui</h1>
+<h1 align="center">英语角 English Corner</h1>
 
 > A local-first English shadowing app for listening and speaking practice with your own videos and subtitles.
 
@@ -33,7 +33,7 @@ English · [中文](README.md)
 | <img src="assets/showcase/video-subtitle-lookup.png" alt="Translation popup after tapping a word in the video subtitle" width="100%" /> | |
 | Look up a word directly from the subtitle over the playing video. | |
 | The three-pass method | Learning journey and levels |
-| <img src="assets/showcase/learning-guide.jpg" alt="The three-pass method in YingSui" width="100%" /> | <img src="assets/showcase/growth.png" alt="Learning journey, levels, and study roadmap" width="100%" /> |
+| <img src="assets/showcase/learning-guide.jpg" alt="The three-pass method in 英语角 English Corner" width="100%" /> | <img src="assets/showcase/growth.png" alt="Learning journey, levels, and study roadmap" width="100%" /> |
 | Understand first, listen closely, then shadow the line. | Track practice, gain experience, and see the next step clearly. |
 | Wordbook | Saved phrases |
 | <img src="assets/showcase/words.jpg" alt="Wordbook and dictionary lookup" width="100%" /> | <img src="assets/showcase/phrases.jpg" alt="Saved phrases and review space" width="100%" /> |
@@ -42,9 +42,9 @@ English · [中文](README.md)
 | <img src="assets/showcase/settings.jpg" alt="Settings for subtitles, translation, and playback" width="100%" /> | |
 | Configure support around the way you study. | |
 
-YingSui is an English shadowing app for turning videos you already own into deliberate listening and speaking practice. Import local videos and subtitles, work through real scenes sentence by sentence, and keep your media on your own device. This project does not provide videos, courses, or subtitle packs.
+英语角 English Corner is an English shadowing app for turning videos you already own into deliberate listening and speaking practice. Import local videos and subtitles, work through real scenes sentence by sentence, and keep your media on your own device. This project does not provide videos, courses, or subtitle packs.
 
-## What is YingSui
+## What is 英语角 English Corner
 
 English shadowing is more than repeating a line once. It puts listening and speaking in the same real-video context: understand the scene, identify what you hear, then imitate the speaker's timing, connected speech, intonation, and pronunciation.
 
@@ -76,7 +76,7 @@ Short loops keep auditory recognition and spoken output together. A few lines at
 
 ## Subtitles: from import to word-level shadowing
 
-YingSui does more than display one subtitle line over a video. It turns subtitles into a learning timeline you can navigate, loop, search, and shadow. Choose the workflow that fits your material:
+英语角 English Corner does more than display one subtitle line over a video. It turns subtitles into a learning timeline you can navigate, loop, search, and shadow. Choose the workflow that fits your material:
 
 - **Import external subtitles**: `.srt` and `.vtt` files are supported. This is the most direct option when you already have good subtitles; English and Chinese tracks can be matched automatically by filename.
 - **Switch embedded subtitle tracks**: If a video contains selectable subtitle tracks, choose one from the player's subtitle menu without extracting it first.
@@ -114,7 +114,7 @@ When usable English external or embedded subtitles are available, the app can us
 
 AI recognition can still be affected by background music, overlapping speakers, accents, and recording quality. For important material, use an existing subtitle as a reference and review the result in Manage AI Subtitles before relying on it long-term.
 
-## Why use YingSui
+## Why use 英语角 English Corner
 
 - **Start with videos you want to watch**: Learn English with videos you care about instead of a fixed course pack.
 - **Keep language in context**: Words, lines, and phrases come from real dialogue.
@@ -184,6 +184,6 @@ Read [RESOURCE_SETUP.md](RESOURCE_SETUP.md) for more detail. This repository doe
 
 ## License
 
-YingSui is available under the [MIT License](LICENSE).
+英语角 English Corner is available under the [MIT License](LICENSE).
 
-For English listening practice, English speaking practice, and English shadowing with local videos, YingSui is ready for your own learning library.
+For English listening practice, English speaking practice, and English shadowing with local videos, 英语角 English Corner is ready for your own learning library.

@@ -1,4 +1,4 @@
-# 影随 / YingSui —— 构建与发布指南
+# 英语角 / English Corner —— 构建与发布指南
 
 本文档记录三平台构建的完整流程，以及**已经踩过的坑**。
 下次构建遇到问题，优先查这里。
@@ -96,10 +96,10 @@ build/ffmpeg-bundle/macos-arm64/ffmpeg -y -t 30 -i "你的视频.mkv" \
 
 | 平台 | 命令 | 产物 |
 |---|---|---|
-| macOS | `./scripts/build-macos.sh release [dmg]` | `YingSui.app`（已签名） |
+| macOS | `./scripts/build-macos.sh release [dmg]` | `EnglishCorner.app`（已签名） |
 | Android | `flutter build apk --release --flavor prod` | `app-prod-release.apk` |
 | Android | `flutter build appbundle --release --flavor prod` | `.aab`（上 Google Play 用） |
-| iOS | `./scripts/build-ios-ipa.sh` | `YingSui-<版本>-unsigned.ipa` |
+| iOS | `./scripts/build-ios-ipa.sh` | `EnglishCorner-<版本>-unsigned.ipa` |
 | Web | `flutter build web --release` | `build/web` |
 
 ---
