@@ -178,3 +178,71 @@ xcodebuild -exportArchive -archivePath <archive> -exportOptionsPlist <plist>
 - [ ] 版本号已在 `pubspec.yaml` 提升
 - [ ] 应用图标已生成（`python3 tool/brand/generate_icons.py --concept C --out .`）
 - [ ] 域名已填入 `lib/config/app_links.dart`（如已注册）
+
+---
+
+## 七、macOS release 构建需要给 Flutter 打补丁
+
+**这是 Flutter 3.44.4 自身的 bug，不是本项目的问题。**
+
+### 现象
+
+macOS **release** 构建失败，报：
+
+```
+Target release_unpack_macos failed: Exception: Binary .../FlutterMacOS
+does not contain architectures "arm64 x86_64".
+lipo -info:
+Architectures in the fat file: ... are: x86_64 arm64
+```
+
+**注意矛盾之处**：`lipo -info` 明确说两个架构都在，却仍报"不包含"。
+
+### 根因
+
+`flutter_tools` 在打包 framework 时执行的是：
+
+```bash
+lipo <framework> -verify_arch x86_64 arm64
+```
+
+但 **`lipo -verify_arch` 一次只接受一个架构参数**，传多个会把第二个当成
+「额外输入文件」：
+
+```
+lipo: -verify_arch requires exactly one input file   （退出码 1）
+```
+
+于是校验失败。逐字验证：
+
+| 命令 | 结果 |
+|---|---|
+| `lipo <fw> -verify_arch x86_64 arm64` | ❌ 退出码 1（Flutter 的写法） |
+| `lipo <fw> -verify_arch x86_64` | ✅ 退出码 0 |
+| `lipo <fw> -verify_arch arm64` | ✅ 退出码 0 |
+
+**关键**：无论 framework 是单架构还是双架构都会失败——问题出在**参数个数**，
+不在架构本身。debug 构建恰好只传一个架构（arm64），所以能过。
+
+### 解决
+
+项目内已提供补丁与脚本：
+
+```bash
+./scripts/patch-flutter-macos-release.sh
+```
+
+它会：
+1. 把 flutter_tools 的架构校验改为**逐个验证**（幂等，已打过会跳过）
+2. 删除快照与 stamp 并**重新生成 flutter_tools 快照**
+
+> 快照只在 revision 变化时才自动重建，改源码不会生效，必须手动重建——
+> 脚本已包含这一步。
+
+**何时需要重跑**：`flutter upgrade` 或 Flutter 升级之后
+（快照会被重新生成，覆盖补丁）。
+
+补丁文件保存在 `tool/patches/flutter-lipo-verify-arch.patch`。
+
+打上补丁后，macOS release 产物为**通用二进制（x86_64 + arm64）**，
+体积约 121 MB（debug 为 221 MB 且仅 arm64）。
