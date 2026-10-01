@@ -1,12 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
-
-import 'package:yingsui/features/settings/presentation/settings_provider.dart';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:yingsui/features/settings/presentation/settings_provider.dart';
 
 void main() {
   late Directory hiveDir;

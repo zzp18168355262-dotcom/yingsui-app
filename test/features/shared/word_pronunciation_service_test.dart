@@ -1,6 +1,6 @@
-import 'package:yingsui/features/shared/data/word_pronunciation_service.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/shared/data/word_pronunciation_service.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();

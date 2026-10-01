@@ -1,5 +1,8 @@
 import 'dart:async';
-
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod/misc.dart' show Override;
 import 'package:yingsui/features/player/presentation/full_transcript_reader.dart';
 import 'package:yingsui/features/player/presentation/player_mock_state.dart';
 import 'package:yingsui/features/player/presentation/transcript_reader_session.dart';
@@ -8,10 +11,6 @@ import 'package:yingsui/features/shared/data/word_lookup_service.dart';
 import 'package:yingsui/features/shared/data/word_pronunciation_service.dart';
 import 'package:yingsui/features/shared/domain/word_lookup_entry.dart';
 import 'package:yingsui/features/words/data/offline_word_dictionary.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod/misc.dart' show Override;
 
 void main() {
   const List<PlayerSubtitleLine> lines = <PlayerSubtitleLine>[

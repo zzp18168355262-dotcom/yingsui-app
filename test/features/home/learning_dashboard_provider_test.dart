@@ -1,6 +1,6 @@
-import 'package:yingsui/features/home/presentation/learning_dashboard_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/home/presentation/learning_dashboard_provider.dart';
 
 void main() {
   test('learning dashboard reflects activity changes', () {

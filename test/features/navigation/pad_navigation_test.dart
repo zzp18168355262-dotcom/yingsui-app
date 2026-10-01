@@ -1,14 +1,14 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yingsui/features/navigation/presentation/floating_bottom_nav.dart';
 import 'package:yingsui/features/navigation/presentation/navigation_destination.dart';
 import 'package:yingsui/features/shared/data/daily_english_service.dart';
 import 'package:yingsui/features/shared/data/word_pronunciation_service.dart';
 import 'package:yingsui/features/shared/presentation/pad/pad_sidebar.dart';
 import 'package:yingsui/router/app_router.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
-import 'package:riverpod/src/framework.dart' show Override;
 
 void main() {
   test('pad prototype routes stay addressable', () {

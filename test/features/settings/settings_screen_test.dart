@@ -1,10 +1,10 @@
-import 'package:yingsui/features/settings/presentation/settings_provider.dart';
-import 'package:yingsui/features/settings/presentation/settings_screen.dart';
-import 'package:yingsui/features/settings/presentation/widgets/settings_group_card.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:yingsui/features/settings/presentation/settings_provider.dart';
+import 'package:yingsui/features/settings/presentation/settings_screen.dart';
+import 'package:yingsui/features/settings/presentation/widgets/settings_group_card.dart';
 
 void main() {
   testWidgets('settings screen shows prototype sections', (

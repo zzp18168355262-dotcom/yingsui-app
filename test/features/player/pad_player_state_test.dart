@@ -1,6 +1,9 @@
 import 'dart:convert';
 import 'dart:ui';
-
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:yingsui/features/library/presentation/library_catalog_provider.dart';
 import 'package:yingsui/features/library/presentation/library_mock_data.dart';
 import 'package:yingsui/features/player/presentation/asr_subtitle_service.dart';
@@ -18,10 +21,6 @@ import 'package:yingsui/features/shared/data/word_lookup_service.dart';
 import 'package:yingsui/features/shared/data/word_pronunciation_service.dart';
 import 'package:yingsui/features/shared/domain/word_lookup_entry.dart';
 import 'package:yingsui/features/shared/presentation/word_lookup_popup.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 class _TestLibraryCatalogNotifier extends LibraryCatalogNotifier {
   @override

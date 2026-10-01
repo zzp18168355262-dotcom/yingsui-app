@@ -1,8 +1,7 @@
 import 'dart:io';
-
+import 'package:flutter_test/flutter_test.dart';
 import 'package:yingsui/features/player/presentation/player_mock_state.dart';
 import 'package:yingsui/features/player/presentation/player_subtitle_loader.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('parses bilingual subtitles from srt/vtt', () {

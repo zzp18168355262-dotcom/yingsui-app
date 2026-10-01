@@ -1,8 +1,7 @@
 import 'dart:io';
-
+import 'package:flutter_test/flutter_test.dart';
 import 'package:yingsui/features/player/presentation/asr_subtitle_cache.dart';
 import 'package:yingsui/features/settings/presentation/settings_provider.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('cache file uses episode folder and video base name', () async {

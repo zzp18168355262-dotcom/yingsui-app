@@ -1,7 +1,6 @@
 import 'dart:io';
-
-import 'package:yingsui/features/import_course/domain/import_match.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/import_course/domain/import_match.dart';
 
 void main() {
   test('parse should map video files to subtitle match status', () {

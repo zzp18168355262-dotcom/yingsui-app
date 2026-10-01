@@ -1,7 +1,6 @@
 import 'dart:async';
-
-import 'package:yingsui/features/player/presentation/player_video_init.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/player/presentation/player_video_init.dart';
 
 void main() {
   test('times out when player initialization never completes', () async {

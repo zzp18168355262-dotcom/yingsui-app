@@ -1,11 +1,10 @@
 import 'dart:io';
-
-import 'package:yingsui/features/import_course/domain/android_import_picker.dart';
-import 'package:yingsui/features/import_course/presentation/widgets/import_course_flow.dart';
-import 'package:yingsui/features/library/presentation/library_catalog_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/import_course/domain/android_import_picker.dart';
+import 'package:yingsui/features/import_course/presentation/widgets/import_course_flow.dart';
+import 'package:yingsui/features/library/presentation/library_catalog_provider.dart';
 
 void main() {
   testWidgets('import screen follows the redesigned three-step import flow', (

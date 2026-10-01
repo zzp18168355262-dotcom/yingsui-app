@@ -1,7 +1,7 @@
-import 'package:yingsui/features/player/presentation/widgets/player_top_bar.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/player/presentation/widgets/player_top_bar.dart';
 
 void main() {
   testWidgets('clears the macOS window controls', (WidgetTester tester) async {

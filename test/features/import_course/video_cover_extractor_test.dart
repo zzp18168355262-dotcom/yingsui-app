@@ -1,5 +1,5 @@
-import 'package:yingsui/features/import_course/domain/video_cover_extractor.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/import_course/domain/video_cover_extractor.dart';
 
 void main() {
   test(

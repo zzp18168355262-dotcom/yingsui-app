@@ -1,3 +1,8 @@
+import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:yingsui/features/home/presentation/pad_home_screen.dart';
 import 'package:yingsui/features/player/presentation/full_transcript_reader.dart';
 import 'package:yingsui/features/player/presentation/pad_landscape_player_screen.dart';
@@ -6,11 +11,6 @@ import 'package:yingsui/features/player/presentation/player_mock_state.dart';
 import 'package:yingsui/features/player/presentation/player_screen.dart';
 import 'package:yingsui/features/player/presentation/widgets/player_subtitle_list.dart';
 import 'package:yingsui/features/player/presentation/widgets/player_video_panel.dart';
-import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 class _SubtitleListHarness extends StatefulWidget {
   const _SubtitleListHarness({this.height = 360, super.key});

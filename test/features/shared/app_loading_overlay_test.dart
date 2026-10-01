@@ -1,6 +1,6 @@
-import 'package:yingsui/features/shared/presentation/app_loading_overlay.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/shared/presentation/app_loading_overlay.dart';
 
 void main() {
   testWidgets('shows loading message only when enabled', (

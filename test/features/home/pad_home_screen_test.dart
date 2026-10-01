@@ -1,3 +1,7 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:yingsui/features/growth/presentation/growth_screen.dart';
 import 'package:yingsui/features/home/presentation/pad_home_screen.dart';
 import 'package:yingsui/features/import_course/presentation/import_course_screen.dart';
@@ -5,10 +9,6 @@ import 'package:yingsui/features/library/presentation/library_screen.dart';
 import 'package:yingsui/features/phrases/presentation/phrases_screen.dart';
 import 'package:yingsui/features/player/presentation/player_screen.dart';
 import 'package:yingsui/router/app_router.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
 
 void main() {
   testWidgets('home quick entries and hero navigate to prototype targets', (

@@ -1,15 +1,14 @@
 import 'dart:convert';
 import 'dart:io';
-
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:hive_ce/hive.dart';
 import 'package:yingsui/features/import_course/domain/import_match.dart';
 import 'package:yingsui/features/import_course/domain/video_cover_extractor.dart';
 import 'package:yingsui/features/library/presentation/library_catalog_provider.dart';
 import 'package:yingsui/features/library/presentation/library_mock_data.dart';
 import 'package:yingsui/features/shared/presentation/media/cover_image.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:hive_ce/hive.dart';
 
 class _FakeVideoCoverExtractor implements VideoCoverExtractor {
   _FakeVideoCoverExtractor({

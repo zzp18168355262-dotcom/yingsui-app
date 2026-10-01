@@ -1,5 +1,5 @@
-import 'package:yingsui/features/player/presentation/desktop_ffmpeg.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/player/presentation/desktop_ffmpeg.dart';
 
 void main() {
   test('macOS checks the app bundle before system ffmpeg', () {

@@ -1,6 +1,6 @@
+import 'package:flutter_test/flutter_test.dart';
 import 'package:yingsui/features/library/presentation/library_mock_data.dart';
 import 'package:yingsui/features/player/presentation/player_course_lookup.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('resolves subtitle paths from subtitle tracks', () {

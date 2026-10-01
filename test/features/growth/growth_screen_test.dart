@@ -1,8 +1,8 @@
-import 'package:yingsui/features/growth/presentation/growth_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:yingsui/features/growth/presentation/growth_screen.dart';
 
 void main() {
   testWidgets('growth screen keeps its carousel and presents learning loops', (

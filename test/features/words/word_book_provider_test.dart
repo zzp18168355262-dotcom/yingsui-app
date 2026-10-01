@@ -1,7 +1,7 @@
-import 'package:yingsui/features/words/data/offline_word_dictionary.dart';
-import 'package:yingsui/features/words/presentation/word_book_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/words/data/offline_word_dictionary.dart';
+import 'package:yingsui/features/words/presentation/word_book_provider.dart';
 
 void main() {
   test('tokenizes subtitle words without punctuation', () {

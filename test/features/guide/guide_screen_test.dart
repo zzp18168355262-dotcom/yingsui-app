@@ -1,8 +1,8 @@
-import 'package:yingsui/features/guide/presentation/guide_screen.dart';
-import 'package:yingsui/features/guide/presentation/widgets/how_to_learn_content.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/guide/presentation/guide_screen.dart';
+import 'package:yingsui/features/guide/presentation/widgets/how_to_learn_content.dart';
 
 void main() {
   testWidgets('guide screen guides learners through the three-pass method', (

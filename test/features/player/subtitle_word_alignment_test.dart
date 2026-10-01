@@ -1,6 +1,6 @@
+import 'package:flutter_test/flutter_test.dart';
 import 'package:yingsui/features/player/presentation/player_mock_state.dart';
 import 'package:yingsui/features/player/presentation/subtitle_word_alignment.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('keeps SRT text and fills words missed by ASR with ordered timings', () {

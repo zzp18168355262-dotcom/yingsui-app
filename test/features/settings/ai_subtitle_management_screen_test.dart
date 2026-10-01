@@ -1,11 +1,10 @@
 import 'dart:io';
-
-import 'package:yingsui/features/player/presentation/asr_subtitle_cache.dart';
-import 'package:yingsui/features/settings/presentation/ai_subtitle_management_screen.dart';
-import 'package:yingsui/features/settings/presentation/settings_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/player/presentation/asr_subtitle_cache.dart';
+import 'package:yingsui/features/settings/presentation/ai_subtitle_management_screen.dart';
+import 'package:yingsui/features/settings/presentation/settings_provider.dart';
 
 void main() {
   testWidgets(

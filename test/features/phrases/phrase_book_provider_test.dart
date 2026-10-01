@@ -1,6 +1,6 @@
-import 'package:yingsui/features/phrases/presentation/phrase_book_provider.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/phrases/presentation/phrase_book_provider.dart';
 
 void main() {
   final DateTime now = DateTime.utc(2026, 7, 10, 8);

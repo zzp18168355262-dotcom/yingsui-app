@@ -1,5 +1,6 @@
 import 'dart:async';
-
+import 'package:flutter_test/flutter_test.dart';
+import 'package:riverpod/src/framework.dart';
 import 'package:yingsui/features/authentication/data/authentication_repository.dart';
 import 'package:yingsui/features/authentication/data/hive/user_repository.dart';
 import 'package:yingsui/features/authentication/domain/login_request.dart';
@@ -7,8 +8,6 @@ import 'package:yingsui/features/authentication/domain/login_response.dart';
 import 'package:yingsui/features/authentication/domain/register_response.dart';
 import 'package:yingsui/features/authentication/presentation/login/auth_ui_model.dart';
 import 'package:yingsui/features/authentication/presentation/login/login_controller.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:riverpod/src/framework.dart';
 
 class FakeAuthRepository implements AuthenticationRepository {
   @override

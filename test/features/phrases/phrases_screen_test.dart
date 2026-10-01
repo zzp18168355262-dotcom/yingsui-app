@@ -1,3 +1,8 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
+import 'package:riverpod/src/framework.dart' show Override;
 import 'package:yingsui/features/library/presentation/library_catalog_provider.dart';
 import 'package:yingsui/features/library/presentation/library_mock_data.dart';
 import 'package:yingsui/features/phrases/presentation/phrase_book_provider.dart';
@@ -6,11 +11,6 @@ import 'package:yingsui/features/phrases/presentation/phrases_screen.dart';
 import 'package:yingsui/features/phrases/presentation/widgets/phrase_card.dart';
 import 'package:yingsui/features/shared/data/word_pronunciation_service.dart';
 import 'package:yingsui/router/app_router.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:flutter_test/flutter_test.dart';
-import 'package:go_router/go_router.dart';
-import 'package:riverpod/src/framework.dart' show Override;
 
 class _PhraseSourceCatalogNotifier extends LibraryCatalogNotifier {
   @override

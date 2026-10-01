@@ -1,5 +1,5 @@
-import 'package:yingsui/features/player/presentation/player_backend.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:yingsui/features/player/presentation/player_backend.dart';
 
 void main() {
   test('initializes media_kit backend once', () {

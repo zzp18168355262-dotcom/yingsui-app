@@ -1,6 +1,6 @@
+import 'package:flutter_test/flutter_test.dart';
 import 'package:yingsui/features/player/presentation/player_mock_state.dart';
 import 'package:yingsui/features/player/presentation/subtitle_reference_review.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   const PlayerSubtitleLine reference = PlayerSubtitleLine(

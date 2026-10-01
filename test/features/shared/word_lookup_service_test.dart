@@ -1,8 +1,8 @@
+import 'package:dio/dio.dart';
+import 'package:flutter_test/flutter_test.dart';
 import 'package:yingsui/features/settings/presentation/settings_provider.dart';
 import 'package:yingsui/features/shared/data/word_lookup_service.dart';
 import 'package:yingsui/features/shared/domain/word_lookup_entry.dart';
-import 'package:dio/dio.dart';
-import 'package:flutter_test/flutter_test.dart';
 
 void main() {
   test('preserves the full lookup result when sent between windows', () {
