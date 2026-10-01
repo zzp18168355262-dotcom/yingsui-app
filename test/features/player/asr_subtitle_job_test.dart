@@ -402,6 +402,64 @@ void main() {
     expect(subtitleGenerationWarning(raw), isNull);
   });
 
+  test('单句翻译失败不会中断后续句子的翻译', () async {
+    // 回归测试：原实现在任意一句翻译失败时直接 break，
+    // 导致该句之后的所有句子永远没有中文
+    // （用户实测表现：前十几分钟正常，后面只剩英文）。
+    final Directory root = Directory.systemTemp.createTempSync(
+      'asr-job-translation-continue-',
+    );
+    addTearDown(() => root.deleteSync(recursive: true));
+    final File video = File('${root.path}/lesson.mp4')
+      ..writeAsStringSync('video');
+    final File chunk = File('${root.path}/chunk.m4a')
+      ..writeAsStringSync('audio');
+    final AsrSubtitleJobRunner runner = AsrSubtitleJobRunner(
+      supportDirectory: () async => root,
+      cache: AsrSubtitleCache(appSupportDirectory: () async => root),
+      service: AsrSubtitleService(
+        prepareAudioChunksOverride: (_) async => <AsrAudioChunk>[
+          AsrAudioChunk(file: chunk, offsetMs: 0),
+        ],
+      ),
+      cloudTranscribeChunk:
+          ({
+            required AsrAudioChunk chunk,
+            required LearningSettingsState settings,
+          }) async => _threeLineChunkJson(),
+      // 中间那句始终失败，两侧正常。
+      translateSentence:
+          ({
+            required String sentence,
+            required LearningSettingsState settings,
+          }) async => sentence == 'second line' ? null : '翻译：$sentence',
+    );
+
+    final String raw = await runner.run(
+      episodeId: 'episode-1',
+      videoPath: video.path,
+      settings: _settings().copyWith(generateBilingualAsrSubtitles: true),
+    );
+
+    final List<String> chinese = parseSubtitleLines(
+      raw,
+    ).map((PlayerSubtitleLine line) => line.chinese).toList();
+
+    // 关键断言：第三句仍然被翻译了。
+    expect(chinese.length, 3);
+    expect(chinese[0], '翻译：first line');
+    expect(chinese[1], isEmpty, reason: '失败的那句保留英文，中文为空');
+    expect(
+      chinese[2],
+      '翻译：third line',
+      reason: '中间失败不应阻止后续句子翻译',
+    );
+    // 并且要明确告知用户有未完成的部分。
+    final String? warning = subtitleGenerationWarning(raw);
+    expect(warning, isNotNull);
+    expect(warning, contains('1 句'));
+  });
+
   test('resume skips completed chunk files', () async {
     final Directory root = Directory.systemTemp.createTempSync(
       'asr-job-resume-',
@@ -1489,6 +1547,18 @@ Map<String, Object?> _twoLineChunkJson() {
     'lines': <Map<String, Object?>>[
       _chunkLine('first line', 1000),
       _chunkLine('second line', 2000),
+    ],
+  };
+}
+
+Map<String, Object?> _threeLineChunkJson() {
+  return <String, Object?>{
+    'version': 1,
+    'language': 'en',
+    'lines': <Map<String, Object?>>[
+      _chunkLine('first line', 1000),
+      _chunkLine('second line', 5000),
+      _chunkLine('third line', 9000),
     ],
   };
 }

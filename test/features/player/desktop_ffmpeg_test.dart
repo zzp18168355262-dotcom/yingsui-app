@@ -19,10 +19,10 @@ void main() {
   test('Windows checks the packaged executable next to the app', () {
     final List<String> candidates = desktopFfmpegCandidates(
       operatingSystem: 'windows',
-      resolvedExecutable: r'C:\YingSui\yingsui.exe',
+      resolvedExecutable: r'C:\EnglishCorner\yingsui.exe',
     );
 
-    expect(candidates.first, r'C:\YingSui\ffmpeg\ffmpeg.exe');
+    expect(candidates.first, r'C:\EnglishCorner\ffmpeg\ffmpeg.exe');
   });
 
   test('Linux checks the relocatable bundle library directory', () {

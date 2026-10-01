@@ -671,6 +671,18 @@ class AsrSubtitleJobRunner {
       checkpoint,
       signature,
     );
+    // 逐句翻译。
+    //
+    // 原先的实现有一个严重缺陷：任何一句翻译失败就直接 break，
+    // 后续所有句子永远没有中文（表现为「前十几分钟正常，之后只有英文」），
+    // 而且这个「翻译了一半」的结果会被缓存，重新生成也不会补齐。
+    //
+    // 现在改为：
+    //   1) 失败时按指数退避重试（应对第三方接口的限流/瞬时抖动）
+    //   2) 仍失败则跳过该句、继续翻译后面的句子，不再整段放弃
+    //   3) 记录未完成数量，并在警告里体现，便于用户判断是否需要重试
+    int untranslated = 0;
+    Object? lastTranslationError;
     for (final dynamic line in lines) {
       if (line is! Map<String, dynamic>) {
         continue;
@@ -685,30 +697,19 @@ class AsrSubtitleJobRunner {
       cancellationToken?.throwIfCancelled();
       final String key = _translationLineKey(line, english);
       final String? cached = translations[key];
-      String? chinese = cached;
-      if (chinese == null) {
-        try {
-          chinese =
-              await (translateSentence ??
-                      const WordLookupService().translateSentence)(
-                    sentence: english,
-                    settings: settings,
-                  )
-                  .timeout(
-                    const Duration(seconds: 45),
-                    onTimeout: () =>
-                        throw TimeoutException('双语字幕翻译超时，请检查网络后重试；已完成的翻译会保留。'),
-                  );
-        } catch (_) {
-          cancellationToken?.throwIfCancelled();
-          decoded['translationWarning'] =
-              '英文词级字幕已生成，但中文翻译未全部完成；请检查翻译设置或网络后重新生成。';
-          break;
-        }
-      }
+      // 命中缓存就直接复用，否则请求翻译（含退避重试）。
+      final String? chinese =
+          cached ??
+          await _translateOnce(
+            english: english,
+            settings: settings,
+            cancellationToken: cancellationToken,
+            onError: (Object error) => lastTranslationError = error,
+          );
       if (chinese == null || chinese.trim().isEmpty) {
-        decoded['translationWarning'] = '英文词级字幕已生成，但中文翻译未全部完成；请检查翻译设置或网络后重新生成。';
-        break;
+        // 这一句没翻出来：跳过，继续后面的句子。
+        untranslated += 1;
+        continue;
       }
       line['chinese'] = chinese.trim();
       if (cached == null) {
@@ -721,7 +722,50 @@ class AsrSubtitleJobRunner {
       }
       cancellationToken?.throwIfCancelled();
     }
+
+    if (untranslated > 0) {
+      final String reason = lastTranslationError == null
+          ? '翻译服务未返回结果'
+          : _errorMessage(lastTranslationError!);
+      const String tail =
+          '英文词级字幕已生成并可用。'
+          '通常是翻译接口限流或余额不足，稍后重新生成即可补上，'
+          '已翻译的部分会被复用。';
+      decoded['translationWarning'] =
+          '有 $untranslated 句中文翻译未完成（$reason）。 $tail';
+    }
     return const JsonEncoder.withIndent('  ').convert(decoded);
+  }
+
+  /// 单句翻译（每次运行只尝试一次）。
+  ///
+  /// 刻意不做内部重试：第三方翻译接口在长字幕场景下失败多半是限流，
+  /// 当场反复重试只会加重限流。失败交给「重新生成」时的断点续传处理 ——
+  /// 已成功的句子走缓存，只有未完成的句子会被重新请求，
+  /// 因此用户稍后重试的成本很低。
+  Future<String?> _translateOnce({
+    required String english,
+    required LearningSettingsState settings,
+    required void Function(Object error) onError,
+    AsrSubtitleCancellationToken? cancellationToken,
+  }) async {
+    cancellationToken?.throwIfCancelled();
+    try {
+      final String? result =
+          await (translateSentence ??
+                  const WordLookupService().translateSentence)(
+                sentence: english,
+                settings: settings,
+              )
+              .timeout(const Duration(seconds: 45));
+      if (result != null && result.trim().isNotEmpty) {
+        return result.trim();
+      }
+      onError(StateError('翻译服务返回空结果'));
+    } catch (error) {
+      onError(error);
+    }
+    return null;
   }
 
   String? _bilingualConfigurationError(LearningSettingsState settings) {
