@@ -2,6 +2,7 @@ import 'dart:convert';
 
 import 'package:crypto/crypto.dart';
 import 'package:dio/dio.dart';
+import 'package:flutter/foundation.dart' show ValueChanged;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../settings/presentation/settings_provider.dart';
@@ -70,9 +71,18 @@ class WordLookupService {
     }
   }
 
+  /// 翻译整句。
+  ///
+  /// 返回 null 表示「未能翻译」（不是异常）。调用方若需要知道原因
+  /// （例如把原因展示给用户），可传入 [onError]。
+  ///
+  /// 之所以用 onError 而不是直接抛异常：本方法有多个调用方（查词、全文阅读、
+  /// 字幕生成等），它们大多只需要「拿到译文或没有」，不应被迫处理异常。
+  /// 字幕生成这类需要诊断的场景再通过 onError 取回细节。
   Future<String?> translateSentence({
     required String sentence,
     required LearningSettingsState settings,
+    ValueChanged<Object>? onError,
   }) async {
     final String text = sentence.trim();
     if (text.isEmpty || !_canUseRemoteProvider(settings)) return null;
@@ -113,10 +123,23 @@ class WordLookupService {
       final Map<String, dynamic> message =
           first['message'] as Map<String, dynamic>;
       final String translation = (message['content'] as String? ?? '').trim();
-      return translation.isEmpty ? null : translation;
-    } catch (_) {
+      if (translation.isEmpty) {
+        onError?.call(
+          StateError('翻译接口返回了空内容（响应片段：${_snippet(data)}）'),
+        );
+        return null;
+      }
+      return translation;
+    } catch (error) {
+      onError?.call(error);
       return null;
     }
+  }
+
+  /// 截断响应内容，避免把超长响应塞进错误提示。
+  static String _snippet(Object? value) {
+    final String text = value?.toString() ?? '';
+    return text.length <= 200 ? text : '${text.substring(0, 200)}…';
   }
 
   Future<WordLookupEntry> _lookupRemote({
@@ -328,12 +351,32 @@ class WordLookupService {
     );
     final Map<String, dynamic> responseData =
         response.data as Map<String, dynamic>;
-    final Map<String, dynamic> data =
-        responseData['Data'] as Map<String, dynamic>;
+
+    // 阿里云在配额用尽、欠费、签名错误等情况下不会返回 Data，
+    // 而是返回 Code + Message。原先直接取 Data 会在这些情况下抛出
+    // 难以理解的类型错误，且被上层 catch 吞掉，表现为「翻译突然全部失效」。
+    // 这里显式识别并把服务端返回的原因抛出来，便于诊断与提示用户。
+    final Object? dataField = responseData['Data'];
+    if (dataField is! Map<String, dynamic>) {
+      final String code = (responseData['Code'] as String? ?? '').trim();
+      final String message = (responseData['Message'] as String? ?? '').trim();
+      if (code.isNotEmpty || message.isNotEmpty) {
+        throw StateError(
+          '阿里云翻译返回错误${code.isEmpty ? '' : '（$code）'}'
+          '${message.isEmpty ? '' : '：$message'}',
+        );
+      }
+      throw StateError('阿里云翻译响应缺少 Data 字段：${_snippet(responseData)}');
+    }
+    final Map<String, dynamic> data = dataField;
+    final String translated = (data['Translated'] as String? ?? '').trim();
+    if (translated.isEmpty) {
+      throw StateError('阿里云翻译未返回译文：${_snippet(responseData)}');
+    }
     return _buildDirectLookupEntry(
       rawWord: rawWord,
       contextSentence: contextSentence,
-      translatedText: (data['Translated'] as String? ?? '').trim(),
+      translatedText: translated,
       providerLabel: '阿里云翻译',
     );
   }

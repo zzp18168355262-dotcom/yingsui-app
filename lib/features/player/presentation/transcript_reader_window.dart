@@ -92,12 +92,14 @@ class _TranscriptReaderProxyWordLookupService extends WordLookupService {
   Future<String?> translateSentence({
     required String sentence,
     required LearningSettingsState settings,
+    ValueChanged<Object>? onError,
   }) async {
     try {
       return await WindowController.fromWindowId(
         parentWindowId,
       ).invokeMethod<String>('translateSentence', sentence);
-    } catch (_) {
+    } catch (error) {
+      onError?.call(error);
       return null;
     }
   }

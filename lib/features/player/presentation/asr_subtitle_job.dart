@@ -751,13 +751,21 @@ class AsrSubtitleJobRunner {
   }) async {
     cancellationToken?.throwIfCancelled();
     try {
-      final String? result =
-          await (translateSentence ??
-                  const WordLookupService().translateSentence)(
-                sentence: english,
-                settings: settings,
-              )
-              .timeout(const Duration(seconds: 45));
+      // 走真实服务时把底层错误原样上报（例如阿里云的 Code/Message、
+      // HTTP 状态码），否则用户只能看到「翻译未完成」而无法判断原因。
+      // 测试注入的 translateSentence 没有该参数，故用位点判断分流。
+      final AsrSentenceTranslator? injected = translateSentence;
+      final String? result = injected != null
+          ? await injected(sentence: english, settings: settings).timeout(
+              const Duration(seconds: 45),
+            )
+          : await const WordLookupService()
+                .translateSentence(
+                  sentence: english,
+                  settings: settings,
+                  onError: onError,
+                )
+                .timeout(const Duration(seconds: 45));
       if (result != null && result.trim().isNotEmpty) {
         return result.trim();
       }

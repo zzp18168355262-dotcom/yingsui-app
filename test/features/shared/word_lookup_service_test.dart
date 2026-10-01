@@ -5,6 +5,7 @@ import 'package:yingsui/features/shared/data/word_lookup_service.dart';
 import 'package:yingsui/features/shared/domain/word_lookup_entry.dart';
 
 void main() {
+  _translationDiagnosticsTests();
   test('preserves the full lookup result when sent between windows', () {
     const WordLookupEntry entry = WordLookupEntry(
       word: 'Guess',
@@ -306,5 +307,120 @@ void main() {
     expect(entry.definitionCn, '混乱的');
     expect(entry.contextMeaningCn, isNull);
     expect(entry.definitionEn, isEmpty);
+  });
+}
+
+/// 翻译失败时必须能拿到「真实原因」。
+///
+/// 背景：用户反馈 AI 字幕翻译到后段全部没有中文。原先的实现在
+/// 翻译失败时一律 `catch (_) { return null; }`，把服务端返回的原因
+/// （例如阿里云的 Code/Message、配额用尽）全部丢弃，导致无法诊断。
+void _translationDiagnosticsTests() {
+  group('translateSentence 错误上报', () {
+    // 用 copyWith 只覆盖翻译相关字段，避免绑定其他必填项。
+    LearningSettingsState aliyunSettings() =>
+        LearningSettingsState.defaults().copyWith(
+          translationProvider: '阿里云翻译',
+          translationApiKey: 'test-key-id',
+          translationApiSecret: 'test-key-secret',
+          translationBaseUrl: 'https://mt.cn-hangzhou.aliyuncs.com',
+        );
+
+    test('阿里云返回 Code/Message 时上报具体错误，而不是静默返回 null', () async {
+      final WordLookupService service = WordLookupService(
+        httpRequestOverride:
+            ({
+              required BaseOptions options,
+              required String method,
+              required String path,
+              Map<String, dynamic>? queryParameters,
+              Object? data,
+            }) async => Response<dynamic>(
+              requestOptions: RequestOptions(path: path),
+              statusCode: 200,
+              // 配额用尽时阿里云就是这个形状：没有 Data，只有 Code/Message。
+              data: <String, dynamic>{
+                'Code': 'Throttling.User',
+                'Message': 'Your request is denied due to request throttling.',
+              },
+            ),
+      );
+
+      final List<Object> reported = <Object>[];
+      final String? result = await service.translateSentence(
+        sentence: 'Let me make sure I understand.',
+        settings: aliyunSettings(),
+        onError: reported.add,
+      );
+
+      expect(result, isNull);
+      expect(reported, hasLength(1));
+      final String message = reported.single.toString();
+      expect(message, contains('Throttling.User'));
+      expect(
+        message,
+        contains('request throttling'),
+        reason: '应把服务端 Message 一并带出，便于用户判断是限流还是欠费',
+      );
+    });
+
+    test('阿里云未返回译文时也视为失败并说明原因', () async {
+      final WordLookupService service = WordLookupService(
+        httpRequestOverride:
+            ({
+              required BaseOptions options,
+              required String method,
+              required String path,
+              Map<String, dynamic>? queryParameters,
+              Object? data,
+            }) async => Response<dynamic>(
+              requestOptions: RequestOptions(path: path),
+              statusCode: 200,
+              data: <String, dynamic>{
+                'Data': <String, dynamic>{'Translated': '   '},
+              },
+            ),
+      );
+
+      final List<Object> reported = <Object>[];
+      final String? result = await service.translateSentence(
+        sentence: 'Hello there.',
+        settings: aliyunSettings(),
+        onError: reported.add,
+      );
+
+      expect(result, isNull);
+      expect(reported, isNotEmpty);
+      expect(reported.single.toString(), contains('未返回译文'));
+    });
+
+    test('正常返回译文时不触发 onError', () async {
+      final WordLookupService service = WordLookupService(
+        httpRequestOverride:
+            ({
+              required BaseOptions options,
+              required String method,
+              required String path,
+              Map<String, dynamic>? queryParameters,
+              Object? data,
+            }) async => Response<dynamic>(
+              requestOptions: RequestOptions(path: path),
+              statusCode: 200,
+              data: <String, dynamic>{
+                'Data': <String, dynamic>{'Translated': '让我确认一下。'},
+              },
+            ),
+      );
+
+      final List<Object> reported = <Object>[];
+      final String? result = await service.translateSentence(
+        sentence: 'Let me make sure.',
+        settings: aliyunSettings(),
+        onError: reported.add,
+      );
+
+      expect(result, '让我确认一下。');
+      expect(reported, isEmpty);
+    });
   });
 }
