@@ -837,6 +837,13 @@ class PadLandscapePlayerScreenState
                                         child: ShadowingPracticePanel(
                                           lineKey:
                                               '${state.lines[state.activeLineIndex].startMs}#${state.activeLineIndex}',
+                                          english: state
+                                              .lines[state.activeLineIndex]
+                                              .english,
+                                          chinese: state
+                                              .lines[state.activeLineIndex]
+                                              .chinese,
+                                          subtitleMode: state.subtitleMode,
                                           onPlayOriginal: () =>
                                               _goToLine(state.activeLineIndex),
                                           onStopOriginal: () =>

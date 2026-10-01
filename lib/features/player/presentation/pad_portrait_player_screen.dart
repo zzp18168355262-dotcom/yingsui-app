@@ -808,6 +808,9 @@ class _PadPortraitPlayerScreenState
                                     child: ShadowingPracticePanel(
                                       lineKey:
                                           '${activeLine.startMs}#${state.activeLineIndex}',
+                                      english: activeLine.english,
+                                      chinese: activeLine.chinese,
+                                      subtitleMode: state.subtitleMode,
                                       onPlayOriginal: () =>
                                           _goToLine(state.activeLineIndex),
                                       onStopOriginal: () =>

@@ -38,6 +38,52 @@ void main() {
     onStopOriginal: _noop,
   );
 
+  group('面板内展示当前句', () {
+    const ShadowingPracticePanel withLine = ShadowingPracticePanel(
+      lineKey: '1000#0',
+      english: 'Let me make sure I understand.',
+      chinese: '让我确认一下我理解得对不对。',
+      onPlayOriginal: _noop,
+      onStopOriginal: _noop,
+    );
+
+    testWidgets('同时显示原文与译文，无需回头看视频字幕', (WidgetTester tester) async {
+      await tester.pumpWidget(_wrap(withLine, const ShadowingRecordState()));
+      await tester.pump();
+
+      expect(find.text('跟读这一句'), findsOneWidget);
+      expect(find.text('Let me make sure I understand.'), findsOneWidget);
+      expect(find.text('让我确认一下我理解得对不对。'), findsOneWidget);
+    });
+
+    testWidgets('字幕模式为「隐藏」时不显示译文', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const ShadowingPracticePanel(
+            lineKey: '1000#0',
+            english: 'Let me make sure I understand.',
+            chinese: '让我确认一下我理解得对不对。',
+            subtitleMode: '隐藏',
+            onPlayOriginal: _noop,
+            onStopOriginal: _noop,
+          ),
+          const ShadowingRecordState(),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('Let me make sure I understand.'), findsOneWidget);
+      expect(find.text('让我确认一下我理解得对不对。'), findsNothing);
+    });
+
+    testWidgets('未传句子时不显示该区块（避免出现空卡片）', (WidgetTester tester) async {
+      await tester.pumpWidget(_wrap(panel, const ShadowingRecordState()));
+      await tester.pump();
+
+      expect(find.text('跟读这一句'), findsNothing);
+    });
+  });
+
   testWidgets('未录音时只显示录制入口，不显示回放按钮', (WidgetTester tester) async {
     await tester.pumpWidget(_wrap(panel, const ShadowingRecordState()));
     await tester.pump();

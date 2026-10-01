@@ -2,7 +2,6 @@ import 'dart:async';
 import 'dart:convert';
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -22,11 +21,17 @@ typedef TranscriptReaderFullPlayback = Future<void> Function();
 typedef TranscriptReaderSentenceTranslation =
     Future<String?> Function(String sentence);
 
-bool get supportsTranscriptReaderWindow =>
-    !kIsWeb &&
-    (defaultTargetPlatform == TargetPlatform.macOS ||
-        defaultTargetPlatform == TargetPlatform.windows ||
-        defaultTargetPlatform == TargetPlatform.linux);
+/// 是否把「逐词全文」开成独立的原生窗口。
+///
+/// 已改为 **false**，所有平台统一走应用内全屏页。
+///
+/// 原因：开独立窗口时阅读器与播放器是两个并列窗口，用户要来回切换；
+/// 而该页面的实际用途是「暂时替换逐句精听、看完关掉回到播放」，
+/// 用应用内页面（fullscreenDialog）更贴合，也少一层窗口管理。
+///
+/// 桌面端开窗的那套实现（WindowController + 跨窗口进度 IPC）仍保留在
+/// transcript_reader_window.dart 中，但当前分支不再走到。
+bool get supportsTranscriptReaderWindow => false;
 
 class TranscriptReaderSession {
   final ValueNotifier<TranscriptReaderProgress> progress =

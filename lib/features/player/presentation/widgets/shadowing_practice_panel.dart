@@ -18,6 +18,9 @@ class ShadowingPracticePanel extends ConsumerStatefulWidget {
     required this.lineKey,
     required this.onPlayOriginal,
     required this.onStopOriginal,
+    this.english,
+    this.chinese,
+    this.subtitleMode = '双语',
     this.compact = false,
   });
 
@@ -29,6 +32,15 @@ class ShadowingPracticePanel extends ConsumerStatefulWidget {
 
   /// 停止原声，避免和跟读录音回放叠在一起。
   final VoidCallback onStopOriginal;
+
+  /// 当前句原文。展示在面板内，用户不必在画面与面板之间来回看。
+  final String? english;
+
+  /// 当前句译文（可能为空，取决于字幕模式与是否已翻译）。
+  final String? chinese;
+
+  /// 字幕显示模式，决定面板内是否显示译文。
+  final String subtitleMode;
 
   final bool compact;
 
@@ -190,6 +202,20 @@ class _ShadowingPracticePanelState
             ],
           ),
           SizedBox(height: widget.compact ? 10 : 14),
+
+          // ── 当前句 ──
+          // 直接在面板里展示这句字幕，用户不必「看画面 → 低头按面板」来回切换。
+          // 点击可重播原声。
+          if ((widget.english ?? '').trim().isNotEmpty) ...<Widget>[
+            _CurrentLineBlock(
+              english: widget.english!.trim(),
+              chinese: widget.chinese?.trim() ?? '',
+              showChinese: widget.subtitleMode != '隐藏',
+              palette: palette,
+              onTap: widget.onPlayOriginal,
+            ),
+            SizedBox(height: widget.compact ? 10 : 14),
+          ],
 
           // ── 录制控制 ──
           _RecordButton(
@@ -413,6 +439,95 @@ class _RecordButton extends StatelessWidget {
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(AppRadius.pill),
           ),
+        ),
+      ),
+    );
+  }
+}
+
+class _CurrentLineBlock extends StatelessWidget {
+  const _CurrentLineBlock({
+    required this.english,
+    required this.chinese,
+    required this.showChinese,
+    required this.palette,
+    required this.onTap,
+  });
+
+  final String english;
+  final String chinese;
+  final bool showChinese;
+  final AppPalette palette;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool hasChinese = showChinese && chinese.isNotEmpty;
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(AppRadius.md),
+      child: Container(
+        width: double.infinity,
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+        decoration: BoxDecoration(
+          color: palette.surfaceAlt,
+          borderRadius: BorderRadius.circular(AppRadius.md),
+          border: Border.all(color: palette.border),
+        ),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              children: <Widget>[
+                Icon(
+                  Icons.subject_rounded,
+                  size: 13,
+                  color: palette.textTertiary,
+                ),
+                const SizedBox(width: 5),
+                Text(
+                  '跟读这一句',
+                  style: TextStyle(
+                    fontSize: 11,
+                    letterSpacing: 0.3,
+                    color: palette.textTertiary,
+                  ),
+                ),
+                const Spacer(),
+                Icon(
+                  Icons.replay_rounded,
+                  size: 14,
+                  color: palette.textTertiary,
+                ),
+                const SizedBox(width: 3),
+                Text(
+                  '重听',
+                  style: TextStyle(fontSize: 11, color: palette.textTertiary),
+                ),
+              ],
+            ),
+            const SizedBox(height: 7),
+            Text(
+              english,
+              style: TextStyle(
+                fontSize: 15,
+                height: 1.35,
+                fontWeight: FontWeight.w600,
+                color: palette.textPrimary,
+              ),
+            ),
+            if (hasChinese) ...<Widget>[
+              const SizedBox(height: 5),
+              Text(
+                chinese,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  height: 1.35,
+                  color: palette.textSecondary,
+                ),
+              ),
+            ],
+          ],
         ),
       ),
     );
