@@ -1,7 +1,7 @@
 # 必须显式声明平台，否则 CocoaPods 会报
 # "Automatically assigning platform iOS ... because no platform was specified"
 # 并中断 pod install。
-platform :ios, '13.0'
+platform :ios, '15.0'
 
 # CocoaPods analytics sends network stats synchronously affecting flutter build latency.
 ENV['COCOAPODS_DISABLE_STATS'] = 'true'
@@ -33,27 +33,43 @@ target 'Runner' do
   use_frameworks!
 
   flutter_install_all_ios_pods File.dirname(File.realpath(__FILE__))
-  target 'RunnerTests' do
-    inherit! :search_paths
-  end
 end
 
 post_install do |installer|
   installer.pods_project.targets.each do |target|
     flutter_additional_ios_build_settings(target)
 
-    # 与 macOS 同理：部分插件的 podspec 声明了偏低的部署目标，
-    # 新版 Xcode 会直接报错。这里统一抬到 13.0；只升不降，
-    # 避免覆盖插件有意声明的更高版本。
+    # 该目标在插件 podspec 中声明的 Swift 版本（没有则为 nil）。
+    # 注意：并非所有 target 都是 Pod target（例如聚合目标），
+    # 它们没有 podspecs 方法，必须先判断响应性。
+    declared_swift = nil
+    if target.respond_to?(:podspecs)
+      declared_swift = target.podspecs
+                             .compact
+                             .filter_map(&:swift_version)
+                             .uniq
+                             .first
+    end
+
     target.build_configurations.each do |config|
+      # 与 macOS 同理：部分插件的 podspec 声明了偏低的部署目标，
+      # 新版 Xcode 会直接报错。这里统一抬到 15.0；只升不降。
       current = config.build_settings['IPHONEOS_DEPLOYMENT_TARGET']
-      if current.nil? || current.to_f < 13.0
-        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
+      if current.nil? || current.to_f < 15.0
+        config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '15.0'
       end
-      # Swift 版本必须全 Pods 工程统一，否则 CocoaPods 会报
+
+      # Swift 版本必须全目标唯一，否则 CocoaPods 报
       # "There may only be up to 1 unique SWIFT_VERSION per target"。
-      # 目前 Runner 与多数插件是 5.0，个别插件（flutter_tts）原先写 4.2。
-      config.build_settings['SWIFT_VERSION'] = '5.0'
+      # 注意要在依赖解析之后、只做「消歧」，不能无脑覆盖：
+      # 基础配置里常出现泛指的 "Swift"，与插件声明的具体版本（如 5.0）
+      # 并存就会被判定为「多个版本」。
+      swift = config.build_settings['SWIFT_VERSION']
+      if declared_swift
+        config.build_settings['SWIFT_VERSION'] = declared_swift
+      elsif swift.nil? || swift.to_s.strip.empty? || swift.to_s == 'Swift'
+        config.build_settings['SWIFT_VERSION'] = '5.0'
+      end
     end
   end
 end
