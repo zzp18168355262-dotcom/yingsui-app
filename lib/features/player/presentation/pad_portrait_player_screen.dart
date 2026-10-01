@@ -799,7 +799,23 @@ class _PadPortraitPlayerScreenState
                             borderRadius: BorderRadius.circular(22),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
-                          child: state.hasLines
+                          child: state.isShadowing && state.hasLines
+                              // 跟读模式：面板内联在下方内容区，而不是弹窗盖住画面。
+                              // 这样字幕与视频全程可见 —— 跟读时需要看着字幕读。
+                              ? Align(
+                                  alignment: Alignment.topCenter,
+                                  child: SingleChildScrollView(
+                                    child: ShadowingPracticePanel(
+                                      lineKey:
+                                          '${activeLine.startMs}#${state.activeLineIndex}',
+                                      onPlayOriginal: () =>
+                                          _goToLine(state.activeLineIndex),
+                                      onStopOriginal: () =>
+                                          unawaited(_videoPlayer?.pause()),
+                                    ),
+                                  ),
+                                )
+                              : state.hasLines
                               ? PlayerTranscriptPanel(
                                   lines: state.lines,
                                   activeIndex: state.activeLineIndex,
@@ -973,43 +989,21 @@ class _PadPortraitPlayerScreenState
     ref
         .read(learningActivityProvider.notifier)
         .recordShadowingToggle(enabled: state.isShadowing);
-    if (state.isShadowing) {
-      _openShadowingPractice();
-    } else {
+    if (!state.isShadowing) {
       _showMessage('已关闭跟读模式');
+      return;
     }
-  }
-
-  /// 打开跟读练习面板：在这里录下这一遍，并和原声 A/B 对比着听。
-  void _openShadowingPractice() {
     if (!state.hasLines) {
+      setState(state.toggleShadowing);
       _showMessage('先导入带字幕的课程，再开始跟读练习');
       return;
     }
-    final PlayerSubtitleLine line = state.lines[state.activeLineIndex];
-    // 用「起始时间 + 句子索引」作句子标识：换句后旧录音自动作废，
-    // 避免把上一句的录音和这一句对比。
-    final String lineKey = '${line.startMs}#${state.activeLineIndex}';
-
-    unawaited(
-      showModalBottomSheet<void>(
-        context: context,
-        isScrollControlled: true,
-        backgroundColor: Colors.transparent,
-        builder: (BuildContext sheetContext) {
-          return SafeArea(
-            child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: ShadowingPracticePanel(
-                lineKey: lineKey,
-                onPlayOriginal: () => _goToLine(state.activeLineIndex),
-                onStopOriginal: () => unawaited(_videoPlayer?.pause()),
-              ),
-            ),
-          );
-        },
-      ),
-    );
+    // 跟读面板以「内联」方式显示在下方内容区（见 build 中的
+    // state.isShadowing 分支），不再用弹窗 —— 弹窗会盖住字幕，
+    // 而跟读恰恰需要看着字幕读。
+    // 这里把当前句定位到开头，方便用户直接开始跟读。
+    _goToLine(state.activeLineIndex);
+    _showMessage('跟读模式已开启：在下方录制并试听');
   }
 
   void _handleToggleLoop() {
