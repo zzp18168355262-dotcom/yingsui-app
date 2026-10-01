@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../config/app_links.dart';
+import '../../../config/theme/app_colors.dart';
+import '../../../flavors/app_flavor.dart';
 import '../../../utils/url_utils.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../shared/data/word_pronunciation_service.dart';
@@ -651,14 +653,44 @@ class SettingsScreen extends ConsumerWidget {
             ],
           ),
           SizedBox(height: compact ? 20 : 24),
+          // 关于：品牌 + 版本 + 官网入口。
+          // 官网配置在 lib/config/app_links.dart；未配置时只显示品牌与版本。
           Center(
-            child: Text(
-              appVersion.when(
-                data: (String version) => '当前版本 v$version',
-                loading: () => '当前版本',
-                error: (_, _) => '当前版本未知',
-              ),
-              style: const TextStyle(fontSize: 12, color: Color(0xFF8C9890)),
+            child: Column(
+              children: <Widget>[
+                Text(
+                  FlavorConfig.appName,
+                  style: TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.w700,
+                    color: Theme.of(context).colorScheme.onSurface,
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  appVersion.when(
+                    data: (String version) => '版本 v$version',
+                    loading: () => '版本',
+                    error: (_, _) => '版本未知',
+                  ),
+                  style: TextStyle(
+                    fontSize: 12,
+                    color: AppColors.of(context).textTertiary,
+                  ),
+                ),
+                if (AppLinks.hasWebsite) ...<Widget>[
+                  const SizedBox(height: 6),
+                  TextButton(
+                    onPressed: () => openUrl(Uri.parse(AppLinks.website)),
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      minimumSize: const Size(0, 32),
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                    ),
+                    child: const Text('访问官网', style: TextStyle(fontSize: 12)),
+                  ),
+                ],
+              ],
             ),
           ),
         ],

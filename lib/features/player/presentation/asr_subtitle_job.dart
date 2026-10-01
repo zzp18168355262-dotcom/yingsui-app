@@ -965,6 +965,28 @@ class AsrSubtitleJobRunner {
           await chunkFile.delete();
         }
         if (attempt == 1) {
+          // 「这段音频里没有识别到语音」不是错误。
+          // 影视资源里静音段、纯音乐段、无对白段很常见，阿里云对这类分片
+          // 返回 FAILED + SUCCESS_WITH_NO_VALID_FRAGMENT。
+          // 若把它当成致命错误，整个字幕生成会在任意一个静音段中断
+          // （实测：一部剧会在第 41 段左右挂掉）。
+          // 这里按「空段落」落盘并继续处理后续分片。
+          if (_isNoSpeechFragment(error)) {
+            report
+              ..repairCount += 1
+              ..anomalies.add(<String, Object?>{
+                'kind': 'silentChunk',
+                'sourceChunk': sourceChunk,
+              });
+            await chunkFile.writeAsString(
+              const JsonEncoder.withIndent(' ').convert(<String, Object?>{
+                'version': 1,
+                'language': 'en',
+                'lines': const <Object?>[],
+              }),
+            );
+            return;
+          }
           if (allowReferenceFallback) {
             report
               ..repairCount += 1
@@ -1764,6 +1786,18 @@ class AsrSubtitleJobRunner {
     if (error is StateError) return error.message;
     if (error is AsrSubtitleGenerationException) return error.message;
     return error.toString();
+  }
+
+  /// 判断错误是否表示「这段音频里没有语音」。
+  ///
+  /// 阿里云 ASR 对无语音分片返回 FAILED，message 为
+  /// `SUCCESS_WITH_NO_VALID_FRAGMENT`（也有大小写/带前缀的变体）。
+  /// 这类分片应当跳过而不是让整个任务失败。
+  bool _isNoSpeechFragment(Object error) {
+    final String message = _errorMessage(error).toUpperCase();
+    return message.contains('SUCCESS_WITH_NO_VALID_FRAGMENT') ||
+        message.contains('NO_VALID_FRAGMENT') ||
+        message.contains('NO_VALID_SEGMENT');
   }
 
   String _safe(String value) {

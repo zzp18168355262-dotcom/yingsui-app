@@ -50,6 +50,10 @@ post_install do |installer|
       if current.nil? || current.to_f < 13.0
         config.build_settings['IPHONEOS_DEPLOYMENT_TARGET'] = '13.0'
       end
+      # Swift 版本必须全 Pods 工程统一，否则 CocoaPods 会报
+      # "There may only be up to 1 unique SWIFT_VERSION per target"。
+      # 目前 Runner 与多数插件是 5.0，个别插件（flutter_tts）原先写 4.2。
+      config.build_settings['SWIFT_VERSION'] = '5.0'
     end
   end
 end
