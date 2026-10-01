@@ -1,5 +1,5 @@
 #include "Release.xcconfig"
 BUNDLE_ID = com.yingsui.app
-APP_DISPLAY_NAME = YingSui
-APP_NAME = YingSui
+APP_DISPLAY_NAME = 英语角 English Corner
+APP_NAME = EnglishCorner
 FLAVOR = prod

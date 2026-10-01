@@ -53,7 +53,7 @@ void main() {
       videoPath: '/videos/Lesson01.mp4',
     );
 
-    expect(exported.path, contains('YingSui'));
+    expect(exported.path, contains('English Corner'));
     expect(exported.path, contains('AI Subtitles'));
     expect(exported.path.endsWith('Lesson01.words.json'), isTrue);
     expect(exported.readAsStringSync(), '{"lines":[]}');
@@ -109,7 +109,7 @@ void main() {
     expect(count, 1);
     expect(
       File(
-        '${downloadsDir.path}${Platform.pathSeparator}YingSui'
+        '${downloadsDir.path}${Platform.pathSeparator}English Corner'
         '${Platform.pathSeparator}AI Subtitles'
         '${Platform.pathSeparator}Lesson01.words.json',
       ).existsSync(),

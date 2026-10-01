@@ -59,17 +59,17 @@ android {
             dimension = "env"
             applicationIdSuffix = ".dev"
             versionNameSuffix = "-dev"
-            resValue("string", "app_name", "YingSui Dev")
+            resValue("string", "app_name", "英语角 Dev")
         }
         create("staging") {
             dimension = "env"
             applicationIdSuffix = ".staging"
             versionNameSuffix = "-staging"
-            resValue("string", "app_name", "YingSui Staging")
+            resValue("string", "app_name", "英语角 Staging")
         }
         create("prod") {
             dimension = "env"
-            resValue("string", "app_name", "YingSui")
+            resValue("string", "app_name", "英语角 English Corner")
         }
     }
 

@@ -80,7 +80,7 @@ class AppUpdateService {
         await getDownloadsDirectory() ??
         await getApplicationDocumentsDirectory();
     final Directory destination = Directory(
-      '${root.path}${Platform.pathSeparator}YingSui',
+      '${root.path}${Platform.pathSeparator}English Corner',
     );
     await destination.create(recursive: true);
     final File file = File(

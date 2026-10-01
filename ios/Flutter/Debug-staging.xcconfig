@@ -1,5 +1,5 @@
 #include "Debug.xcconfig"
 BUNDLE_ID = com.yingsui.app.staging
-APP_DISPLAY_NAME = YingSui Staging
-APP_NAME = YingSuiStaging
+APP_DISPLAY_NAME = 英语角 Staging
+APP_NAME = EnglishCornerStaging
 FLAVOR = staging

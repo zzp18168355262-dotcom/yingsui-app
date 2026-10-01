@@ -36,7 +36,7 @@ void main() {
       await tester.tap(find.text('导出所选'));
       await _pumpFrames(tester);
       final Directory exportDirectory = Directory(
-        '${fixture.downloads.path}${Platform.pathSeparator}YingSui'
+        '${fixture.downloads.path}${Platform.pathSeparator}English Corner'
         '${Platform.pathSeparator}AI Subtitles',
       );
       expect(

@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'app_colors.dart';
 
-/// 影随 / YingSui —— 应用主题
+/// 英语角 / English Corner —— 应用主题
 ///
 /// 字体使用项目内置的 Nunito（见 pubspec.yaml 的 fonts 段），
 /// 不再走 google_fonts 的运行时下载，避免国内网络问题。

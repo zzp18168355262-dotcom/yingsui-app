@@ -4,11 +4,13 @@
 // future. If not, the values below would default to using the project name when this becomes a
 // 'flutter create' template.
 
-// The application's name. By default this is also the title of the Flutter window.
-PRODUCT_NAME = YingSui
+// 技术名（bundle 名 / 可执行文件名 / 产物目录名）。
+// 保持 ASCII：非 ASCII 会进入构建产物路径，影响脚本与部分工具链。
+// 用户看到的名称由 Info.plist 的 CFBundleDisplayName 决定。
+PRODUCT_NAME = EnglishCorner
 
 // The application's bundle identifier
 PRODUCT_BUNDLE_IDENTIFIER = com.yingsui.app
 
 // The copyright displayed in application information
-PRODUCT_COPYRIGHT = Copyright © 2025 YingSui. All rights reserved.
+PRODUCT_COPYRIGHT = Copyright © 2025 English Corner. All rights reserved.

@@ -15,14 +15,15 @@ class FlavorConfig {
   static bool get isStaging => _flavor == AppFlavor.staging;
   static bool get isProd => _flavor == AppFlavor.prod;
 
+  /// 应用显示名。开发/预发渠道带后缀，正式版中英并置便于出海识别。
   static String get appName {
     switch (_flavor) {
       case AppFlavor.dev:
-        return 'YingSui Dev';
+        return '英语角 Dev';
       case AppFlavor.staging:
-        return 'YingSui Staging';
+        return '英语角 Staging';
       case AppFlavor.prod:
-        return 'YingSui';
+        return '英语角 English Corner';
     }
   }
 

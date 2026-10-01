@@ -77,7 +77,7 @@ class _PadHomeScreenState extends ConsumerState<PadHomeScreen> {
       message: '正在打开课程...',
       child: PadScaffold(
         currentDestination: AppNavDestination.home,
-        topBar: const PadTopBar(title: '影随', subtitle: '首页'),
+        topBar: const PadTopBar(title: '英语角', subtitle: '首页'),
         body: ListView(
           key: const ValueKey<String>('home-page-scroll'),
           padding: EdgeInsets.all(pagePadding),

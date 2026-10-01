@@ -76,8 +76,8 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    // 品牌名统一为中文「影随」（侧边栏与顶栏）。
-    expect(find.text('影随'), findsWidgets);
+    // 品牌名统一为「英语角」（侧边栏与顶栏）。
+    expect(find.text('英语角'), findsWidgets);
     expect(find.text('晚上好 Mark 👋'), findsOneWidget);
     expect(find.text('导入你的第一套英语视频课程'), findsOneWidget);
     expect(find.text('去导入课程'), findsOneWidget);

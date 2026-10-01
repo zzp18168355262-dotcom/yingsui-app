@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// 影随 / YingSui —— 设计令牌
+/// 英语角 / English Corner —— 设计令牌
 ///
 /// 命名保留历史名称（brandGreen / primaryBlue 等），以兼容全项目 596 处
 /// 引用与 210 处 `const` 上下文；但**取值已统一到新的品牌体系**：

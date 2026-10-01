@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-/// 影随 / YingSui —— 设计系统颜色令牌
+/// 英语角 / English Corner —— 设计系统颜色令牌
 ///
 /// 设计方向：翠玉（Jade）+ 琥珀金（Amber）+ 紫（Violet），冷白底。
 /// 三色体系保证有记忆点，同时用深主色守住质感，

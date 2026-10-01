@@ -28,6 +28,8 @@ from PIL import Image, ImageDraw
 SCALE = 4  # 高倍超采样，缩放后边缘干净
 
 JADE = (0x00, 0x69, 0x5C)
+# 与应用 app_design_tokens.brandGreenDark 一致，用于图标渐变的深端。
+JADE_DEEP = (0x00, 0x4D, 0x40)
 JADE_LT = (0x3D, 0xD6, 0xC0)
 JADE_MID = (0x00, 0x89, 0x7B)
 AMBER = (0xF2, 0xA0, 0x07)
@@ -133,10 +135,72 @@ def concept_f(size, background=(0xF8, 0xF9, 0xFA), mask_ratio=0.235):
     return _compose(body, size, mask_ratio)
 
 
-CONCEPTS = {"C": concept_c, "E": concept_e, "F": concept_f}
+def concept_p1(size, background="auto", mask_ratio=0.235):
+    """P1（当前采用）：深翠玉渐变底 + 白柱 + 右上金色小点。
+
+    参数 background：
+      "auto"（默认）→ 绘制品牌翠玉对角渐变底，用于主图标
+      None          → 透明底，仅画柱体与金点，用于 Android 自适应前景
+
+    设计要点：
+    - 底色取应用品牌翠玉色系（#004D40 → #00695C 对角渐变），
+      与界面主按钮、侧边栏选中态同源，因此不会与浅色 UI 冲突。
+    - 柱体用白色，在深底上对比最高，小尺寸也能辨认。
+    - 金色只做**点缀**（右上圆点），不做柱体 ——
+      金色柱放在深翠玉上会发乌，读起来像脏棕色。
+    - 全部颜色取自 lib/config/theme/app_colors.dart，不引入外来色。
+    """
+    S = size * SCALE
+    transparent = background is None
+    body = Image.new("RGBA" if transparent else "RGB", (S, S),
+                     (0, 0, 0, 0) if transparent else JADE)
+    d = ImageDraw.Draw(body)
+
+    if not transparent:
+        # 对角线性渐变：左上更深、右下稍亮，形成轻微体积感。
+        # 用 numpy 生成整幅渐变再贴回，避免逐条画线时的坐标越界问题。
+        import numpy as np  # 局部导入，保持其他方案无 numpy 依赖
+
+        yy, xx = np.mgrid[0:S, 0:S].astype(np.float32)
+        t = ((xx + yy) / max(1, (S - 1) * 2))[..., None]  # 左上 0 → 右下 1
+        c0 = np.array(JADE_DEEP, dtype=np.float32)
+        c1 = np.array(JADE, dtype=np.float32)
+        grad = (c0 + (c1 - c0) * t).astype(np.uint8)
+        body.paste(Image.fromarray(grad, "RGB"), (0, 0))
+
+    # 三根圆角柱：中间略高，柱宽有节奏。
+    bar_colors = (WHITE, WHITE, WHITE)
+    bw = S * 0.115
+    gap = S * 0.080
+    widths = (0.80, 1.00, 0.80)
+    heights = (0.30, 0.46, 0.30)
+    total = sum(bw * w for w in widths) + gap * 2
+    x = (S - total) / 2
+    for i in range(3):
+        w = bw * widths[i]
+        hh = S * heights[i]
+        d.rounded_rectangle([x, S / 2 - hh / 2, x + w, S / 2 + hh / 2],
+                            radius=int(min(w, hh) / 2), fill=bar_colors[i])
+        x += w + gap
+
+    # 金色点缀：右上角。透明底前景里用品牌金，深底上同理。
+    r = S * 0.052
+    cx, cy = S * 0.735, S * 0.29
+    d.ellipse([cx - r, cy - r, cx + r, cy + r], fill=AMBER)
+
+    return _compose(body, size, mask_ratio)
+
+
+CONCEPTS = {
+    "P1": concept_p1,   # 当前采用
+    "C": concept_c,
+    "E": concept_e,
+    "F": concept_f,
+}
 
 # 各方案的 Android 自适应图标底色（与前景图形配套）
 CONCEPT_BACKGROUND = {
+    "P1": "#00695C",
     "C": "#121618",
     "E": "#121618",
     "F": "#F8F9FA",
