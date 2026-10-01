@@ -178,7 +178,8 @@ class _PadSidebarState extends ConsumerState<PadSidebar> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: <Widget>[
                           Text(
-                            'YingSui',
+                            // 品牌主名。国内用中文，出海时改回 'YingSui'。
+                            '影随',
                             style: TextStyle(
                               fontSize: compact ? 16 : 18,
                               fontWeight: FontWeight.w900,
@@ -187,7 +188,7 @@ class _PadSidebarState extends ConsumerState<PadSidebar> {
                           ),
                           const SizedBox(height: 2),
                           Text(
-                            '放映室入口',
+                            '影子跟读',
                             style: TextStyle(
                               fontSize: compact ? 11 : 12,
                               color: AppDesignTokens.textSecondary,
