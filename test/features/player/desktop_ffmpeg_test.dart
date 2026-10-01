@@ -6,12 +6,12 @@ void main() {
     final List<String> candidates = desktopFfmpegCandidates(
       operatingSystem: 'macos',
       resolvedExecutable:
-          '/Applications/YingSui.app/Contents/MacOS/app',
+          '/Applications/EnglishCorner.app/Contents/MacOS/app',
     );
 
     expect(
       candidates.first,
-      '/Applications/YingSui.app/Contents/Resources/ffmpeg/ffmpeg',
+      '/Applications/EnglishCorner.app/Contents/Resources/ffmpeg/ffmpeg',
     );
     expect(candidates, contains('ffmpeg'));
   });

@@ -73,7 +73,7 @@ class MainFlutterWindow: NSWindow, NSSpeechSynthesizerDelegate {
     let infoCenter = MPNowPlayingInfoCenter.default()
     infoCenter.nowPlayingInfo = [
       MPMediaItemPropertyTitle: "英语学习",
-      MPMediaItemPropertyArtist: "YingSui",
+      MPMediaItemPropertyArtist: "英语角 English Corner",
       MPNowPlayingInfoPropertyPlaybackRate: isPlaying ? 1 : 0
     ]
     infoCenter.playbackState = isPlaying ? .playing : .paused
