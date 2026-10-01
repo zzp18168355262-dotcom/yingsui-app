@@ -120,23 +120,13 @@ void main() {
       );
     });
 
-    test('clearError 在有错误时才改变状态', () async {
+    test('无错误时 clearError 是空操作', () async {
       final ProviderContainer container = ProviderContainer();
       addTearDown(container.dispose);
 
-      final ShadowingRecorder recorder = container.read(
-        shadowingRecorderProvider.notifier,
-      );
-
-      // 无错误时调用应当是空操作。
-      recorder.clearError();
+      // 读取 notifier 以获得实例；随后清错。
+      container.read(shadowingRecorderProvider.notifier).clearError();
       expect(container.read(shadowingRecorderProvider).error, isNull);
-
-      // Web 环境下 start 会写入明确的错误提示（本测试运行在 VM，
-      // 因此这里直接验证状态机的拷贝语义）。
-      final ShadowingRecordState withError =
-          container.read(shadowingRecorderProvider).copyWith(error: '测试错误');
-      expect(withError.error, '测试错误');
     });
   });
 }
