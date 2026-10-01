@@ -815,6 +815,8 @@ class _PadPortraitPlayerScreenState
                                       totalLines: state.lines.length,
                                       onPreviousLine: _handlePreviousLine,
                                       onNextLine: _handleNextLine,
+                                      lines: state.lines,
+                                      onSelectLine: _goToLine,
                                       onPlayOriginal: () =>
                                           _goToLine(state.activeLineIndex),
                                       onStopOriginal: () =>

@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 // Override 由 riverpod 内部导出，flutter_riverpod 不转出该类型。
 import 'package:riverpod/src/framework.dart' show Override;
+import 'package:yingsui/features/player/presentation/player_mock_state.dart';
 import 'package:yingsui/features/player/presentation/shadowing_recorder.dart';
 import 'package:yingsui/features/player/presentation/widgets/shadowing_practice_panel.dart';
 
@@ -171,6 +172,114 @@ void main() {
       await tester.tap(find.byTooltip('下一句'), warnIfMissed: false);
       await tester.pump();
       expect(lastTaps, 1, reason: '最后一句不应能再往后');
+    });
+  });
+
+  group('选择句子列表（可折叠）', () {
+    List<PlayerSubtitleLine> sampleLines() => <PlayerSubtitleLine>[
+      const PlayerSubtitleLine(
+        startTime: '00:01',
+        english: 'first line',
+        chinese: '第一句',
+        startMs: 1000,
+        endMs: 3000,
+      ),
+      const PlayerSubtitleLine(
+        startTime: '00:05',
+        english: 'second line',
+        chinese: '第二句',
+        startMs: 5000,
+        endMs: 8000,
+      ),
+      const PlayerSubtitleLine(
+        startTime: '00:09',
+        english: 'third line',
+        chinese: '第三句',
+        startMs: 9000,
+        endMs: 12000,
+      ),
+    ];
+
+    testWidgets('默认收起，只显示入口；展开后可见句子并可点选', (WidgetTester tester) async {
+      int? selected;
+      await tester.pumpWidget(
+        _wrap(
+          ShadowingPracticePanel(
+            lineKey: '5000#1',
+            english: 'second line',
+            chinese: '第二句',
+            lineIndex: 1,
+            totalLines: 3,
+            lines: sampleLines(),
+            onSelectLine: (int index) => selected = index,
+            onPlayOriginal: _noop,
+            onStopOriginal: _noop,
+          ),
+          const ShadowingRecordState(),
+        ),
+      );
+      await tester.pump();
+
+      // 收起状态：入口在，但列表内容不在。
+      expect(find.text('选择句子'), findsOneWidget);
+      expect(find.textContaining('共 3 句'), findsOneWidget);
+      expect(find.text('third line'), findsNothing);
+
+      // 展开。
+      await tester.tap(find.text('选择句子'));
+      await tester.pumpAndSettle();
+      expect(find.text('first line'), findsOneWidget);
+      expect(find.text('third line'), findsOneWidget);
+      expect(find.text('第一句'), findsOneWidget);
+
+      // 点选第三句：回调收到正确索引，并且列表自动收起。
+      await tester.tap(find.text('third line'));
+      await tester.pumpAndSettle();
+      expect(selected, 2);
+      expect(find.text('third line'), findsNothing, reason: '点选后应收起列表');
+    });
+
+    testWidgets('未提供句子列表时不显示该入口', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          const ShadowingPracticePanel(
+            lineKey: '1000#0',
+            english: 'only line',
+            onPlayOriginal: _noop,
+            onStopOriginal: _noop,
+          ),
+          const ShadowingRecordState(),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.text('选择句子'), findsNothing);
+    });
+
+    testWidgets('字幕模式为「隐藏」时列表中不显示译文', (WidgetTester tester) async {
+      await tester.pumpWidget(
+        _wrap(
+          ShadowingPracticePanel(
+            lineKey: '1000#0',
+            english: 'first line',
+            chinese: '第一句',
+            subtitleMode: '隐藏',
+            lineIndex: 0,
+            totalLines: 3,
+            lines: sampleLines(),
+            onSelectLine: (_) {},
+            onPlayOriginal: _noop,
+            onStopOriginal: _noop,
+          ),
+          const ShadowingRecordState(),
+        ),
+      );
+      await tester.pump();
+      await tester.tap(find.text('选择句子'));
+      await tester.pumpAndSettle();
+
+      expect(find.text('first line'), findsWidgets);
+      expect(find.text('第一句'), findsNothing);
     });
   });
 

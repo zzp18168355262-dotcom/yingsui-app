@@ -6,6 +6,7 @@ import 'package:media_kit/media_kit.dart';
 
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_theme.dart';
+import '../player_mock_state.dart';
 import '../shadowing_recorder.dart';
 
 /// 跟读练习面板。
@@ -25,6 +26,8 @@ class ShadowingPracticePanel extends ConsumerStatefulWidget {
     this.totalLines,
     this.onPreviousLine,
     this.onNextLine,
+    this.lines = const <PlayerSubtitleLine>[],
+    this.onSelectLine,
     this.compact = false,
   });
 
@@ -55,6 +58,13 @@ class ShadowingPracticePanel extends ConsumerStatefulWidget {
   final VoidCallback? onPreviousLine;
   final VoidCallback? onNextLine;
 
+  /// 字幕列表，供面板内的「选择句子」折叠列表使用。
+  /// 传空表示不提供列表（只保留上一句/下一句）。
+  final List<PlayerSubtitleLine> lines;
+
+  /// 点选某一句字幕：宿主负责跳转播放位置。
+  final ValueChanged<int>? onSelectLine;
+
   final bool compact;
 
   @override
@@ -67,6 +77,15 @@ class _ShadowingPracticePanelState
   Player? _player;
   StreamSubscription<bool>? _completedSub;
   bool _playingRecording = false;
+
+  /// 「选择句子」列表是否展开。默认收起，保持面板紧凑。
+  bool _linePickerExpanded = false;
+
+  /// 展开选句列表时用来把当前句滚进视野。
+  final ScrollController _linePickerController = ScrollController();
+
+  /// 每行的估算高度，用于展开时定位当前句。
+  static const double _linePickerRowHeight = 58;
 
   @override
   void didUpdateWidget(ShadowingPracticePanel oldWidget) {
@@ -87,7 +106,24 @@ class _ShadowingPracticePanelState
   void dispose() {
     unawaited(_completedSub?.cancel());
     unawaited(_player?.dispose());
+    _linePickerController.dispose();
     super.dispose();
+  }
+
+  /// 展开选句列表时，把当前句滚动到可见位置。
+  void _scrollLinePickerToActive() {
+    if (!_linePickerController.hasClients) return;
+    final int index = widget.lineIndex ?? 0;
+    const double viewport = 240;
+    final double target =
+        (index * _linePickerRowHeight) -
+        (viewport / 2) +
+        (_linePickerRowHeight / 2);
+    final double clamped = target.clamp(
+      0.0,
+      _linePickerController.position.maxScrollExtent,
+    );
+    _linePickerController.jumpTo(clamped);
   }
 
   Player get _audioPlayer => _player ??= Player();
@@ -230,6 +266,34 @@ class _ShadowingPracticePanelState
               onTap: widget.onPlayOriginal,
               onPreviousLine: widget.onPreviousLine,
               onNextLine: widget.onNextLine,
+            ),
+            SizedBox(height: widget.compact ? 10 : 14),
+          ],
+
+          // ── 选择句子（可折叠）──
+          // 跟读模式下由于面板替换了字幕列表，这里补一个选句入口：
+          // 默认收起不占地方，需要跳句时展开、点任意一句即可。
+          if (widget.lines.isNotEmpty && widget.onSelectLine != null) ...<Widget>[
+            _LinePicker(
+              lines: widget.lines,
+              activeIndex: widget.lineIndex ?? 0,
+              showChinese: widget.subtitleMode != '隐藏',
+              expanded: _linePickerExpanded,
+              palette: palette,
+              scrollController: _linePickerController,
+              rowHeight: _linePickerRowHeight,
+              onToggle: () {
+                setState(() => _linePickerExpanded = !_linePickerExpanded);
+                if (_linePickerExpanded) {
+                  WidgetsBinding.instance.addPostFrameCallback((_) {
+                    _scrollLinePickerToActive();
+                  });
+                }
+              },
+              onSelect: (int index) {
+                setState(() => _linePickerExpanded = false);
+                widget.onSelectLine!(index);
+              },
             ),
             SizedBox(height: widget.compact ? 10 : 14),
           ],
@@ -616,6 +680,178 @@ class _CurrentLineBlock extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 「选择句子」折叠列表。
+///
+/// 跟读模式下本面板替换了字幕列表，这里补回选句能力：
+/// 收起时只占一行，展开后可直接跳到任意一句开始跟读。
+class _LinePicker extends StatelessWidget {
+  const _LinePicker({
+    required this.lines,
+    required this.activeIndex,
+    required this.showChinese,
+    required this.expanded,
+    required this.palette,
+    required this.onToggle,
+    required this.onSelect,
+    required this.scrollController,
+    required this.rowHeight,
+  });
+
+  final List<PlayerSubtitleLine> lines;
+  final int activeIndex;
+  final bool showChinese;
+  final bool expanded;
+  final AppPalette palette;
+  final VoidCallback onToggle;
+  final ValueChanged<int> onSelect;
+  final ScrollController scrollController;
+  final double rowHeight;
+
+  @override
+  Widget build(BuildContext context) {
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: palette.surfaceAlt,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: palette.border),
+      ),
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: <Widget>[
+          InkWell(
+            onTap: onToggle,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 12,
+                vertical: 10,
+              ),
+              child: Row(
+                children: <Widget>[
+                  Icon(
+                    Icons.list_alt_rounded,
+                    size: 15,
+                    color: palette.textSecondary,
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '选择句子',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: palette.textSecondary,
+                    ),
+                  ),
+                  const SizedBox(width: 6),
+                  Text(
+                    '（共 ${lines.length} 句）',
+                    style: TextStyle(fontSize: 11.5, color: palette.textTertiary),
+                  ),
+                  const Spacer(),
+                  Icon(
+                    expanded
+                        ? Icons.expand_less_rounded
+                        : Icons.expand_more_rounded,
+                    size: 18,
+                    color: palette.textSecondary,
+                  ),
+                ],
+              ),
+            ),
+          ),
+          if (expanded) ...<Widget>[
+            Divider(color: palette.divider, height: 1),
+            SizedBox(
+              height: 240,
+              child: ListView.builder(
+                controller: scrollController,
+                padding: const EdgeInsets.symmetric(vertical: 4),
+                itemExtent: rowHeight,
+                itemCount: lines.length,
+                itemBuilder: (BuildContext context, int index) {
+                  final PlayerSubtitleLine line = lines[index];
+                  final bool isActive = index == activeIndex;
+                  final String chinese = showChinese ? line.chinese.trim() : '';
+                  return InkWell(
+                    onTap: () => onSelect(index),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      color: isActive
+                          ? palette.brand.withValues(alpha: 0.10)
+                          : Colors.transparent,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: <Widget>[
+                          SizedBox(
+                            width: 46,
+                            child: Text(
+                              line.startTime,
+                              style: TextStyle(
+                                fontSize: 10.5,
+                                color: palette.textTertiary,
+                                fontFeatures: const <FontFeature>[
+                                  FontFeature.tabularFigures(),
+                                ],
+                              ),
+                            ),
+                          ),
+                          if (isActive) ...<Widget>[
+                            Icon(
+                              Icons.play_arrow_rounded,
+                              size: 14,
+                              color: palette.brand,
+                            ),
+                            const SizedBox(width: 2),
+                          ],
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: <Widget>[
+                                Text(
+                                  line.english,
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12.5,
+                                    fontWeight: isActive
+                                        ? FontWeight.w700
+                                        : FontWeight.w500,
+                                    color: isActive
+                                        ? palette.brand
+                                        : palette.textPrimary,
+                                  ),
+                                ),
+                                if (chinese.isNotEmpty)
+                                  Text(
+                                    chinese,
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11,
+                                      color: palette.textTertiary,
+                                    ),
+                                  ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
         ],
       ),
     );
