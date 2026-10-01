@@ -21,6 +21,10 @@ class ShadowingPracticePanel extends ConsumerStatefulWidget {
     this.english,
     this.chinese,
     this.subtitleMode = '双语',
+    this.lineIndex,
+    this.totalLines,
+    this.onPreviousLine,
+    this.onNextLine,
     this.compact = false,
   });
 
@@ -41,6 +45,15 @@ class ShadowingPracticePanel extends ConsumerStatefulWidget {
 
   /// 字幕显示模式，决定面板内是否显示译文。
   final String subtitleMode;
+
+  /// 当前句序号（从 0 起）与总句数，用于显示「第 N / M 句」。
+  final int? lineIndex;
+  final int? totalLines;
+
+  /// 切换跟读的句子。有了它，用户不必离开面板去找上一句/下一句，
+  /// 换句时录音会自动作废（见 didUpdateWidget 的 lineKey 比较）。
+  final VoidCallback? onPreviousLine;
+  final VoidCallback? onNextLine;
 
   final bool compact;
 
@@ -211,8 +224,12 @@ class _ShadowingPracticePanelState
               english: widget.english!.trim(),
               chinese: widget.chinese?.trim() ?? '',
               showChinese: widget.subtitleMode != '隐藏',
+              lineIndex: widget.lineIndex,
+              totalLines: widget.totalLines,
               palette: palette,
               onTap: widget.onPlayOriginal,
+              onPreviousLine: widget.onPreviousLine,
+              onNextLine: widget.onNextLine,
             ),
             SizedBox(height: widget.compact ? 10 : 14),
           ],
@@ -452,6 +469,10 @@ class _CurrentLineBlock extends StatelessWidget {
     required this.showChinese,
     required this.palette,
     required this.onTap,
+    this.lineIndex,
+    this.totalLines,
+    this.onPreviousLine,
+    this.onNextLine,
   });
 
   final String english;
@@ -459,75 +480,185 @@ class _CurrentLineBlock extends StatelessWidget {
   final bool showChinese;
   final AppPalette palette;
   final VoidCallback onTap;
+  final int? lineIndex;
+  final int? totalLines;
+  final VoidCallback? onPreviousLine;
+  final VoidCallback? onNextLine;
+
+  /// 「第 N / M 句」，两值都有效时才显示。
+  String? get _positionLabel {
+    final int? index = lineIndex;
+    final int? total = totalLines;
+    if (index == null || total == null || total <= 0) return null;
+    return '第 ${index + 1} / $total 句';
+  }
 
   @override
   Widget build(BuildContext context) {
     final bool hasChinese = showChinese && chinese.isNotEmpty;
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(AppRadius.md),
-      child: Container(
-        width: double.infinity,
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
-        decoration: BoxDecoration(
-          color: palette.surfaceAlt,
-          borderRadius: BorderRadius.circular(AppRadius.md),
-          border: Border.all(color: palette.border),
-        ),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Row(
-              children: <Widget>[
-                Icon(
-                  Icons.subject_rounded,
-                  size: 13,
+    final String? position = _positionLabel;
+    final bool canGoPrevious = onPreviousLine != null && (lineIndex ?? 0) > 0;
+    final bool canGoNext =
+        onNextLine != null &&
+        lineIndex != null &&
+        totalLines != null &&
+        lineIndex! + 1 < totalLines!;
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 11),
+      decoration: BoxDecoration(
+        color: palette.surfaceAlt,
+        borderRadius: BorderRadius.circular(AppRadius.md),
+        border: Border.all(color: palette.border),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: <Widget>[
+          // 顶部：句子序号 + 上一句/下一句。切换后 lineKey 变化，
+          // 录音自动作废，不会把上一句的录音和这一句混在一起。
+          Row(
+            children: <Widget>[
+              Icon(
+                Icons.subject_rounded,
+                size: 13,
+                color: palette.textTertiary,
+              ),
+              const SizedBox(width: 5),
+              Text(
+                '跟读这一句',
+                style: TextStyle(
+                  fontSize: 11,
+                  letterSpacing: 0.3,
                   color: palette.textTertiary,
                 ),
-                const SizedBox(width: 5),
+              ),
+              if (position != null) ...<Widget>[
+                const SizedBox(width: 6),
                 Text(
-                  '跟读这一句',
+                  '· $position',
                   style: TextStyle(
                     fontSize: 11,
-                    letterSpacing: 0.3,
                     color: palette.textTertiary,
+                    fontFeatures: const <FontFeature>[
+                      FontFeature.tabularFigures(),
+                    ],
                   ),
                 ),
-                const Spacer(),
-                Icon(
-                  Icons.replay_rounded,
-                  size: 14,
-                  color: palette.textTertiary,
+              ],
+              const Spacer(),
+              if (onPreviousLine != null || onNextLine != null) ...<Widget>[
+                _LineStepButton(
+                  icon: Icons.chevron_left_rounded,
+                  tooltip: '上一句',
+                  palette: palette,
+                  onPressed: canGoPrevious ? onPreviousLine : null,
                 ),
-                const SizedBox(width: 3),
-                Text(
-                  '重听',
-                  style: TextStyle(fontSize: 11, color: palette.textTertiary),
+                const SizedBox(width: 4),
+                _LineStepButton(
+                  icon: Icons.chevron_right_rounded,
+                  tooltip: '下一句',
+                  palette: palette,
+                  onPressed: canGoNext ? onNextLine : null,
                 ),
               ],
-            ),
-            const SizedBox(height: 7),
-            Text(
-              english,
-              style: TextStyle(
-                fontSize: 15,
-                height: 1.35,
-                fontWeight: FontWeight.w600,
-                color: palette.textPrimary,
-              ),
-            ),
-            if (hasChinese) ...<Widget>[
-              const SizedBox(height: 5),
-              Text(
-                chinese,
-                style: TextStyle(
-                  fontSize: 12.5,
-                  height: 1.35,
-                  color: palette.textSecondary,
-                ),
-              ),
             ],
-          ],
+          ),
+          const SizedBox(height: 7),
+          // 点句子本身＝重听原声。
+          InkWell(
+            onTap: onTap,
+            borderRadius: BorderRadius.circular(AppRadius.sm),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 2),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: <Widget>[
+                  Text(
+                    english,
+                    style: TextStyle(
+                      fontSize: 15,
+                      height: 1.35,
+                      fontWeight: FontWeight.w600,
+                      color: palette.textPrimary,
+                    ),
+                  ),
+                  if (hasChinese) ...<Widget>[
+                    const SizedBox(height: 5),
+                    Text(
+                      chinese,
+                      style: TextStyle(
+                        fontSize: 12.5,
+                        height: 1.35,
+                        color: palette.textSecondary,
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 5),
+                  Row(
+                    children: <Widget>[
+                      Icon(
+                        Icons.replay_rounded,
+                        size: 13,
+                        color: palette.textTertiary,
+                      ),
+                      const SizedBox(width: 3),
+                      Text(
+                        '点击重听这句原声',
+                        style: TextStyle(
+                          fontSize: 11,
+                          color: palette.textTertiary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/// 「上一句 / 下一句」的小圆角按钮。
+class _LineStepButton extends StatelessWidget {
+  const _LineStepButton({
+    required this.icon,
+    required this.tooltip,
+    required this.palette,
+    required this.onPressed,
+  });
+
+  final IconData icon;
+  final String tooltip;
+  final AppPalette palette;
+  final VoidCallback? onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final bool enabled = onPressed != null;
+    return Tooltip(
+      message: tooltip,
+      child: InkWell(
+        onTap: onPressed,
+        borderRadius: BorderRadius.circular(AppRadius.pill),
+        child: Container(
+          width: 26,
+          height: 26,
+          decoration: BoxDecoration(
+            color: enabled ? palette.surface : Colors.transparent,
+            shape: BoxShape.circle,
+            border: Border.all(
+              color: enabled ? palette.border : palette.divider,
+            ),
+          ),
+          child: Icon(
+            icon,
+            size: 17,
+            color: enabled ? palette.textPrimary : palette.divider,
+          ),
         ),
       ),
     );

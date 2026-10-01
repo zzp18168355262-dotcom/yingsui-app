@@ -811,6 +811,10 @@ class _PadPortraitPlayerScreenState
                                       english: activeLine.english,
                                       chinese: activeLine.chinese,
                                       subtitleMode: state.subtitleMode,
+                                      lineIndex: state.activeLineIndex,
+                                      totalLines: state.lines.length,
+                                      onPreviousLine: _handlePreviousLine,
+                                      onNextLine: _handleNextLine,
                                       onPlayOriginal: () =>
                                           _goToLine(state.activeLineIndex),
                                       onStopOriginal: () =>

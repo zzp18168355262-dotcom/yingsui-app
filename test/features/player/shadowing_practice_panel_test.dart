@@ -82,6 +82,96 @@ void main() {
 
       expect(find.text('跟读这一句'), findsNothing);
     });
+
+    testWidgets('显示句子序号，并可切换上一句/下一句', (WidgetTester tester) async {
+      int previousTaps = 0;
+      int nextTaps = 0;
+      await tester.pumpWidget(
+        _wrap(
+          ShadowingPracticePanel(
+            lineKey: '5000#1',
+            english: 'second line',
+            chinese: '第二句',
+            lineIndex: 1,
+            totalLines: 3,
+            onPreviousLine: () => previousTaps += 1,
+            onNextLine: () => nextTaps += 1,
+            onPlayOriginal: _noop,
+            onStopOriginal: _noop,
+          ),
+          const ShadowingRecordState(),
+        ),
+      );
+      await tester.pump();
+
+      expect(find.textContaining('第 2 / 3 句'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('上一句'));
+      await tester.tap(find.byTooltip('下一句'));
+      await tester.pump();
+
+      expect(previousTaps, 1);
+      expect(nextTaps, 1);
+    });
+
+    testWidgets('第一句时「上一句」不可用，最后一句时「下一句」不可用', (WidgetTester tester) async {
+      // 第一句：上一句应无效，点击不应有任何副作用。
+      int taps = 0;
+      await tester.pumpWidget(
+        _wrap(
+          ShadowingPracticePanel(
+            lineKey: 'k0',
+            english: 'first line',
+            lineIndex: 0,
+            totalLines: 3,
+            onPreviousLine: () => taps += 1,
+            onNextLine: () => taps += 1,
+            onPlayOriginal: _noop,
+            onStopOriginal: _noop,
+          ),
+          const ShadowingRecordState(),
+        ),
+      );
+      await tester.pump();
+      expect(find.textContaining('第 1 / 3 句'), findsOneWidget);
+
+      // 禁用的按钮点击不会触发回调（warnIfMissed 关闭：禁用态本就不可命中）。
+      await tester.tap(find.byTooltip('上一句'), warnIfMissed: false);
+      await tester.pump();
+      expect(taps, 0, reason: '第一句不应能切到上一句');
+
+      await tester.tap(find.byTooltip('下一句'));
+      await tester.pump();
+      expect(taps, 1, reason: '第一句应能切到下一句');
+
+      // 最后一句：下一句应无效。
+      int lastTaps = 0;
+      await tester.pumpWidget(
+        _wrap(
+          ShadowingPracticePanel(
+            lineKey: 'k2',
+            english: 'last line',
+            lineIndex: 2,
+            totalLines: 3,
+            onPreviousLine: () => lastTaps += 1,
+            onNextLine: () => lastTaps += 1,
+            onPlayOriginal: _noop,
+            onStopOriginal: _noop,
+          ),
+          const ShadowingRecordState(),
+        ),
+      );
+      await tester.pump();
+      expect(find.textContaining('第 3 / 3 句'), findsOneWidget);
+
+      await tester.tap(find.byTooltip('上一句'));
+      await tester.pump();
+      expect(lastTaps, 1, reason: '最后一句应能切到上一句');
+
+      await tester.tap(find.byTooltip('下一句'), warnIfMissed: false);
+      await tester.pump();
+      expect(lastTaps, 1, reason: '最后一句不应能再往后');
+    });
   });
 
   testWidgets('未录音时只显示录制入口，不显示回放按钮', (WidgetTester tester) async {
