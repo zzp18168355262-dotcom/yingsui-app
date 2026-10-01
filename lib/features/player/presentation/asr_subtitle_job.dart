@@ -196,6 +196,7 @@ class AsrSubtitleJobRunner {
     this.service = const AsrSubtitleService(),
     this.cloudTranscribeChunk,
     this.translateSentence,
+    this.translationRequestInterval = _translationRequestInterval,
   });
 
   final Future<Directory> Function()? supportDirectory;
@@ -204,7 +205,21 @@ class AsrSubtitleJobRunner {
   final AsrChunkTranscriber? cloudTranscribeChunk;
   final AsrSentenceTranslator? translateSentence;
 
+  /// 逐句翻译之间的间隔。测试可传 Duration.zero 避免真实等待。
+  final Duration translationRequestInterval;
+
   static const int _repairableOverlapMs = 500;
+
+  /// 逐句翻译之间的间隔。
+  ///
+  /// 第三方翻译接口（尤其大模型接口）在短时间内收到大量请求时会限流，
+  /// 典型表现就是「翻了一阵之后突然全部失败」。留出间隔可显著降低触发概率。
+  /// 取值权衡：200ms 约等于 5 句/秒，对多数接口是安全区间；
+  /// 500 句的长字幕因此多花约 100 秒，可以接受。
+  static const Duration _translationRequestInterval = Duration(
+    milliseconds: 200,
+  );
+
   static final Set<String> _activeJobs = <String>{};
 
   Future<AsrRegeneratedLineResult> regenerateLine({
@@ -697,22 +712,22 @@ class AsrSubtitleJobRunner {
       cancellationToken?.throwIfCancelled();
       final String key = _translationLineKey(line, english);
       final String? cached = translations[key];
-      // 命中缓存就直接复用，否则请求翻译（含退避重试）。
-      final String? chinese =
-          cached ??
-          await _translateOnce(
-            english: english,
-            settings: settings,
-            cancellationToken: cancellationToken,
-            onError: (Object error) => lastTranslationError = error,
-          );
-      if (chinese == null || chinese.trim().isEmpty) {
-        // 这一句没翻出来：跳过，继续后面的句子。
-        untranslated += 1;
+      if (cached != null) {
+        // 命中缓存：直接复用，不发请求。
+        line['chinese'] = cached;
         continue;
       }
-      line['chinese'] = chinese.trim();
-      if (cached == null) {
+      final String? chinese = await _translateOnce(
+        english: english,
+        settings: settings,
+        cancellationToken: cancellationToken,
+        onError: (Object error) => lastTranslationError = error,
+      );
+      if (chinese == null || chinese.trim().isEmpty) {
+        // 这一句没翻出来：跳过，继续后面的句子（不再整段放弃）。
+        untranslated += 1;
+      } else {
+        line['chinese'] = chinese.trim();
         translations[key] = chinese.trim();
         await _writeJsonAtomically(checkpoint, <String, Object?>{
           'version': 1,
@@ -721,6 +736,11 @@ class AsrSubtitleJobRunner {
         });
       }
       cancellationToken?.throwIfCancelled();
+      // 逐句之间留出间隔，避免把第三方翻译接口打到限流。
+      // 大模型翻译接口尤其常见：短时间大量请求会被限流，
+      // 表现为「翻了一阵之后突然全部失败」。这里的间隔会让长字幕
+      // 多花一点时间，但能显著降低触发限流的概率。
+      await Future<void>.delayed(translationRequestInterval);
     }
 
     if (untranslated > 0) {

@@ -281,7 +281,8 @@ void main() {
               required AsrAudioChunk chunk,
               required LearningSettingsState settings,
             }) async => _chunkJson('Hello there', 1000),
-        translateSentence:
+        translationRequestInterval: Duration.zero,
+      translateSentence:
             ({
               required String sentence,
               required LearningSettingsState settings,
@@ -361,6 +362,7 @@ void main() {
             required AsrAudioChunk chunk,
             required LearningSettingsState settings,
           }) async => _twoLineChunkJson(),
+      translationRequestInterval: Duration.zero,
       translateSentence:
           ({
             required String sentence,
@@ -402,6 +404,59 @@ void main() {
     expect(subtitleGenerationWarning(raw), isNull);
   });
 
+  test('逐句翻译之间会留出请求间隔（避免打到限流）', () async {
+    // 大模型翻译接口在短时间内收到大量请求会被限流，
+    // 表现为「翻了一阵之后突然全部失败」。这里验证间隔确实生效。
+    final Directory root = Directory.systemTemp.createTempSync(
+      'asr-job-translation-pacing-',
+    );
+    addTearDown(() => root.deleteSync(recursive: true));
+    final File video = File('${root.path}/lesson.mp4')
+      ..writeAsStringSync('video');
+    final File chunk = File('${root.path}/chunk.m4a')
+      ..writeAsStringSync('audio');
+    const Duration interval = Duration(milliseconds: 40);
+    final AsrSubtitleJobRunner runner = AsrSubtitleJobRunner(
+      supportDirectory: () async => root,
+      cache: AsrSubtitleCache(appSupportDirectory: () async => root),
+      service: AsrSubtitleService(
+        prepareAudioChunksOverride: (_) async => <AsrAudioChunk>[
+          AsrAudioChunk(file: chunk, offsetMs: 0),
+        ],
+      ),
+      cloudTranscribeChunk:
+          ({
+            required AsrAudioChunk chunk,
+            required LearningSettingsState settings,
+          }) async => _threeLineChunkJson(),
+      translationRequestInterval: interval,
+      translateSentence:
+          ({
+            required String sentence,
+            required LearningSettingsState settings,
+          }) async => '翻译：$sentence',
+    );
+
+    final Stopwatch watch = Stopwatch()..start();
+    final String raw = await runner.run(
+      episodeId: 'episode-1',
+      videoPath: video.path,
+      settings: _settings().copyWith(generateBilingualAsrSubtitles: true),
+    );
+    watch.stop();
+
+    expect(
+      parseSubtitleLines(raw).map((PlayerSubtitleLine line) => line.chinese),
+      <String>['翻译：first line', '翻译：second line', '翻译：third line'],
+    );
+    // 3 句会产生 3 次间隔，保守断言至少 2 次，避免受机器调度影响而抖动。
+    expect(
+      watch.elapsedMilliseconds,
+      greaterThanOrEqualTo(2 * interval.inMilliseconds),
+      reason: '应按 translationRequestInterval 在句间等待',
+    );
+  });
+
   test('单句翻译失败不会中断后续句子的翻译', () async {
     // 回归测试：原实现在任意一句翻译失败时直接 break，
     // 导致该句之后的所有句子永远没有中文
@@ -428,6 +483,7 @@ void main() {
             required LearningSettingsState settings,
           }) async => _threeLineChunkJson(),
       // 中间那句始终失败，两侧正常。
+      translationRequestInterval: Duration.zero,
       translateSentence:
           ({
             required String sentence,
