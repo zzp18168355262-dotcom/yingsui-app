@@ -98,7 +98,8 @@ void main() {
     final Scaffold scaffold = tester.widget<Scaffold>(
       find.byType(Scaffold).first,
     );
-    expect(scaffold.backgroundColor, const Color(0xFFFAFAFA));
+    // 画布色随新配色体系改为 #F8F9FA（见 AppColors 与 AppDesignTokens.softWhite）。
+    expect(scaffold.backgroundColor, const Color(0xFFF8F9FA));
   });
 
   testWidgets('renders pad player controls', (WidgetTester tester) async {

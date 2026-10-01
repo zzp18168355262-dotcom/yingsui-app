@@ -195,7 +195,7 @@ class _TranscriptReaderWindowAppState
       title: '逐词全文',
       theme: ThemeData(
         useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF10B981)),
+        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF00695C)),
         fontFamily: 'Nunito',
       ),
       home: FullTranscriptReaderScreen(

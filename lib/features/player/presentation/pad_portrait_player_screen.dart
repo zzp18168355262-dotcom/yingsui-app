@@ -40,6 +40,7 @@ import 'widgets/player_subtitle_list.dart';
 import 'widgets/player_top_bar.dart';
 import 'widgets/player_transcript_panel.dart';
 import 'widgets/player_video_panel.dart';
+import 'widgets/shadowing_practice_panel.dart';
 
 class PadPortraitPlayerScreen extends ConsumerStatefulWidget {
   const PadPortraitPlayerScreen({
@@ -972,7 +973,43 @@ class _PadPortraitPlayerScreenState
     ref
         .read(learningActivityProvider.notifier)
         .recordShadowingToggle(enabled: state.isShadowing);
-    _showMessage(state.isShadowing ? '已开启跟读模式' : '已关闭跟读模式');
+    if (state.isShadowing) {
+      _openShadowingPractice();
+    } else {
+      _showMessage('已关闭跟读模式');
+    }
+  }
+
+  /// 打开跟读练习面板：在这里录下这一遍，并和原声 A/B 对比着听。
+  void _openShadowingPractice() {
+    if (!state.hasLines) {
+      _showMessage('先导入带字幕的课程，再开始跟读练习');
+      return;
+    }
+    final PlayerSubtitleLine line = state.lines[state.activeLineIndex];
+    // 用「起始时间 + 句子索引」作句子标识：换句后旧录音自动作废，
+    // 避免把上一句的录音和这一句对比。
+    final String lineKey = '${line.startMs}#${state.activeLineIndex}';
+
+    unawaited(
+      showModalBottomSheet<void>(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (BuildContext sheetContext) {
+          return SafeArea(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: ShadowingPracticePanel(
+                lineKey: lineKey,
+                onPlayOriginal: () => _goToLine(state.activeLineIndex),
+                onStopOriginal: () => unawaited(_videoPlayer?.pause()),
+              ),
+            ),
+          );
+        },
+      ),
+    );
   }
 
   void _handleToggleLoop() {

@@ -82,7 +82,7 @@ class _PlayerEpisodeStripState extends State<PlayerEpisodeStrip> {
               child: const Text(
                 '查看全部',
                 style: TextStyle(
-                  color: Color(0xFF047857),
+                  color: Color(0xFF004D40),
                   fontSize: 12,
                   fontWeight: FontWeight.w700,
                 ),
@@ -213,7 +213,7 @@ class _EpisodeCard extends StatelessWidget {
                 height: 38,
                 decoration: BoxDecoration(
                   color: isActive
-                      ? const Color(0xFF10B981)
+                      ? const Color(0xFF00695C)
                       : const Color(0xFFF1F5F9),
                   borderRadius: BorderRadius.circular(14),
                 ),
@@ -238,7 +238,7 @@ class _EpisodeCard extends StatelessWidget {
                         fontSize: 11,
                         fontWeight: FontWeight.w800,
                         color: isActive
-                            ? const Color(0xFF047857)
+                            ? const Color(0xFF004D40)
                             : const Color(0xFF64748B),
                       ),
                     ),

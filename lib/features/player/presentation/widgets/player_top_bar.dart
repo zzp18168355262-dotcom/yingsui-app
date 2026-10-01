@@ -114,7 +114,7 @@ class PlayerTopBar extends StatelessWidget {
                       style: TextStyle(
                         fontSize: tiny ? 10 : 11,
                         fontWeight: FontWeight.w800,
-                        color: const Color(0xFF047857),
+                        color: const Color(0xFF004D40),
                       ),
                     ),
                   ),

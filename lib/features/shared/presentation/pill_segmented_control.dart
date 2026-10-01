@@ -41,7 +41,7 @@ class PillSegmentedControl<T extends Object> extends StatelessWidget {
                   option.label,
                   style: TextStyle(
                     color: option.value == value
-                        ? const Color(0xFF0875D8)
+                        ? const Color(0xFF00695C)
                         : const Color(0xFF222226),
                     fontSize: 14,
                     fontWeight: FontWeight.w700,
