@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 影随 / YingSui —— 发布打包
+# 英语角 / English Corner —— 发布打包
 #
 # 用途：
 #   把已构建的三平台产物汇总到 dist/，生成 SHA256 校验文件与安装说明，
@@ -11,9 +11,9 @@
 #
 # 产物结构：
 #   dist/
-#     YingSui-<版本>-macos.dmg             macOS 安装包
-#     YingSui-<版本>-android.apk           Android 安装包
-#     YingSui-<版本>-ios-unsigned.ipa      iOS（需签名服务重签）
+#     EnglishCorner-<版本>-macos.dmg             macOS 安装包
+#     EnglishCorner-<版本>-android.apk           Android 安装包
+#     EnglishCorner-<版本>-ios-unsigned.ipa      iOS（需签名服务重签）
 #     SHA256SUMS.txt                       校验文件
 #     安装说明.txt                          给最终用户的说明
 #     manifest.json                        供更新接口使用
@@ -48,16 +48,16 @@ mkdir -p "$DIST"
 copied=()
 
 # ---- macOS ----
-MAC_APP="build/macos/Build/Products/Release/YingSui.app"
+MAC_APP="build/macos/Build/Products/Release/EnglishCorner.app"
 if [[ -d "$MAC_APP" ]]; then
-  DMG="$DIST/YingSui-${VERSION}-macos.dmg"
+  DMG="$DIST/EnglishCorner-${VERSION}-macos.dmg"
   echo "    打包 macOS DMG"
   rm -rf build/macos/dmg-root
   mkdir -p build/macos/dmg-root
   # 先做干净拷贝，避免 iCloud 扩展属性带进 DMG
-  ditto --norsrc --noextattr "$MAC_APP" build/macos/dmg-root/YingSui.app
+  ditto --norsrc --noextattr "$MAC_APP" build/macos/dmg-root/EnglishCorner.app
   ln -sf /Applications build/macos/dmg-root/Applications
-  hdiutil create -volname "影随 YingSui" \
+  hdiutil create -volname "英语角 English Corner" \
     -srcfolder build/macos/dmg-root -ov -format UDZO "$DMG" >/dev/null
   copied+=("$DMG")
 else
@@ -67,23 +67,23 @@ fi
 # ---- Android ----
 APK="build/app/outputs/flutter-apk/app-prod-release.apk"
 if [[ -f "$APK" ]]; then
-  cp "$APK" "$DIST/YingSui-${VERSION}-android.apk"
-  copied+=("$DIST/YingSui-${VERSION}-android.apk")
+  cp "$APK" "$DIST/EnglishCorner-${VERSION}-android.apk"
+  copied+=("$DIST/EnglishCorner-${VERSION}-android.apk")
 else
   echo "    ! 跳过 Android：未找到 $APK"
 fi
 
 AAB="build/app/outputs/bundle/prodRelease/app-prod-release.aab"
 if [[ -f "$AAB" ]]; then
-  cp "$AAB" "$DIST/YingSui-${VERSION}-android.aab"
+  cp "$AAB" "$DIST/EnglishCorner-${VERSION}-android.aab"
   echo "    （AAB 供 Google Play 上传，不分发给用户）"
 fi
 
 # ---- iOS ----
-IPA="build/ios/ipa/YingSui-${VERSION}-unsigned.ipa"
+IPA="build/ios/ipa/EnglishCorner-${VERSION}-unsigned.ipa"
 if [[ -f "$IPA" ]]; then
-  cp "$IPA" "$DIST/YingSui-${VERSION}-ios-unsigned.ipa"
-  copied+=("$DIST/YingSui-${VERSION}-ios-unsigned.ipa")
+  cp "$IPA" "$DIST/EnglishCorner-${VERSION}-ios-unsigned.ipa"
+  copied+=("$DIST/EnglishCorner-${VERSION}-ios-unsigned.ipa")
 else
   echo "    ! 跳过 iOS：未找到 $IPA"
 fi
@@ -145,7 +145,7 @@ PY
 echo
 echo "==> 生成安装说明.txt"
 cat > "$DIST/安装说明.txt" <<EOF
-影随 YingSui  ${VERSION}（构建 ${BUILD_NO}）
+英语角 English Corner  ${VERSION}（构建 ${BUILD_NO}）
 
 感谢使用。请按你的设备选择对应文件：
 
@@ -158,7 +158,7 @@ Windows
 ────────────────────────────────
 Android 手机 / 平板
 ────────────────────────────────
-文件：YingSui-${VERSION}-android.apk
+文件：EnglishCorner-${VERSION}-android.apk
 
 安装步骤：
   1. 把 apk 传到手机上（微信/QQ/数据线均可）
@@ -172,22 +172,22 @@ Android 手机 / 平板
 ────────────────────────────────
 macOS 电脑
 ────────────────────────────────
-文件：YingSui-${VERSION}-macos.dmg
+文件：EnglishCorner-${VERSION}-macos.dmg
 
 安装步骤：
-  1. 双击 dmg，把「影随」拖进「应用程序」
+  1. 双击 dmg，把「英语角」拖进「应用程序」
   2. 首次打开会提示「无法验证开发者」—— 这是正常的
      （本应用未做 Apple 公证）
   3. 解决办法（任选其一）：
      · 右键点击图标 → 选择「打开」→ 再点「打开」
-     · 或：系统设置 → 隐私与安全性 → 找到影随 → 点「仍要打开」
+     · 或：系统设置 → 隐私与安全性 → 找到英语角 → 点「仍要打开」
   4. 首次使用跟读功能时，请允许「麦克风」权限
 
 
 ────────────────────────────────
 iPhone / iPad
 ────────────────────────────────
-文件：YingSui-${VERSION}-ios-unsigned.ipa
+文件：EnglishCorner-${VERSION}-ios-unsigned.ipa
 
 此文件需要签名后才能安装，请按提供的安装指引操作。
 

@@ -54,7 +54,7 @@ class GuideSectionCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: compact ? 9 : 10,
                         fontWeight: FontWeight.w800,
-                        color: const Color(0xFF0F7A43),
+                        color: const Color(0xFF00695C),
                       ),
                     ),
                   ),
@@ -67,15 +67,15 @@ class GuideSectionCard extends StatelessWidget {
                     height: compact ? 42 : 48,
                     decoration: BoxDecoration(
                       color: isKey
-                          ? const Color(0xFF16C784)
-                          : const Color(0xFFD4E3DA),
+                          ? const Color(0xFFE3F3EF)
+                          : const Color(0xFFFFF3DC),
                       borderRadius: BorderRadius.circular(compact ? 14 : 16),
                     ),
                     child: Icon(
                       icon,
                       color: isKey
-                          ? const Color(0xFF004C30)
-                          : const Color(0xFF57665E),
+                          ? const Color(0xFF00695C)
+                          : const Color(0xFFC97F00),
                     ),
                   ),
                   SizedBox(width: compact ? 12 : 16),
@@ -119,7 +119,7 @@ class GuideSectionCard extends StatelessWidget {
               shape: BoxShape.circle,
               border: Border.all(
                 color: isKey
-                    ? const Color(0xFF0F7A43)
+                    ? const Color(0xFF00695C)
                     : const Color(0xFF8D9891),
                 width: 2,
               ),
@@ -131,7 +131,7 @@ class GuideSectionCard extends StatelessWidget {
                   fontSize: compact ? 11 : 12,
                   fontWeight: FontWeight.w800,
                   color: isKey
-                      ? const Color(0xFF0F7A43)
+                      ? const Color(0xFF00695C)
                       : const Color(0xFF53625A),
                 ),
               ),

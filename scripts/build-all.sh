@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 影随 / YingSui —— 全平台构建
+# 英语角 / English Corner —— 全平台构建
 #
 # 用法：
 #   ./scripts/build-all.sh              # 构建 macOS + Android + iOS
@@ -7,10 +7,10 @@
 #   ./scripts/build-all.sh android ios
 #
 # 产物：
-#   macOS    build/macos/Build/Products/<Config>/YingSui.app（已 ad-hoc 签名）
+#   macOS    build/macos/Build/Products/<Config>/EnglishCorner.app（已 ad-hoc 签名）
 #   Android  build/app/outputs/flutter-apk/app-prod-release.apk
 #            build/app/outputs/bundle/prodRelease/app-prod-release.aab（供 Google Play）
-#   iOS      build/ios/ipa/YingSui-<版本>-unsigned.ipa（交签名服务重签）
+#   iOS      build/ios/ipa/EnglishCorner-<版本>-unsigned.ipa（交签名服务重签）
 #   Web      build/web（可选）
 #
 # 依赖：先执行 `source ../toolchain-env.sh` 或确保 PATH 里有 flutter / pod / java。
@@ -36,10 +36,10 @@ VERSION="$(sed -nE 's/^version: ([^+]+).*/\1/p' pubspec.yaml)"
 ensure_ffmpeg() {
   local target="$1" dir="build/ffmpeg-bundle/$1"
   if [[ -x "$dir/ffmpeg" ]]; then
-    echo "    ffmpeg 已就绪（$target）"
+    echo "    ffmpeg 已就绪（${target}）"
     return
   fi
-  echo "==> 编译 ffmpeg（$target）"
+  echo "==> 编译 ffmpeg（${target}）"
   bash tool/ffmpeg/build_ffmpeg.sh "$target" "$dir"
 }
 
@@ -52,7 +52,7 @@ for t in "${TARGETS[@]}"; do
       echo "========== macOS =========="
       ensure_ffmpeg macos-arm64
       ./scripts/build-macos.sh release
-      summary+=("macOS    build/macos/Build/Products/Release/YingSui.app")
+      summary+=("macOS    build/macos/Build/Products/Release/EnglishCorner.app")
       ;;
     android)
       echo
@@ -71,7 +71,7 @@ for t in "${TARGETS[@]}"; do
       echo "========== iOS =========="
       ensure_ffmpeg ios-arm64
       ./scripts/build-ios-ipa.sh
-      summary+=("iOS      build/ios/ipa/YingSui-${VERSION}-unsigned.ipa")
+      summary+=("iOS      build/ios/ipa/EnglishCorner-${VERSION}-unsigned.ipa")
       ;;
     web)
       echo
@@ -80,7 +80,7 @@ for t in "${TARGETS[@]}"; do
       summary+=("Web      build/web")
       ;;
     *)
-      echo "未知平台：$t（可选：macos android ios web）" >&2
+      echo "未知平台：${t}（可选：macos android ios web）" >&2
       exit 1
       ;;
   esac

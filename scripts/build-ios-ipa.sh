@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 影随 / YingSui —— iOS 未签名 IPA 打包脚本
+# 英语角 / English Corner —— iOS 未签名 IPA 打包脚本
 #
 # 用途：
 #   编译出未签名的 iOS 包并打成标准 IPA，交给第三方签名服务重签
@@ -8,7 +8,7 @@
 # 用法：
 #   ./scripts/build-ios-ipa.sh
 #
-# 产物：build/ios/ipa/YingSui-<版本>-unsigned.ipa
+# 产物：build/ios/ipa/EnglishCorner-<版本>-unsigned.ipa
 #
 # 实现说明（为什么不用 flutter build ios）：
 #   Flutter 3.44 的 `flutter build ios` 在解析 Swift Package Manager
@@ -31,7 +31,6 @@ cd "$ROOT"
 VERSION="$(sed -nE 's/^version: ([^+]+).*/\1/p' pubspec.yaml)"
 SCHEME="${IOS_SCHEME:-Runner}"
 CONFIGURATION="${IOS_CONFIGURATION:-Release}"
-DERIVED="build/ios/DerivedData"
 CONFIG_LOWER="$(echo "$CONFIGURATION" | tr '[:upper:]' '[:lower:]')"
 
 echo "==> 准备 Flutter 侧产物（Dart 编译 / flutter_assets）"
@@ -42,6 +41,14 @@ flutter build ios "--$CONFIG_LOWER" --no-codesign >/dev/null 2>&1 || true
 echo "==> 安装 Pods"
 (cd ios && pod install >/dev/null)
 
+# DerivedData 必须放在 /tmp，不能放工作区内。
+# 原因：仓库位于 iCloud 托管目录（~/Documents）时，iCloud 会给中间产物
+# 贴上 com.apple.FinderInfo 扩展属性；构建过程中对嵌套 framework
+# （如 native_assets/objective_c.framework）签名时报
+#   resource fork, Finder information, or similar detritus not allowed
+# 而失败。放到 /tmp 可彻底避开。
+DERIVED_TMP="/tmp/EnglishCorner-ios-dd"
+
 echo "==> xcodebuild ($CONFIGURATION / $SCHEME)"
 (
   cd ios
@@ -51,15 +58,15 @@ echo "==> xcodebuild ($CONFIGURATION / $SCHEME)"
     -configuration "$CONFIGURATION" \
     -sdk iphoneos \
     -destination 'generic/platform=iOS' \
-    -derivedDataPath "../$DERIVED" \
+    -derivedDataPath "$DERIVED_TMP" \
     CODE_SIGNING_ALLOWED=NO \
     build
 )
 
-APP="$DERIVED/Build/Products/${CONFIGURATION}-iphoneos/Runner.app"
+APP="$DERIVED_TMP/Build/Products/${CONFIGURATION}-iphoneos/Runner.app"
 if [[ ! -d "$APP" ]]; then
   echo "错误：未找到 $APP" >&2
-  ls -1 "$DERIVED/Build/Products/" 2>/dev/null >&2 || true
+  ls -1 "$DERIVED_TMP/Build/Products/" 2>/dev/null >&2 || true
   exit 1
 fi
 echo "==> 产物：$APP"
@@ -74,7 +81,7 @@ if [[ -x "$FFMPEG_SRC" ]]; then
   cp -a build/ffmpeg-bundle/ios-arm64/. "$APP/ffmpeg/"
   chmod +x "$APP/ffmpeg/ffmpeg"
 else
-  echo "==> 警告：未找到 $FFMPEG_SRC，iOS 上 AI 字幕会失败。"
+  echo "==> 警告：未找到 ${FFMPEG_SRC}，iOS 上 AI 字幕会失败。"
   echo "    先执行：bash tool/ffmpeg/build_ffmpeg.sh ios-arm64 build/ffmpeg-bundle/ios-arm64"
 fi
 
@@ -86,7 +93,7 @@ PAYLOAD="$STAGE/Payload"
 mkdir -p "$PAYLOAD"
 ditto --norsrc --noextattr "$APP" "$PAYLOAD/Runner.app"
 
-OUT="$IPA_DIR/YingSui-${VERSION}-unsigned.ipa"
+OUT="$IPA_DIR/EnglishCorner-${VERSION}-unsigned.ipa"
 rm -f "$OUT"
 (cd "$STAGE" && zip -qry "$ROOT/$OUT" Payload)
 rm -rf "$STAGE"

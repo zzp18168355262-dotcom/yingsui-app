@@ -7,7 +7,7 @@ index 3f81eb17221..2606900a5af 100644
      final lipoInfo = infoResult.stdout as String;
  
 -    final ProcessResult verifyResult = await environment.processManager.run(<String>[
-+    // 补丁（影随项目）：`lipo -verify_arch` 一次只接受一个架构参数，
++    // 补丁（英语角项目）：`lipo -verify_arch` 一次只接受一个架构参数，
 +    // 传入多个架构时 lipo 会把第二个当成「额外输入文件」而报
 +    //   lipo: -verify_arch requires exactly one input file
 +    // 并返回非零退出码，导致 macOS release 构建必然失败

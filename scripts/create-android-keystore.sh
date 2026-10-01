@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 影随 / YingSui —— Android 发布密钥生成
+# 英语角 / English Corner —— Android 发布密钥生成
 #
 # 用法：
 #   ./scripts/create-android-keystore.sh
@@ -62,7 +62,7 @@ echo "==> 生成密钥库 $KEYSTORE"
   -validity 10000 \
   -storepass "$STORE_PASS" \
   -keypass "$STORE_PASS" \
-  -dname "CN=YingSui, OU=Mobile, O=YingSui, L=Unknown, ST=Unknown, C=CN"
+  -dname "CN=English Corner, OU=Mobile, O=English Corner, L=Unknown, ST=Unknown, C=CN"
 
 echo "==> 写入 $PROPS"
 cat > "$PROPS" <<EOF

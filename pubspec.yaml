@@ -172,11 +172,11 @@ flutter_launcher_icons:
   web:
     generate: true
     image_path: assets/img/app_icon.png
-    background_color: "#D4E3DA"
-    theme_color: "#0F7A43"
+    background_color: "#F8F9FA"
+    theme_color: "#00695C"
   macos:
     generate: true
     image_path: assets/img/app_icon.png
   remove_alpha_ios: true
-  adaptive_icon_background: "#D4E3DA"
+  adaptive_icon_background: "#00695C"
   adaptive_icon_foreground: assets/img/app_icon_foreground.png

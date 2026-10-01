@@ -22,14 +22,14 @@ class SettingsGroupCard extends StatelessWidget {
       children: <Widget>[
         Row(
           children: <Widget>[
-            Icon(icon, size: compact ? 16 : 18, color: const Color(0xFF0F7A43)),
+            Icon(icon, size: compact ? 16 : 18, color: const Color(0xFF00695C)),
             SizedBox(width: compact ? 6 : 8),
             Text(
               title,
               style: TextStyle(
                 fontSize: compact ? 12 : 13,
                 fontWeight: FontWeight.w800,
-                color: const Color(0xFF0F7A43),
+                color: const Color(0xFF00695C),
               ),
             ),
           ],

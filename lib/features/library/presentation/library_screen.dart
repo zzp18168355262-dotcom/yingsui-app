@@ -1400,7 +1400,7 @@ class _LibraryDetailTopStatus extends StatelessWidget {
           style: const TextStyle(
             fontSize: 13,
             fontWeight: FontWeight.w700,
-            color: Color(0xFF0F7A43),
+            color: Color(0xFF00695C),
           ),
         ),
           if (episodeName != null && episodeName!.isNotEmpty) ...<Widget>[

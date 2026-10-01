@@ -42,13 +42,13 @@ class PhraseFilterChipRow extends StatelessWidget {
                   backgroundColor: const Color(0xFFF2F4F6),
                   labelStyle: TextStyle(
                     color: isActive
-                        ? const Color(0xFF0F7A43)
+                        ? const Color(0xFF00695C)
                         : const Color(0xFF53625A),
                     fontWeight: isActive ? FontWeight.w700 : FontWeight.w600,
                   ),
                   side: BorderSide(
                     color: isActive
-                        ? const Color(0xFF0F7A43)
+                        ? const Color(0xFF00695C)
                         : const Color(0xFFDCE4DA),
                   ),
                 );

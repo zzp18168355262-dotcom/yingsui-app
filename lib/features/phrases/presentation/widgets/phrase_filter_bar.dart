@@ -29,7 +29,7 @@ class PhraseFilterBar extends StatelessWidget {
               onSelected: (_) => onSelected(value),
               selectedColor: review
                   ? const Color(0xFF8F1D1D)
-                  : const Color(0xFF0F7A43),
+                  : const Color(0xFF00695C),
               backgroundColor: review
                   ? const Color(0xFFFFF0F0)
                   : const Color(0xFFF2F4F6),
@@ -45,7 +45,7 @@ class PhraseFilterBar extends StatelessWidget {
                 color: active
                     ? (review
                           ? const Color(0xFF8F1D1D)
-                          : const Color(0xFF0F7A43))
+                          : const Color(0xFF00695C))
                     : (review
                           ? const Color(0xFFF0B7B7)
                           : const Color(0xFFDCE3DC)),

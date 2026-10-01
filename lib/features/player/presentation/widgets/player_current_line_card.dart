@@ -165,7 +165,7 @@ class _PlayerCurrentLineCardState extends State<PlayerCurrentLineCard> {
                             border: Border.all(
                               color: highlighted
                                   ? AppDesignTokens.brandGreen
-                                  : const Color(0x000F7A43),
+                                  : const Color(0x0000695C),
                               width: highlighted ? 1.5 : 0,
                             ),
                           ),

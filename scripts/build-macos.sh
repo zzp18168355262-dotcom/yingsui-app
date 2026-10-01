@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 影随 / YingSui —— macOS 构建脚本
+# 英语角 / English Corner —— macOS 构建脚本
 #
 # 用法：
 #   ./scripts/build-macos.sh              # debug 构建
@@ -36,14 +36,14 @@ echo "==> 构建 macOS ($MODE)"
 flutter build macos "--$MODE" || true
 
 # 明确指定产物路径。不要用 find 通配 —— 构建目录里可能残留
-# 历史的 *.app（例如测试用的 YingSui-signed.app），会被误选。
+# 历史的 *.app（例如测试用的 EnglishCorner-signed.app），会被误选。
 case "$MODE" in
   debug) CONFIG_DIR="Debug" ;;
   profile) CONFIG_DIR="Profile" ;;
   release) CONFIG_DIR="Release" ;;
   *) CONFIG_DIR="Debug" ;;
 esac
-APP="build/macos/Build/Products/$CONFIG_DIR/YingSui.app"
+APP="build/macos/Build/Products/$CONFIG_DIR/EnglishCorner.app"
 if [[ ! -d "$APP" ]]; then
   echo "错误：未找到 $APP" >&2
   echo "构建目录现状：" >&2
@@ -73,7 +73,7 @@ else
 fi
 
 # 在 /tmp 下做干净拷贝，剥离扩展属性后再签名。
-STAGE_APP="/tmp/YingSui-build-$$.app"
+STAGE_APP="/tmp/EnglishCorner-build-$$.app"
 rm -rf "$STAGE_APP"
 echo "==> 干净拷贝到 $STAGE_APP"
 ditto --norsrc --noextattr "$APP" "$STAGE_APP"
@@ -92,13 +92,13 @@ fi
 
 if [[ "$PACKAGE_DMG" == "dmg" ]]; then
   VERSION="$(sed -nE 's/^version: ([^+]+).*/\1/p' pubspec.yaml)"
-  OUT="build/macos/YingSui-${VERSION}.dmg"
+  OUT="build/macos/EnglishCorner-${VERSION}.dmg"
   echo "==> 打包 DMG：$OUT"
   rm -rf build/macos/dmg-root "$OUT"
   mkdir -p build/macos/dmg-root
-  cp -R "$FINAL" "build/macos/dmg-root/YingSui.app"
+  cp -R "$FINAL" "build/macos/dmg-root/EnglishCorner.app"
   ln -s /Applications build/macos/dmg-root/Applications
-  hdiutil create -volname "影随 YingSui" \
+  hdiutil create -volname "英语角 English Corner" \
     -srcfolder build/macos/dmg-root \
     -ov -format UDZO "$OUT"
   echo "==> 完成：$OUT"
@@ -106,9 +106,9 @@ fi
 
 if [[ "$STAGE" == "stage" ]]; then
   mkdir -p dist
-  rm -rf dist/YingSui.app
-  cp -R "$FINAL" dist/YingSui.app
-  echo "==> 已放到 dist/YingSui.app"
+  rm -rf dist/EnglishCorner.app
+  cp -R "$FINAL" dist/EnglishCorner.app
+  echo "==> 已放到 dist/EnglishCorner.app"
 fi
 
 echo "==> 完成：$FINAL"

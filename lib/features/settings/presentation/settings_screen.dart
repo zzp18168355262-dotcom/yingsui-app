@@ -1285,7 +1285,7 @@ class _SwitchRow extends StatelessWidget {
                 Set<WidgetState> states,
               ) {
                 if (states.contains(WidgetState.selected)) {
-                  return const Color(0xFF0F7A43);
+                  return const Color(0xFF00695C);
                 }
                 return Colors.transparent;
               }),
@@ -1293,7 +1293,7 @@ class _SwitchRow extends StatelessWidget {
                 Set<WidgetState> states,
               ) {
                 if (states.contains(WidgetState.selected)) {
-                  return const Color(0xFF0F7A43);
+                  return const Color(0xFF00695C);
                 }
                 return const Color(0xFFE4E8E4);
               }),

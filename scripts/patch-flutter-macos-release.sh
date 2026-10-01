@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# 影随 / YingSui —— 给 Flutter 打补丁：修复 macOS release 构建
+# 英语角 / English Corner —— 给 Flutter 打补丁：修复 macOS release 构建
 #
 # 背景：
 #   Flutter 3.44.4 的 flutter_tools 在打包 macOS framework 时执行：
