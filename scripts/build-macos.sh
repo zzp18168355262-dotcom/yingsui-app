@@ -30,14 +30,47 @@ fi
 cd "$ROOT"
 
 echo "==> 构建 macOS ($MODE)"
+# flutter build macos 不支持 --no-codesign（那是 iOS 的参数）。
+# 它自带的签名会因为目录受 iCloud 影响而失败，这没关系：
+# 我们随后会在 /tmp 做干净拷贝统一重新签名。
 flutter build macos "--$MODE" || true
 
-APP="$(find build/macos/Build/Products -maxdepth 2 -type d -name '*.app' -print -quit)"
-if [[ -z "$APP" ]]; then
-  echo "错误：未找到 .app 产物" >&2
+# 明确指定产物路径。不要用 find 通配 —— 构建目录里可能残留
+# 历史的 *.app（例如测试用的 YingSui-signed.app），会被误选。
+case "$MODE" in
+  debug) CONFIG_DIR="Debug" ;;
+  profile) CONFIG_DIR="Profile" ;;
+  release) CONFIG_DIR="Release" ;;
+  *) CONFIG_DIR="Debug" ;;
+esac
+APP="build/macos/Build/Products/$CONFIG_DIR/YingSui.app"
+if [[ ! -d "$APP" ]]; then
+  echo "错误：未找到 $APP" >&2
+  echo "构建目录现状：" >&2
+  ls -1 "build/macos/Build/Products/" 2>/dev/null >&2 || true
   exit 1
 fi
 echo "==> 原始产物：$APP"
+
+# ---- 嵌入 ffmpeg ----
+# 应用在 macOS 上按 Contents/Resources/ffmpeg/ffmpeg 查找内置音频组件；
+# 没有它，AI 字幕会报「应用内置音频组件缺失或无法运行」。
+# flutter build macos 不会自动带上它，必须在这里补。
+FFMPEG_SRC="build/ffmpeg-bundle/macos-arm64/ffmpeg"
+FFMPEG_DIR="$APP/Contents/Resources/ffmpeg"
+if [[ -x "$FFMPEG_SRC" ]]; then
+  echo "==> 嵌入 ffmpeg"
+  mkdir -p "$FFMPEG_DIR"
+  cp -a build/ffmpeg-bundle/macos-arm64/. "$FFMPEG_DIR/"
+  chmod +x "$FFMPEG_DIR/ffmpeg"
+  "$FFMPEG_DIR/ffmpeg" -version >/dev/null 2>&1 \
+    && echo "    ffmpeg 可运行" \
+    || echo "    警告：ffmpeg 无法运行，AI 字幕仍会失败"
+else
+  echo "==> 警告：未找到 $FFMPEG_SRC"
+  echo "    请先执行：bash tool/ffmpeg/build_ffmpeg.sh macos-arm64 build/ffmpeg-bundle/macos-arm64"
+  echo "    否则应用内的 AI 字幕功能会因为缺少音频组件而失败。"
+fi
 
 # 在 /tmp 下做干净拷贝，剥离扩展属性后再签名。
 STAGE_APP="/tmp/YingSui-build-$$.app"

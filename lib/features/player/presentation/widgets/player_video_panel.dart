@@ -788,6 +788,17 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
                                   ),
                                 ],
                                 trailingButtons: <Widget>[
+                                  _RoundActionButton(
+                                    icon: Icons.mic_rounded,
+                                    tooltip: widget.isShadowing
+                                        ? '跟读练习（已开启）'
+                                        : '开始跟读练习：录音并与原声对比',
+                                    active: widget.isShadowing,
+                                    compact: compactControls,
+                                    tiny: tinyControls,
+                                    fullscreen: widget.isFullscreen,
+                                    onPressed: widget.onToggleShadowing,
+                                  ),
                                   if (widget.showAiGenerateSubtitles)
                                     _RoundActionButton(
                                       icon: Icons.auto_awesome_rounded,
