@@ -249,9 +249,14 @@ class _FullTranscriptReaderScreenState
       return;
     }
     setState(() => _progress = next);
-    if (!_hasTextSelection) {
-      WidgetsBinding.instance.addPostFrameCallback((_) => _revealActiveWord());
-    }
+    // 不再因「页面上有文本被选中」而跳过跟随。
+    //
+    // 与字幕列表同样的原因：播放中在页面上点选/划选文字很常见，
+    // 一旦因此停止跟随，用户看到的就是「全文阅读和视频对不上」。
+    // 想自己浏览时可点「定位当前」重新对齐。
+    WidgetsBinding.instance.addPostFrameCallback((_) => _revealActiveWord());
+    // _hasTextSelection 仍用于其他交互（如避免选择时自动滚动打断），
+    // 这里保留字段但不再阻断跟随。
   }
 
   Future<void> _revealActiveWord() async {
@@ -269,15 +274,30 @@ class _FullTranscriptReaderScreenState
     if (!_scrollController.hasClients || widget.snapshot.lines.length < 2) {
       return;
     }
-    final double target =
-        _scrollController.position.maxScrollExtent *
+    // 第一遍：按行索引比例估算。
+    //
+    // 行高并不均匀（带释义与不带释义的行高度不同），比例估算会偏，
+    // 且偏小 —— 目标行可能仍在视口之外，后面的「用真实几何校正」也就
+    // 失效（_activeWordKey 绑在目标行的词上，行未构建时拿不到 context）。
+    // 因此这里在估算结果上加一屏的余量：宁可先滚过头一点，
+    // 也要让目标行进入视口，由第二遍校正回准确位置。
+    final ScrollPosition position = _scrollController.position;
+    final double estimated =
+        position.maxScrollExtent *
         (_progress.lineIndex / (widget.snapshot.lines.length - 1));
+    final double target =
+        (estimated + position.viewportDimension * 0.5).clamp(
+          position.minScrollExtent,
+          position.maxScrollExtent,
+        );
     await _scrollController.animateTo(
       target,
       duration: const Duration(milliseconds: 260),
       curve: Curves.easeOutCubic,
     );
     if (!mounted) return;
+
+    // 第二遍：目标行已进入视口，用它的真实几何校正到准确位置。
     final BuildContext? revealedContext = _activeWordKey.currentContext;
     if (revealedContext != null && revealedContext.mounted) {
       await Scrollable.ensureVisible(
