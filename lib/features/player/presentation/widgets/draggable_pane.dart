@@ -3,40 +3,33 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_theme.dart';
 
-/// 可拖动、可缩放的浮动窗格。
+/// 可拖动、可从**四边与四角**缩放的浮动窗格。
 ///
-/// 用于「逐词全文」：用户要求它与视频**并存**，而不是整页盖住播放页。
-/// 窗格有标题栏，可拖动改变位置；右下角把手可缩放尺寸。
+/// 用于「逐词全文」：与播放页并存，而不是整页盖住。
 ///
-/// 实现要点：
-/// - 位置用 Offset 记录，拖动结束后夹取到可视区内，避免被拖出屏幕后找不回来。
-/// - 尺寸有上下限，既保证内容可读，也不会大到遮住整个视频。
-/// - 关闭由 [onClose] 交回宿主处理。
+/// 设计取舍（来自用户反馈）：
+/// - 缩放把手做成八方向（上/下/左/右 + 四角），而不是只有一个右下角
+///   ——「只能按住右下角那个图标缩放，不方便」。
+/// - 尺寸上限放开到接近满窗、下限收到 240×160
+///   ——「可以调节的大小范围还是有限」。原先上限是屏幕九成，
+///   窗格接近上限时就几乎无法再调。
+/// - 位置夹取在可视区内，保证标题栏始终可点到。
 class DraggablePane extends StatefulWidget {
   const DraggablePane({
     super.key,
     required this.title,
     required this.child,
     required this.onClose,
-    this.initialSize = const Size(620, 460),
+    this.initialSize = const Size(640, 480),
     this.initialOffset,
-    this.minSize = const Size(360, 260),
+    this.minSize = const Size(240, 160),
   });
 
-  /// 标题栏文字。
   final String title;
-
-  /// 窗格内容。
   final Widget child;
-
-  /// 关闭回调。
   final VoidCallback onClose;
-
   final Size initialSize;
-
-  /// 初始位置；为空时放在右上角附近。
   final Offset? initialOffset;
-
   final Size minSize;
 
   @override
@@ -47,42 +40,67 @@ class _DraggablePaneState extends State<DraggablePane> {
   late Size _size = widget.initialSize;
   Offset? _offset;
 
+  /// 边与角的命中厚度。
+  static const double _handleThickness = 14;
+
+  /// 角块尺寸（比边略大，便于抓取）。
+  static const double _cornerSize = 22;
+
+  /// 标题栏高度。
+  static const double _titleBarHeight = 40;
+
   @override
   Widget build(BuildContext context) {
     final Size screen = MediaQuery.sizeOf(context);
-    // 尺寸夹取：不超过屏幕的九成，也不小于最小值。
-    final double maxWidth = screen.width * 0.9;
-    final double maxHeight = screen.height * 0.9;
-    final double width = _size.width.clamp(
-      widget.minSize.width > maxWidth ? maxWidth : widget.minSize.width,
-      maxWidth,
-    );
-    final double height = _size.height.clamp(
-      widget.minSize.height > maxHeight ? maxHeight : widget.minSize.height,
-      maxHeight,
-    );
 
-    // 默认位置：右上角留出边距。
-    final Offset position =
-        _offset ??
-        widget.initialOffset ??
-        Offset(screen.width - width - 24, 72);
+    // 上限：允许几乎铺满整个窗口，只留一点点边距便于再拖回。
+    final double maxWidth = screen.width - 16;
+    final double maxHeight = screen.height - 16;
 
-    // 夹取到可视区内，保证标题栏始终可点到（否则拖出去就找不回来了）。
-    final double clampedLeft = position.dx.clamp(
-      -width + 120,
-      screen.width - 120,
-    );
-    final double clampedTop = position.dy.clamp(0, screen.height - 48);
+    // 下限不超过上限，否则 clamp 参数非法。
+    final double minWidth = widget.minSize.width.clamp(120, maxWidth);
+    final double minHeight = widget.minSize.height.clamp(100, maxHeight);
+
+    final double width = _size.width.clamp(minWidth, maxWidth);
+    final double height = _size.height.clamp(minHeight, maxHeight);
+
+    final Offset base = _offset ?? Offset(screen.width - width - 24, 72);
+
+    // 夹取位置：标题栏始终可点到（否则拖出屏幕就找不回来了）。
+    final double left = base.dx.clamp(-width + 140, screen.width - 140);
+    final double top = base.dy.clamp(0, screen.height - _titleBarHeight);
 
     final AppPalette palette = AppColors.of(context);
+
+    void resize(Offset delta, {required bool fromLeft, required bool fromTop}) {
+      setState(() {
+        final double nextWidth = (_size.width + (fromLeft ? -delta.dx : delta.dx))
+            .clamp(minWidth, maxWidth);
+        final double nextHeight =
+            (_size.height + (fromTop ? -delta.dy : delta.dy)).clamp(
+              minHeight,
+              maxHeight,
+            );
+        final double appliedDx = nextWidth - _size.width;
+        final double appliedDy = nextHeight - _size.height;
+        _size = Size(nextWidth, nextHeight);
+        // 从左边/上边缩放时窗格位置同步移动，视觉上才是「边被拉动」。
+        if (fromLeft || fromTop) {
+          _offset = Offset(
+            left + (fromLeft ? -appliedDx : 0),
+            top + (fromTop ? -appliedDy : 0),
+          );
+        }
+      });
+    }
 
     return Stack(
       children: <Widget>[
         Positioned(
-          left: clampedLeft,
-          top: clampedTop,
+          left: left,
+          top: top,
           child: Material(
+            key: const ValueKey<String>('pane-surface'),
             elevation: 12,
             borderRadius: BorderRadius.circular(AppRadius.lg),
             clipBehavior: Clip.antiAlias,
@@ -91,17 +109,16 @@ class _DraggablePaneState extends State<DraggablePane> {
               height: height,
               child: Column(
                 children: <Widget>[
-                  // 标题栏：拖动区域。
+                  // 标题栏：拖动移动窗格。
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
                     onPanUpdate: (DragUpdateDetails details) {
                       setState(() {
-                        final Offset base = _offset ?? position;
-                        _offset = base + details.delta;
+                        _offset = Offset(left, top) + details.delta;
                       });
                     },
                     child: Container(
-                      height: 40,
+                      height: _titleBarHeight,
                       padding: const EdgeInsets.only(left: 12, right: 4),
                       decoration: BoxDecoration(
                         color: palette.surfaceAlt,
@@ -148,58 +165,195 @@ class _DraggablePaneState extends State<DraggablePane> {
                       ),
                     ),
                   ),
-                  // 内容区。
                   Expanded(child: widget.child),
                 ],
               ),
             ),
           ),
         ),
-        // 右下角缩放把手。
-        //
-        // 做大的原因：最初只有 14×14 的可见区域，图标也不像缩放手柄，
-        // 用户根本找不到（反馈「没法调整大小」）。实测功能本身是好的
-        // （拖拽后宽度从 620 变为 770），问题是可发现性与可抓取性。
+
+        // ── 缩放把手：四边 + 四角，共八处 ──
+        _handle(
+          key: const ValueKey<String>('pane-resize-top'),
+          left: left,
+          top: top,
+          width: width,
+          height: height,
+          cursor: SystemMouseCursors.resizeUpDown,
+          position: _HandlePosition.top,
+          onDrag: (Offset d) => resize(d, fromLeft: false, fromTop: true),
+        ),
+        _handle(
+          key: const ValueKey<String>('pane-resize-bottom'),
+          left: left,
+          top: top,
+          width: width,
+          height: height,
+          cursor: SystemMouseCursors.resizeUpDown,
+          position: _HandlePosition.bottom,
+          onDrag: (Offset d) => resize(d, fromLeft: false, fromTop: false),
+        ),
+        _handle(
+          key: const ValueKey<String>('pane-resize-left'),
+          left: left,
+          top: top,
+          width: width,
+          height: height,
+          cursor: SystemMouseCursors.resizeLeftRight,
+          position: _HandlePosition.left,
+          onDrag: (Offset d) => resize(d, fromLeft: true, fromTop: false),
+        ),
+        _handle(
+          key: const ValueKey<String>('pane-resize-right'),
+          left: left,
+          top: top,
+          width: width,
+          height: height,
+          cursor: SystemMouseCursors.resizeLeftRight,
+          position: _HandlePosition.right,
+          onDrag: (Offset d) => resize(d, fromLeft: false, fromTop: false),
+        ),
+        _handle(
+          key: const ValueKey<String>('pane-resize-topLeft'),
+          left: left,
+          top: top,
+          width: width,
+          height: height,
+          cursor: SystemMouseCursors.resizeUpLeft,
+          position: _HandlePosition.topLeft,
+          onDrag: (Offset d) => resize(d, fromLeft: true, fromTop: true),
+        ),
+        _handle(
+          key: const ValueKey<String>('pane-resize-topRight'),
+          left: left,
+          top: top,
+          width: width,
+          height: height,
+          cursor: SystemMouseCursors.resizeUpRight,
+          position: _HandlePosition.topRight,
+          onDrag: (Offset d) => resize(d, fromLeft: false, fromTop: true),
+        ),
+        _handle(
+          key: const ValueKey<String>('pane-resize-bottomLeft'),
+          left: left,
+          top: top,
+          width: width,
+          height: height,
+          cursor: SystemMouseCursors.resizeDownLeft,
+          position: _HandlePosition.bottomLeft,
+          onDrag: (Offset d) => resize(d, fromLeft: true, fromTop: false),
+        ),
+        _handle(
+          key: const ValueKey<String>('pane-resize-bottomRight'),
+          left: left,
+          top: top,
+          width: width,
+          height: height,
+          cursor: SystemMouseCursors.resizeDownRight,
+          position: _HandlePosition.bottomRight,
+          onDrag: (Offset d) => resize(d, fromLeft: false, fromTop: false),
+        ),
+
+        // 右下角可视提示：明确告诉用户「这里可以缩放」。
         Positioned(
-          left: clampedLeft + width - 30,
-          top: clampedTop + height - 30,
-          child: Tooltip(
-            message: '拖动可调整窗格大小',
-            child: MouseRegion(
-              cursor: SystemMouseCursors.resizeDownRight,
-              child: GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onPanUpdate: (DragUpdateDetails details) {
-                  setState(() {
-                    _size = Size(
-                      _size.width + details.delta.dx,
-                      _size.height + details.delta.dy,
-                    );
-                  });
-                },
-                child: Container(
-                  width: 30,
-                  height: 30,
-                  alignment: Alignment.center,
-                  decoration: BoxDecoration(
-                    color: palette.surfaceAlt.withValues(alpha: 0.92),
-                    borderRadius: const BorderRadius.only(
-                      topLeft: Radius.circular(10),
-                      bottomRight: Radius.circular(AppRadius.lg),
-                    ),
-                  ),
-                  child: Icon(
-                    // 双向对角箭头，是「可缩放」的通用视觉语言。
-                    Icons.open_in_full_rounded,
-                    size: 20,
-                    color: palette.textSecondary,
-                  ),
-                ),
-              ),
+          left: left + width - 26,
+          top: top + height - 26,
+          child: const IgnorePointer(
+            child: Icon(
+              Icons.open_in_full_rounded,
+              size: 16,
+              color: Color(0xFF8A9691),
             ),
           ),
         ),
       ],
     );
   }
+
+  Widget _handle({
+    Key? key,
+    required double left,
+    required double top,
+    required double width,
+    required double height,
+    required MouseCursor cursor,
+    required _HandlePosition position,
+    required ValueChanged<Offset> onDrag,
+  }) {
+    const double t = _handleThickness;
+    const double corner = _cornerSize;
+
+    final double hLeft;
+    final double hTop;
+    final double hWidth;
+    final double hHeight;
+
+    switch (position) {
+      case _HandlePosition.top:
+        hLeft = left + corner;
+        hTop = top - t / 2;
+        hWidth = width - corner * 2;
+        hHeight = t;
+      case _HandlePosition.bottom:
+        hLeft = left + corner;
+        hTop = top + height - t / 2;
+        hWidth = width - corner * 2;
+        hHeight = t;
+      case _HandlePosition.left:
+        hLeft = left - t / 2;
+        hTop = top + corner;
+        hWidth = t;
+        hHeight = height - corner * 2;
+      case _HandlePosition.right:
+        hLeft = left + width - t / 2;
+        hTop = top + corner;
+        hWidth = t;
+        hHeight = height - corner * 2;
+      case _HandlePosition.topLeft:
+        hLeft = left - t / 2;
+        hTop = top - t / 2;
+        hWidth = corner;
+        hHeight = corner;
+      case _HandlePosition.topRight:
+        hLeft = left + width - corner + t / 2;
+        hTop = top - t / 2;
+        hWidth = corner;
+        hHeight = corner;
+      case _HandlePosition.bottomLeft:
+        hLeft = left - t / 2;
+        hTop = top + height - corner + t / 2;
+        hWidth = corner;
+        hHeight = corner;
+      case _HandlePosition.bottomRight:
+        hLeft = left + width - corner + t / 2;
+        hTop = top + height - corner + t / 2;
+        hWidth = corner;
+        hHeight = corner;
+    }
+
+    return Positioned(
+      key: key,
+      left: hLeft,
+      top: hTop,
+      child: MouseRegion(
+        cursor: cursor,
+        child: GestureDetector(
+          behavior: HitTestBehavior.opaque,
+          onPanUpdate: (DragUpdateDetails details) => onDrag(details.delta),
+          child: SizedBox(width: hWidth, height: hHeight),
+        ),
+      ),
+    );
+  }
+}
+
+enum _HandlePosition {
+  top,
+  bottom,
+  left,
+  right,
+  topLeft,
+  topRight,
+  bottomLeft,
+  bottomRight,
 }

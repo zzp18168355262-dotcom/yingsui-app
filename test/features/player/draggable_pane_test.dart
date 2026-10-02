@@ -68,10 +68,9 @@ void main() {
     expect(after.dy, greaterThan(before.dy + 30), reason: '应能向下拖动');
   });
 
-  testWidgets('拖动右下角把手可改变窗格尺寸', (WidgetTester tester) async {
-    // 用户反馈「这个页面没法调整大小」。
-    // 实测功能本身可用，但把手原先只有 14×14、图标也不明显，
-    // 用户找不到。这里同时验证「能找到」与「拖动能改尺寸」。
+  testWidgets('四边与四角都能缩放（不再只能抓右下角）', (WidgetTester tester) async {
+    // 用户反馈「只能按住右下角那个图标缩放，不方便」。
+    // 现在八个方向都有把手。
     tester.view.physicalSize = const Size(1200, 800);
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
@@ -79,36 +78,85 @@ void main() {
     await tester.pumpWidget(page(onClose: () {}));
     await tester.pumpAndSettle();
 
-    // 用标题栏宽度代表窗格宽度。
-    Size paneSize() {
-      final Finder bar = find.ancestor(
-        of: find.text('逐词全文'),
-        matching: find.byType(Container),
+    // 直接测窗格本体：标题栏高度是固定的 40，测不出高度变化。
+    Size paneSize() =>
+        tester.getSize(find.byKey(const ValueKey<String>('pane-surface')));
+
+    // 八个把手都应存在。
+    for (final String name in <String>[
+      'top',
+      'bottom',
+      'left',
+      'right',
+      'topLeft',
+      'topRight',
+      'bottomLeft',
+      'bottomRight',
+    ]) {
+      expect(
+        find.byKey(ValueKey<String>('pane-resize-$name')),
+        findsOneWidget,
+        reason: '$name 方向应有缩放手把',
       );
-      return tester.getSize(bar.first);
     }
 
-    final Finder handle = find.byIcon(Icons.open_in_full_rounded);
-    expect(handle, findsOneWidget, reason: '缩放把手应存在且可被找到');
-
-    // 实际可拖区域应足够大、便于抓取（图标本身是可视部分，会小一些）。
-    final Rect hitArea = tester.getRect(
-      find
-          .ancestor(of: handle, matching: find.byType(GestureDetector))
-          .first,
-    );
-    expect(
-      hitArea.width,
-      greaterThanOrEqualTo(28),
-      reason: '把手可拖区域不应小于 28 逻辑像素',
-    );
-
+    // 拖右边 → 宽度变大。
     final Size before = paneSize();
-    await tester.drag(handle, const Offset(160, 120));
+    await tester.drag(
+      find.byKey(const ValueKey<String>('pane-resize-right')),
+      const Offset(120, 0),
+    );
     await tester.pumpAndSettle();
-    final Size after = paneSize();
+    expect(paneSize().width, greaterThan(before.width + 50), reason: '拖右边应加宽');
 
-    expect(after.width, greaterThan(before.width + 50), reason: '拖拽应增大宽度');
+    // 拖下边 → 高度变大。
+    final Size beforeHeight = paneSize();
+    await tester.drag(
+      find.byKey(const ValueKey<String>('pane-resize-bottom')),
+      const Offset(0, 90),
+    );
+    await tester.pumpAndSettle();
+    expect(
+      paneSize().height,
+      greaterThan(beforeHeight.height + 30),
+      reason: '拖下边应加高',
+    );
+  });
+
+  testWidgets('尺寸调节范围足够大（可缩到很小、也可铺满窗口）', (WidgetTester tester) async {
+    // 用户反馈「可以调节的大小范围还是有限」。
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page(onClose: () {}));
+    await tester.pumpAndSettle();
+
+    // 直接测窗格本体：标题栏高度是固定的 40，测不出高度变化。
+    Size paneSize() =>
+        tester.getSize(find.byKey(const ValueKey<String>('pane-surface')));
+
+    // 缩到最小：往左上角猛拖右下角把手。
+    await tester.drag(
+      find.byKey(const ValueKey<String>('pane-resize-bottomRight')),
+      const Offset(-2000, -2000),
+    );
+    await tester.pumpAndSettle();
+    final Size small = paneSize();
+    expect(small.width, lessThan(320), reason: '应能缩到很小');
+
+    // 放到最大：往右下角猛拖。
+    await tester.drag(
+      find.byKey(const ValueKey<String>('pane-resize-bottomRight')),
+      const Offset(3000, 3000),
+    );
+    await tester.pumpAndSettle();
+    final Size large = paneSize();
+    expect(
+      large.width,
+      greaterThan(1100),
+      reason: '应能放大到接近铺满窗口（1200 宽）',
+    );
   });
 
   testWidgets('点击关闭按钮触发回调', (WidgetTester tester) async {
