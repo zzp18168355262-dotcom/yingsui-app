@@ -54,7 +54,14 @@ class SettingsScreen extends ConsumerWidget {
       // 标题使用品牌名，避免出现与产品定位无关的旧文案。
       topBar: const PadTopBar(title: '英语角', subtitle: '设置'),
       body: ListView(
-        padding: EdgeInsets.all(context.padPagePadding),
+        // 底部多留一点余量：内容高度在某些视口下会算出小数，
+        // 导致 ListView 末尾出现 1px 溢出（真机上会有溢出警告条纹）。
+        padding: EdgeInsets.fromLTRB(
+          context.padPagePadding,
+          context.padPagePadding,
+          context.padPagePadding,
+          context.padPagePadding + 8,
+        ),
         children: <Widget>[
           Text(
             '设置',

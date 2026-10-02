@@ -7,6 +7,7 @@ import 'package:yingsui/features/settings/presentation/settings_screen.dart';
 import 'package:yingsui/features/settings/presentation/widgets/settings_group_card.dart';
 
 void main() {
+  _narrowLayoutTests();
   _noFakeCloudSyncTests();
   testWidgets('settings screen shows prototype sections', (
     WidgetTester tester,
@@ -249,5 +250,35 @@ void _noFakeCloudSyncTests() {
       expect(find.textContaining('尚在开发中'), findsOneWidget);
       expect(find.textContaining('不会上传任何数据'), findsOneWidget);
     });
+  });
+}
+
+/// 窄屏布局：设置页有大量 Row，手机竖屏宽度下容易横向溢出。
+///
+/// 这是实测驱动的检查 —— 上一轮逐词全文就在 390 逻辑像素下溢出 25px，
+/// 真机上表现为黄黑条纹警告。
+void _narrowLayoutTests() {
+  group('设置页窄屏不溢出', () {
+    for (final double width in <double>[320, 390, 412, 480, 600]) {
+      testWidgets('宽度 $width 下无溢出', (WidgetTester tester) async {
+        tester.view.physicalSize = Size(width * 3, 844 * 3);
+        tester.view.devicePixelRatio = 3;
+        addTearDown(tester.view.reset);
+
+        await tester.pumpWidget(
+          const ProviderScope(child: MaterialApp(home: SettingsScreen())),
+        );
+        await tester.pumpAndSettle();
+
+        expect(tester.takeException(), isNull, reason: '$width 宽度发生布局异常');
+
+        // 滚到底部，让下半部分也参与布局。
+        for (int i = 0; i < 12; i += 1) {
+          await tester.drag(find.byType(ListView).last, const Offset(0, -400));
+          await tester.pumpAndSettle();
+          expect(tester.takeException(), isNull, reason: '$width 宽度滚动中出现异常');
+        }
+      });
+    }
   });
 }

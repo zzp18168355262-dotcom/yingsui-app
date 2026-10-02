@@ -39,8 +39,11 @@ class PadTopBar extends ConsumerWidget {
     final bool hasDescription = description != null;
 
     return Container(
+      // 高度按内容估算。实测（手机宽度 320–600）发现内部 Column
+      // 的实际渲染高度会比原估算多出约 1px，导致底部溢出并出现
+      // 溢出警告条纹；这里留出少量余量吸收字体行高带来的取整误差。
       height:
-          (hasDescription ? (compact ? 88 : 96) : (compact ? 64 : 72)) +
+          (hasDescription ? (compact ? 92 : 100) : (compact ? 68 : 76)) +
           topInset +
           windowControlsInset,
       padding: EdgeInsets.fromLTRB(
