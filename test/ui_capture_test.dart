@@ -13,7 +13,6 @@
 library;
 
 import 'dart:io';
-import 'dart:typed_data';
 import 'dart:ui' as ui;
 
 import 'package:flutter/material.dart';
@@ -170,9 +169,8 @@ Future<void> capture(WidgetTester tester, String fileName) async {
     if (!dir.existsSync()) {
       dir.createSync(recursive: true);
     }
-    File(
-      '${dir.path}/$fileName.png',
-    ).writeAsBytesSync(bytes.buffer.asUint8List());
+    final String path = '${dir.path}/$fileName.png';
+    File(path).writeAsBytesSync(bytes.buffer.asUint8List());
   });
 }
 
@@ -195,8 +193,8 @@ Future<void> loadChineseFont() async {
     final ByteData data = ByteData.view(
       file.readAsBytesSync().buffer,
     );
-    final FontLoader loader = FontLoader('CJK');
-    loader.addFont(Future<ByteData>.value(data));
+    final FontLoader loader = FontLoader('CJK')
+      ..addFont(Future<ByteData>.value(data));
     await loader.load();
     return;
   }

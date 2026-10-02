@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../library/presentation/library_mock_data.dart';
 import '../../../library/presentation/widgets/library_course_poster.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
@@ -30,14 +31,12 @@ class PadHomeHero extends StatelessWidget {
       child: Container(
         decoration: BoxDecoration(
           color: AppDesignTokens.appWhite,
-          borderRadius: BorderRadius.circular(compact ? 30 : 36),
-          boxShadow: const <BoxShadow>[
-            BoxShadow(
-              color: Color(0x1F24385B),
-              blurRadius: 36,
-              offset: Offset(0, 18),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(
+            compact ? AppRadius.xl : AppRadius.xxl,
+          ),
+          // 统一到高度令牌：原先是 0x1F24385B（偏暖发黄）的单层大模糊阴影，
+          // 与项目其它阴影色相不一致，观感发虚。
+          boxShadow: AppElevation.high,
         ),
         clipBehavior: Clip.antiAlias,
         child: narrow

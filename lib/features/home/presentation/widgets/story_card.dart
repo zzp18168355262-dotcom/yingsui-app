@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../config/theme/app_theme.dart';
+
 import '../../../../router/app_router.dart';
 import '../../../episodes/domain/episode.dart';
 
@@ -25,14 +27,9 @@ class StoryCard extends StatelessWidget {
       child: Ink(
         decoration: BoxDecoration(
           color: Colors.white,
-          borderRadius: BorderRadius.circular(28),
-          boxShadow: const <BoxShadow>[
-            BoxShadow(
-              color: Color(0x12000000),
-              blurRadius: 20,
-              offset: Offset(0, 12),
-            ),
-          ],
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
+          // 原为纯黑 0x12000000 投影会发灰发脏，改用令牌的冷色多层阴影。
+          boxShadow: AppElevation.medium,
         ),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
