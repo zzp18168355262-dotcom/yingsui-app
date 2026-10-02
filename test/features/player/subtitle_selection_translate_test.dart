@@ -123,6 +123,12 @@ void simulateSelection(WidgetTester tester, String text) {
   area.onSelectionChanged?.call(SelectedContent(plainText: text));
 }
 
+/// 等待选中去抖窗口过去（实现里为 160ms，留出余量）。
+Future<void> settleSelection(WidgetTester tester) async {
+  await tester.pump(const Duration(milliseconds: 250));
+  await tester.pumpAndSettle();
+}
+
 void main() {
   testWidgets('未选中时不显示「翻译选中」入口', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(900, 700);
@@ -147,7 +153,7 @@ void main() {
     await tester.pumpAndSettle();
 
     simulateSelection(tester, 'turns me on');
-    await tester.pumpAndSettle();
+    await settleSelection(tester);
 
     expect(
       find.byKey(const ValueKey<String>('subtitle-translate-selection')),
@@ -166,7 +172,7 @@ void main() {
     await tester.pumpAndSettle();
 
     simulateSelection(tester, 'turns me on');
-    await tester.pumpAndSettle();
+    await settleSelection(tester);
 
     await tester.tap(
       find.byKey(const ValueKey<String>('subtitle-translate-selection')),
@@ -189,7 +195,7 @@ void main() {
     await tester.pumpAndSettle();
 
     simulateSelection(tester, 'turns me on');
-    await tester.pumpAndSettle();
+    await settleSelection(tester);
     expect(
       find.byKey(const ValueKey<String>('subtitle-translate-selection')),
       findsOneWidget,
@@ -216,7 +222,7 @@ void main() {
     await tester.pumpAndSettle();
 
     simulateSelection(tester, 'turns me on');
-    await tester.pumpAndSettle();
+    await settleSelection(tester);
     await tester.tap(
       find.byKey(const ValueKey<String>('subtitle-translate-selection')),
     );
@@ -232,6 +238,75 @@ void main() {
       lastLookup!.context,
       'Science just turns me on.',
       reason: '应带上该短语所在的整句作为上下文',
+    );
+  });
+
+  testWidgets('提示条出现不会改变列表几何（防闪烁）', (WidgetTester tester) async {
+    // 用户反馈：选中短语时页面闪烁、不稳定。
+    //
+    // 根因一：选中回调每帧触发 setState，整个列表每帧重建。
+    // 根因二：提示条原先插在 Column 里，出现/消失会改变列表可用高度，
+    //         拖选过程中列表内容随之上下跳动。
+    //
+    // 现改为：选中结果用 ValueNotifier 承载（只有提示条自己重建），
+    // 提示条改为 Stack 浮层（不参与列表布局），并加 160ms 去抖。
+    // 这里断言「提示条出现前后列表几何完全一致」。
+    tester.view.physicalSize = const Size(900, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page());
+    await tester.pumpAndSettle();
+
+    Rect listRect() => tester.getRect(find.byType(ListView));
+    final Rect before = listRect();
+
+    simulateSelection(tester, 'turns me on');
+    await settleSelection(tester);
+
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '提示条应已出现',
+    );
+    final Rect after = listRect();
+    expect(
+      after,
+      before,
+      reason: '提示条出现不应改变列表位置或尺寸，否则拖选时会跳动',
+    );
+
+    // 取消后再确认一次。
+    await tester.tap(find.byIcon(Icons.close_rounded).first);
+    await tester.pumpAndSettle();
+    expect(listRect(), before, reason: '提示条消失同样不应改变列表几何');
+  });
+
+  testWidgets('拖选过程中的中间状态不会立即显示提示条（去抖）', (WidgetTester tester) async {
+    // 拖选会连续产生多个中间选中状态；若每个都立刻显示提示条，
+    // 界面会持续抖动。去抖窗口内不应出现提示条。
+    tester.view.physicalSize = const Size(900, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page());
+    await tester.pumpAndSettle();
+
+    simulateSelection(tester, 'turns');
+    await tester.pump(const Duration(milliseconds: 40));
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsNothing,
+      reason: '去抖窗口内不应显示提示条',
+    );
+
+    // 停稳后出现
+    await tester.pump(const Duration(milliseconds: 250));
+    await tester.pumpAndSettle();
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '停稳后应显示提示条',
     );
   });
 }

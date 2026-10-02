@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show SelectedContent;
 import 'package:flutter/services.dart';
@@ -97,7 +99,17 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
   /// 用途：原先只能点单个单词查词，无法处理「不认识的短语」。
   /// 列表本就包在 SelectionArea 里（可拖选），但选中后毫无反应。
   /// 这里接住选中结果，给出「翻译选中」入口。
-  String _selectedText = '';
+  ///
+  /// 用 ValueNotifier 而非 setState 的原因：
+  /// 拖选时 onSelectionChanged 会**每帧**触发，若走 setState 就会
+  /// 每帧重建整个列表（几百个子项），用户看到的就是「闪烁」。
+  /// 这里让提示条单独监听，只有它重建。
+  final ValueNotifier<String> _selectedTextNotifier = ValueNotifier<String>('');
+
+  /// 选中去抖定时器：拖选过程中不显示提示条，停稳后再出现。
+  Timer? _selectionDebounce;
+
+  String get _selectedText => _selectedTextNotifier.value;
 
   /// 上一帧是否在播放，用于检测「暂停 → 继续播放」的切换。
   late bool _wasPlaying;
@@ -191,6 +203,8 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
 
   @override
   void dispose() {
+    _selectionDebounce?.cancel();
+    _selectedTextNotifier.dispose();
     _removeDictionaryOverlay(notify: false);
     _scrollController
       ..removeListener(_dismissDictionary)
@@ -532,10 +546,18 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
       // 选中文本是阅读/查词行为，不等于「用户要脱离自动跟随」。
       onSelectionChanged: (SelectedContent? selection) {
         final String next = selection?.plainText.trim() ?? '';
-        if (next == _selectedText) {
+        if (next == _selectedTextNotifier.value) {
           return;
         }
-        setState(() => _selectedText = next);
+        // 去抖：拖选过程中会连续触发，此时若立刻显示提示条，
+        // 列表高度/浮层反复变化会造成闪烁。停稳 160ms 后再更新。
+        _selectionDebounce?.cancel();
+        _selectionDebounce = Timer(const Duration(milliseconds: 160), () {
+          if (!mounted) {
+            return;
+          }
+          _selectedTextNotifier.value = next;
+        });
       },
       child: NotificationListener<ScrollNotification>(
         onNotification: _handleScrollNotification,
@@ -808,70 +830,46 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
             ],
           ),
         ),
-        // 「翻译选中」入口：选中短语/整句后出现。
-        //
-        // 为什么需要手动点一下：选中即刻自动翻译会带来两个问题——
-        // 划选过程中的中间状态也会触发请求（浪费且抖动），
-        // 以及用户只是想复制文字时被强行弹窗。手动确认更稳。
-        if (_selectedText.isNotEmpty)
-          Padding(
-            padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
-            child: Builder(
-              builder: (BuildContext chipContext) {
-                return Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: Text(
-                        _selectedText,
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: AppDesignTokens.textSecondary,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 8),
-                    FilledButton.icon(
-                      key: const ValueKey<String>('subtitle-translate-selection'),
-                      onPressed: () => _toggleDictionaryOverlay(
-                        chipContext,
-                        _selectedText,
-                        _contextSentenceForSelection(),
-                        'selection:$_selectedText',
-                        preferAbove: true,
-                      ),
-                      style: FilledButton.styleFrom(
-                        visualDensity: VisualDensity.compact,
-                        padding: const EdgeInsets.symmetric(horizontal: 12),
-                        minimumSize: const Size(0, 32),
-                        textStyle: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.w700,
-                        ),
-                      ),
-                      icon: const Icon(Icons.translate_rounded, size: 16),
-                      label: const Text('翻译选中'),
-                    ),
-                    IconButton(
-                      onPressed: () => setState(() => _selectedText = ''),
-                      tooltip: '取消选择',
-                      visualDensity: VisualDensity.compact,
-                      iconSize: 18,
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints.tightFor(
-                        width: 32,
-                        height: 32,
-                      ),
-                      icon: const Icon(Icons.close_rounded),
-                    ),
-                  ],
-                );
-              },
-            ),
+        Expanded(
+          child: Stack(
+            children: <Widget>[
+              list,
+              // 「翻译选中」入口：选中短语/整句后出现。
+              //
+              // 做成**浮层**而不是插进 Column：
+              // 插进 Column 会在选中出现/消失时改变列表可用高度，
+              // 拖选过程中列表内容随之上下跳动（用户反馈的「闪烁」）。
+              //
+              // 用 ValueListenableBuilder 单独监听选中结果，
+              // 只有这一条提示重建，不会每帧重建整个列表。
+              Positioned(
+                left: 8,
+                right: 8,
+                bottom: 8,
+                child: ValueListenableBuilder<String>(
+                  valueListenable: _selectedTextNotifier,
+                  builder: (BuildContext context, String selected, Widget? _) {
+                    if (selected.isEmpty) {
+                      return const SizedBox.shrink();
+                    }
+                    return _SelectionTranslateBar(
+                      selectedText: selected,
+                      onTranslate: (BuildContext anchorContext) =>
+                          _toggleDictionaryOverlay(
+                            anchorContext,
+                            selected,
+                            _contextSentenceForSelection(),
+                            'selection:$selected',
+                            preferAbove: true,
+                          ),
+                      onDismiss: () => _selectedTextNotifier.value = '',
+                    );
+                  },
+                ),
+              ),
+            ],
           ),
-        Expanded(child: list),
+        ),
       ],
     );
   }
@@ -1042,7 +1040,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                   onTap: () {
                     // 点词查词时收起「翻译选中」入口，避免两个浮层并存。
                     if (_selectedText.isNotEmpty) {
-                      setState(() => _selectedText = '');
+                      _selectedTextNotifier.value = '';
                     }
                     _toggleDictionaryOverlay(
                       wordContext,
@@ -1273,6 +1271,82 @@ class _SubtitlePlaceholder extends StatelessWidget {
               ),
             ],
           ],
+        ),
+      ),
+    );
+  }
+}
+
+/// 「翻译选中」提示条。
+///
+/// 独立成组件是为了让重建范围局限在这一条上：拖选时选中文本持续变化，
+/// 若由列表 State 承载就会每帧重建整个列表，表现为闪烁。
+class _SelectionTranslateBar extends StatelessWidget {
+  const _SelectionTranslateBar({
+    required this.selectedText,
+    required this.onTranslate,
+    required this.onDismiss,
+  });
+
+  final String selectedText;
+  final void Function(BuildContext anchorContext) onTranslate;
+  final VoidCallback onDismiss;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      elevation: 6,
+      borderRadius: BorderRadius.circular(14),
+      color: AppDesignTokens.appWhite,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(10, 6, 4, 6),
+        child: Builder(
+          builder: (BuildContext anchorContext) {
+            return Row(
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    selectedText,
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.w600,
+                      color: AppDesignTokens.textSecondary,
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 8),
+                FilledButton.icon(
+                  key: const ValueKey<String>('subtitle-translate-selection'),
+                  onPressed: () => onTranslate(anchorContext),
+                  style: FilledButton.styleFrom(
+                    visualDensity: VisualDensity.compact,
+                    padding: const EdgeInsets.symmetric(horizontal: 12),
+                    minimumSize: const Size(0, 32),
+                    textStyle: const TextStyle(
+                      fontSize: 13,
+                      fontWeight: FontWeight.w700,
+                    ),
+                  ),
+                  icon: const Icon(Icons.translate_rounded, size: 16),
+                  label: const Text('翻译选中'),
+                ),
+                IconButton(
+                  onPressed: onDismiss,
+                  tooltip: '取消选择',
+                  visualDensity: VisualDensity.compact,
+                  iconSize: 18,
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints.tightFor(
+                    width: 32,
+                    height: 32,
+                  ),
+                  icon: const Icon(Icons.close_rounded),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );
