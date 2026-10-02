@@ -629,25 +629,35 @@ class _CollectionMetric extends StatelessWidget {
           child: Icon(icon, color: color),
         ),
         const SizedBox(width: 12),
-        Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: <Widget>[
-            Text(
-              label,
-              style: const TextStyle(
-                color: AppDesignTokens.textSecondary,
-                fontWeight: FontWeight.w700,
+        // 文字列必须可伸缩：这一行是「两个指标各占一半宽度」的布局，
+        // 在手机宽度下每侧只剩约 130px，图标已占 58px。
+        // 不加 Expanded 会横向溢出（实测 320 宽度溢出 25px）。
+        Expanded(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: <Widget>[
+              Text(
+                label,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  color: AppDesignTokens.textSecondary,
+                  fontWeight: FontWeight.w700,
+                ),
               ),
-            ),
-            Text(
-              value,
-              style: const TextStyle(
-                fontSize: 17,
-                color: AppDesignTokens.textPrimary,
-                fontWeight: FontWeight.w900,
+              Text(
+                value,
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+                style: const TextStyle(
+                  fontSize: 17,
+                  color: AppDesignTokens.textPrimary,
+                  fontWeight: FontWeight.w900,
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ],
     );

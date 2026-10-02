@@ -11,6 +11,8 @@ import 'package:yingsui/features/player/presentation/player_screen.dart';
 import 'package:yingsui/router/app_router.dart';
 
 void main() {
+  _narrowWidthLayoutTests();
+
   testWidgets('home quick entries and hero navigate to prototype targets', (
     WidgetTester tester,
   ) async {
@@ -18,42 +20,7 @@ void main() {
     tester.view.devicePixelRatio = 1;
     addTearDown(tester.view.reset);
 
-    final GoRouter router = GoRouter(
-      initialLocation: SGRoute.home.route,
-      routes: <GoRoute>[
-        GoRoute(
-          path: SGRoute.home.route,
-          builder: (BuildContext context, GoRouterState state) =>
-              const PadHomeScreen(),
-        ),
-        GoRoute(
-          path: SGRoute.phrases.route,
-          builder: (BuildContext context, GoRouterState state) =>
-              const PhrasesScreen(),
-        ),
-        GoRoute(
-          path: SGRoute.library.route,
-          builder: (BuildContext context, GoRouterState state) =>
-              const LibraryScreen(),
-        ),
-        GoRoute(
-          path: SGRoute.growth.route,
-          builder: (BuildContext context, GoRouterState state) =>
-              const GrowthScreen(),
-        ),
-        GoRoute(
-          path: SGRoute.importCourse.route,
-          builder: (BuildContext context, GoRouterState state) =>
-              const ImportCourseScreen(),
-        ),
-        GoRoute(
-          path: '/episodes/:episodeId',
-          name: SGRoute.player.name,
-          builder: (BuildContext context, GoRouterState state) =>
-              PlayerScreen(episodeId: state.pathParameters['episodeId']!),
-        ),
-      ],
-    );
+    final GoRouter router = buildAppTestRouter();
 
     await tester.pumpWidget(
       ProviderScope(child: MaterialApp.router(routerConfig: router)),
@@ -98,4 +65,82 @@ void main() {
     expect(find.text('导入影视'), findsOneWidget);
     expect(find.text('选择视频文件夹'), findsWidgets);
   });
+}
+
+/// 构造一个覆盖主要界面的测试路由，供多个用例复用。
+GoRouter buildAppTestRouter() {
+  return GoRouter(
+    initialLocation: SGRoute.home.route,
+    routes: <GoRoute>[
+      GoRoute(
+        path: SGRoute.home.route,
+        builder: (BuildContext context, GoRouterState state) =>
+            const PadHomeScreen(),
+      ),
+      GoRoute(
+        path: SGRoute.phrases.route,
+        builder: (BuildContext context, GoRouterState state) =>
+            const PhrasesScreen(),
+      ),
+      GoRoute(
+        path: SGRoute.library.route,
+        builder: (BuildContext context, GoRouterState state) =>
+            const LibraryScreen(),
+      ),
+      GoRoute(
+        path: SGRoute.growth.route,
+        builder: (BuildContext context, GoRouterState state) =>
+            const GrowthScreen(),
+      ),
+      GoRoute(
+        path: SGRoute.importCourse.route,
+        builder: (BuildContext context, GoRouterState state) =>
+            const ImportCourseScreen(),
+      ),
+      GoRoute(
+        path: '/episodes/:episodeId',
+        name: SGRoute.player.name,
+        builder: (BuildContext context, GoRouterState state) =>
+            PlayerScreen(episodeId: state.pathParameters['episodeId']!),
+      ),
+    ],
+  );
+}
+
+/// 主要界面在手机竖屏宽度下的布局检查。
+///
+/// 实测驱动的回归检查：此前逐词全文头部与 PadTopBar 分别在
+/// 390 与 320 宽度下出现溢出（真机上是黄黑条纹警告）。
+/// 这里把常用宽度都跑一遍，避免再靠肉眼发现。
+void _narrowWidthLayoutTests() {
+  for (final double width in <double>[320, 390, 430]) {
+    testWidgets('主要界面在宽度 $width 下不溢出', (WidgetTester tester) async {
+      tester.view.physicalSize = Size(width * 3, 844 * 3);
+      tester.view.devicePixelRatio = 3;
+      addTearDown(tester.view.reset);
+
+      await tester.pumpWidget(
+        ProviderScope(
+          child: MaterialApp.router(routerConfig: buildAppTestRouter()),
+        ),
+      );
+      await tester.pumpAndSettle();
+
+      expect(tester.takeException(), isNull, reason: '$width 宽度首页出现布局异常');
+
+      // 逐页滚动，触达需要滚动才参与布局的内容。
+      for (int i = 0; i < 6; i += 1) {
+        await tester.drag(
+          find.byType(Scrollable).first,
+          const Offset(0, -320),
+        );
+        await tester.pumpAndSettle();
+        expect(
+          tester.takeException(),
+          isNull,
+          reason: '$width 宽度首页滚动中出现异常',
+        );
+      }
+    });
+  }
 }
