@@ -633,139 +633,20 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   controller: listScrollController,
                   padding: EdgeInsets.all(pagePadding),
                   children: <Widget>[
-                Row(
-                  children: <Widget>[
-                    Expanded(
-                      child: DecoratedBox(
-                        decoration: BoxDecoration(
-                          color: AppDesignTokens.appWhite.withValues(alpha: 0.9),
-                          borderRadius: BorderRadius.circular(999),
-                          boxShadow: AppDesignTokens.toyCardShadow,
-                        ),
-                        child: TextField(
-                          controller: queryController,
-                          onChanged: (String value) {
-                            setState(() {
-                              query = value;
-                            });
-                          },
-                          onSubmitted: (_) => _applySearch(),
-                          decoration: InputDecoration(
-                            hintText: '搜索想继续看的内容...',
-                            hintStyle: const TextStyle(
-                              fontWeight: FontWeight.w600,
-                              color: AppDesignTokens.textSecondary,
-                            ),
-                            prefixIcon: const Icon(
-                              Icons.search_rounded,
-                              color: AppDesignTokens.primaryBlueDark,
-                            ),
-                            filled: true,
-                            fillColor: Colors.transparent,
-                            contentPadding: const EdgeInsets.symmetric(
-                              horizontal: 20,
-                              vertical: 18,
-                            ),
-                            suffixIcon: queryController.text.isEmpty
-                                ? null
-                                : IconButton(
-                                    onPressed: _clearSearch,
-                                    icon: const Icon(
-                                      Icons.close_rounded,
-                                      color: AppDesignTokens.textSecondary,
-                                    ),
-                                    tooltip: '清空搜索',
-                                  ),
-                            border: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(999),
-                              borderSide: BorderSide.none,
-                            ),
-                            enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(999),
-                              borderSide: BorderSide.none,
-                            ),
-                            focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(999),
-                              borderSide: BorderSide.none,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(width: 14),
-                    _CourseViewModeToggle(
-                      value: viewMode,
-                      onChanged: (LibraryCourseViewMode nextValue) {
-                        setState(() {
-                          viewMode = nextValue;
-                        });
-                      },
-                    ),
-                    const SizedBox(width: 12),
-                    if (editMode)
-                      _LibraryEditToolbar(
-                        selectedCount: selectedCourseIds.length,
-                        onEdit: selectedCourseIds.isEmpty
-                            ? null
-                            : _showBatchEditDialog,
-                        onDelete: selectedCourseIds.isEmpty
-                            ? null
-                            : _confirmDeleteSelectedCourses,
-                        onDone: _exitEditMode,
-                      )
-                    else ...<Widget>[
-                      FilledButton.tonal(
-                        onPressed: filteredCourses.isEmpty ? null : _enterEditMode,
-                        style: FilledButton.styleFrom(
-                          backgroundColor: AppDesignTokens.appWhite.withValues(
-                            alpha: 0.92,
-                          ),
-                          foregroundColor: AppDesignTokens.primaryBlueDark,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(999),
-                          ),
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 18,
-                            vertical: 18,
-                          ),
-                          elevation: 0,
-                        ),
-                        child: const Text(
-                          '编辑',
-                          style: TextStyle(fontWeight: FontWeight.w800),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                    ],
-                    FilledButton.icon(
-                      onPressed: editMode
-                          ? null
-                          : () {
-                        openImportCourseExperience(context);
-                      },
-                      style: FilledButton.styleFrom(
-                        backgroundColor: AppDesignTokens.brandGreen,
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(999),
-                        ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 18,
-                        ),
-                        elevation: 0,
-                      ),
-                      icon: const DecoratedBox(
-                        decoration: BoxDecoration(
-                          boxShadow: AppDesignTokens.toyButtonShadow,
-                        ),
-                        child: Icon(Icons.add_rounded, size: 18),
-                      ),
-                      label: const Text(
-                        '导入新课程',
-                        style: TextStyle(fontWeight: FontWeight.w900),
-                      ),
-                    ),
-                  ],
+                _buildToolbarRow(
+                  context: context,
+                  queryController: queryController,
+                  query: query,
+                  viewMode: viewMode,
+                  editMode: editMode,
+                  selectedCourseIds: selectedCourseIds,
+                  hasCourses: filteredCourses.isNotEmpty,
+                  onQueryChanged: (String value) {
+                    setState(() => query = value);
+                  },
+                  onViewModeChanged: (LibraryCourseViewMode nextValue) {
+                    setState(() => viewMode = nextValue);
+                  },
                 ),
                 const SizedBox(height: 24),
                 if (filteredCourses.isEmpty)
@@ -1133,6 +1014,164 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
       query = '';
     });
   }
+
+
+  /// 搜索栏与操作按钮所在的工具行。
+  ///
+  /// 窄屏（手机竖屏）下这一行放不下「搜索框 + 视图切换 + 编辑 + 导入」，
+  /// 实测 320 宽度横向溢出 61px。因此窄屏改为上下两行：
+  /// 搜索框独占一行，按钮排在下一行。
+  Widget _buildToolbarRow({
+    required BuildContext context,
+    required TextEditingController queryController,
+    required String query,
+    required LibraryCourseViewMode viewMode,
+    required bool editMode,
+    required Set<String> selectedCourseIds,
+    required bool hasCourses,
+    required ValueChanged<String> onQueryChanged,
+    required ValueChanged<LibraryCourseViewMode> onViewModeChanged,
+  }) {
+    final Widget searchField = DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppDesignTokens.appWhite.withValues(alpha: 0.9),
+        borderRadius: BorderRadius.circular(999),
+        boxShadow: AppDesignTokens.toyCardShadow,
+      ),
+      child: TextField(
+        controller: queryController,
+        onChanged: (String value) {
+          // 由外层统一保存，避免在此处给参数赋值。
+          onQueryChanged(value);
+        },
+        onSubmitted: (_) => _applySearch(),
+        decoration: InputDecoration(
+          hintText: '搜索想继续看的内容...',
+          hintStyle: const TextStyle(
+            fontWeight: FontWeight.w600,
+            color: AppDesignTokens.textSecondary,
+          ),
+          prefixIcon: const Icon(
+            Icons.search_rounded,
+            color: AppDesignTokens.primaryBlueDark,
+          ),
+          filled: true,
+          fillColor: Colors.transparent,
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 20,
+            vertical: 16,
+          ),
+          suffixIcon: query.isEmpty
+              ? null
+              : IconButton(
+                  onPressed: _clearSearch,
+                  icon: const Icon(
+                    Icons.close_rounded,
+                    color: AppDesignTokens.textSecondary,
+                  ),
+                  tooltip: '清空搜索',
+                ),
+          border: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(999),
+            borderSide: BorderSide.none,
+          ),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(999),
+            borderSide: BorderSide.none,
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(999),
+            borderSide: BorderSide.none,
+          ),
+        ),
+      ),
+    );
+
+    final List<Widget> actions = <Widget>[
+      _CourseViewModeToggle(
+        value: viewMode,
+        onChanged: (LibraryCourseViewMode nextValue) {
+          // 同样交给外层保存，避免给参数赋值。
+          onViewModeChanged(nextValue);
+        },
+      ),
+      const SizedBox(width: 12),
+      if (editMode)
+        _LibraryEditToolbar(
+          selectedCount: selectedCourseIds.length,
+          onEdit: selectedCourseIds.isEmpty ? null : _showBatchEditDialog,
+          onDelete: selectedCourseIds.isEmpty
+              ? null
+              : _confirmDeleteSelectedCourses,
+          onDone: _exitEditMode,
+        )
+      else ...<Widget>[
+        FilledButton.tonal(
+          onPressed: hasCourses ? _enterEditMode : null,
+          style: FilledButton.styleFrom(
+            backgroundColor: AppDesignTokens.appWhite.withValues(alpha: 0.92),
+            foregroundColor: AppDesignTokens.primaryBlueDark,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(999),
+            ),
+            padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 18),
+            elevation: 0,
+          ),
+          child: const Text(
+            '编辑',
+            style: TextStyle(fontWeight: FontWeight.w800),
+          ),
+        ),
+        const SizedBox(width: 8),
+      ],
+      FilledButton.icon(
+        onPressed: editMode
+            ? null
+            : () {
+                openImportCourseExperience(context);
+              },
+        style: FilledButton.styleFrom(
+          backgroundColor: AppDesignTokens.brandGreen,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(999),
+          ),
+          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+          elevation: 0,
+        ),
+        icon: const DecoratedBox(
+          decoration: BoxDecoration(boxShadow: AppDesignTokens.toyButtonShadow),
+          child: Icon(Icons.add_rounded, size: 18),
+        ),
+        label: const Text(
+          '导入新课程',
+          style: TextStyle(fontWeight: FontWeight.w900),
+        ),
+      ),
+    ];
+
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        // 低于 560 时按钮换行，避免挤压搜索框。
+        if (constraints.maxWidth < 560) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              searchField,
+              const SizedBox(height: 12),
+              Wrap(spacing: 8, runSpacing: 8, children: actions),
+            ],
+          );
+        }
+        return Row(
+          children: <Widget>[
+            Expanded(child: searchField),
+            const SizedBox(width: 14),
+            ...actions,
+          ],
+        );
+      },
+    );
+  }
 }
 
 class _EmptyLibraryState extends StatelessWidget {
@@ -1498,4 +1537,6 @@ class _EpisodeSortChip extends StatelessWidget {
       ),
     );
   }
+
+
 }

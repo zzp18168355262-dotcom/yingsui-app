@@ -925,8 +925,9 @@ class _ReaderLine extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Wrap(
-            spacing: 7,
-            runSpacing: 12,
+            // 收紧词块间距：原先偏松，配合偏大的字号导致一行放不下几个词。
+            spacing: 6,
+            runSpacing: 9,
             children: <Widget>[
               for (int wordIndex = 0; wordIndex < tokens.length; wordIndex++)
                 Builder(
@@ -1093,12 +1094,16 @@ class _WordMeaningTile extends StatelessWidget {
                   Text(
                     token,
                     textAlign: TextAlign.center,
+                    // softWrap: false —— 单词不从句中拆行。
+                    // 否则像 neighborhood's 会被断成两行，很难读。
+                    softWrap: false,
+                    overflow: TextOverflow.visible,
                     style: TextStyle(
                       color: active
                           ? AppDesignTokens.brandGreenDark
                           : AppDesignTokens.textPrimary,
-                      fontSize: 25,
-                      height: 1.08,
+                      fontSize: 19,
+                      height: 1.15,
                       fontWeight: active ? FontWeight.w900 : FontWeight.w700,
                     ),
                   ),
@@ -1108,7 +1113,7 @@ class _WordMeaningTile extends StatelessWidget {
                 ],
               ),
               if (showMeaning) ...<Widget>[
-                const SizedBox(height: 5),
+                const SizedBox(height: 4),
                 Wrap(
                   alignment: WrapAlignment.center,
                   children: <Widget>[
@@ -1119,9 +1124,9 @@ class _WordMeaningTile extends StatelessWidget {
                       textAlign: TextAlign.center,
                       style: const TextStyle(
                         color: Color(0xFF8A5A12),
-                        fontSize: 11,
-                        height: 1.15,
-                        fontWeight: FontWeight.w800,
+                        fontSize: 10.5,
+                        height: 1.2,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const IgnorePointer(child: Text(' ')),
