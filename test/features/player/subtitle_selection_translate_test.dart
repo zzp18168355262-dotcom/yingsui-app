@@ -446,4 +446,43 @@ void main() {
       reason: '应选中从起点到终点的完整短语',
     );
   });
+
+  testWidgets('触屏：长按后向右划（Android 式触摸拖动）也能选中短语', (WidgetTester tester) async {
+    // 前面的测试用单步 moveTo 直接跳到终点；
+    // 真机手指滑动是**多步**移动，这里用分步移动复现触屏事件序列，
+    // 确认逐步移动时命中判定依然有效（steps 少会漏判中间词块）。
+    tester.view.physicalSize = const Size(760, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page());
+    await tester.pumpAndSettle();
+
+    final Rect startRect = tester.getRect(find.text('saying').first);
+    final Rect endRect = tester.getRect(find.text('neighborhood').first);
+
+    final TestGesture gesture = await tester.startGesture(startRect.center);
+    // 触屏长按需要超过 longPress 超时
+    await tester.pump(const Duration(milliseconds: 700));
+    // 分 5 步移动到终点，模拟手指滑动
+    final Offset delta = endRect.center - startRect.center;
+    for (int i = 1; i <= 5; i++) {
+      await gesture.moveTo(startRect.center + delta * (i / 5));
+      await tester.pump(const Duration(milliseconds: 30));
+    }
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '触屏长按拖动后应出现提示条',
+    );
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-collect-selection')),
+      findsOneWidget,
+      reason: '收藏按钮也应出现',
+    );
+  });
 }

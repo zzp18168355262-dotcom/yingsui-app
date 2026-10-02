@@ -96,6 +96,8 @@ class _VideoPreview extends StatelessWidget {
             title: course?.title ?? '导入你的第一套课程',
             path: course?.coverImage ?? '',
             borderRadius: radius,
+            // 正中已有播放按钮，标题改由卡片下方呈现，避免二者重叠。
+            showTitle: false,
           ),
           const DecoratedBox(
             decoration: BoxDecoration(
