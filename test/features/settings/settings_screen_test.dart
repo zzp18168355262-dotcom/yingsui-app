@@ -7,6 +7,7 @@ import 'package:yingsui/features/settings/presentation/settings_screen.dart';
 import 'package:yingsui/features/settings/presentation/widgets/settings_group_card.dart';
 
 void main() {
+  _noFakeCloudSyncTests();
   testWidgets('settings screen shows prototype sections', (
     WidgetTester tester,
   ) async {
@@ -191,4 +192,62 @@ class _TestLearningSettingsNotifier extends LearningSettingsNotifier {
 
   @override
   LearningSettingsState build() => _state;
+}
+
+/// 未实现的功能必须如实说明，不得提示「成功」。
+///
+/// 回归背景：设置页曾有一个「备份同步云端数据」入口，
+/// 描述里显示写死的「142 个词汇」，点击后提示「备份同步成功」，
+/// 但实际不会同步任何数据 —— 用户会以为数据已上云，
+/// 换设备时才发现丢失。对付费产品而言这种误导不可接受。
+void _noFakeCloudSyncTests() {
+  Future<void> pumpSettings(WidgetTester tester) async {
+    tester.view.physicalSize = const Size(1366, 1024);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: <Override>[
+          learningSettingsProvider.overrideWith(
+            () => _TestLearningSettingsNotifier(
+              LearningSettingsState.defaults(),
+            ),
+          ),
+        ],
+        child: const MaterialApp(home: SettingsScreen()),
+      ),
+    );
+    await tester.pumpAndSettle();
+    // 该入口在设置页底部，需要滚动到可见处。
+    for (
+      int index = 0;
+      index < 10 && find.textContaining('云端备份').evaluate().isEmpty;
+      index++
+    ) {
+      await tester.drag(find.byType(ListView).last, const Offset(0, -400));
+      await tester.pumpAndSettle();
+    }
+  }
+
+  group('设置页不提供假的云端同步', () {
+    testWidgets('不再出现「同步成功」这类误导提示', (WidgetTester tester) async {
+      await pumpSettings(tester);
+
+      final Finder entry = find.textContaining('云端备份');
+      expect(entry, findsOneWidget, reason: '应保留入口但如实标注为即将推出');
+      await tester.tap(entry, warnIfMissed: false);
+      await tester.pumpAndSettle();
+
+      expect(find.textContaining('同步成功'), findsNothing);
+      // 也不应出现写死的假数据量。
+      expect(find.textContaining('142'), findsNothing);
+    });
+
+    testWidgets('如实说明当前不会上传数据', (WidgetTester tester) async {
+      await pumpSettings(tester);
+
+      expect(find.textContaining('尚在开发中'), findsOneWidget);
+      expect(find.textContaining('不会上传任何数据'), findsOneWidget);
+    });
+  });
 }

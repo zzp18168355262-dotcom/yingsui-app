@@ -640,10 +640,15 @@ class SettingsScreen extends ConsumerWidget {
                   ),
                 ),
               ),
-              _ActionRow(
-                title: '备份同步云端数据',
-                description: '将您本地记录的 142 个词汇与学习周期备份，支持多设备同步。',
-                onTap: () => _showMessage(context, '精听学习进度和短语本备份同步成功！'),
+              const _ActionRow(
+                title: '云端备份与多设备同步（即将推出）',
+                // 这是尚未实现的功能。此前它显示写死的「142 个词汇」，
+                // 点击后提示「备份同步成功」，但实际什么都不做 ——
+                // 用户会以为数据已上云，换设备时才发现丢失。
+                // 对付费产品而言这种误导不可接受，故改为如实说明。
+                description: '该功能尚在开发中，当前版本不会上传任何数据。'
+                    '你的学习记录只保存在本设备，卸载前请留意。',
+                onTap: null,
               ),
               _ActionRow(
                 title: '清除应用缓存与生词记录',
@@ -1318,19 +1323,28 @@ class _ActionRow extends StatelessWidget {
 
   final String title;
   final String description;
-  final VoidCallback onTap;
+
+  /// 为空表示该项尚未开放：整行不可点击并呈现为灰态。
+  final VoidCallback? onTap;
   final bool danger;
   final IconData? icon;
 
   @override
   Widget build(BuildContext context) {
-    final Color titleColor = danger
+    final bool enabled = onTap != null;
+    final Color titleColor = !enabled
+        ? const Color(0xFF8C9890)
+        : danger
         ? const Color(0xFFC62828)
         : const Color(0xFF191C1E);
-    final Color descColor = danger
+    final Color descColor = !enabled
+        ? const Color(0xFFA6B0A9)
+        : danger
         ? const Color(0xFFD86A6A)
         : const Color(0xFF53625A);
-    final Color iconColor = danger
+    final Color iconColor = !enabled
+        ? const Color(0xFFC3CBC5)
+        : danger
         ? const Color(0xFFC62828)
         : const Color(0xFF8C9890);
 
