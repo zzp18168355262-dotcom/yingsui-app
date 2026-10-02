@@ -174,24 +174,34 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
 
     final BuildContext? activeContext =
         _rowKeys[widget.activeIndex]?.currentContext;
-    if (activeContext == null) {
-      final double targetOffset = (widget.activeIndex * 132.0).clamp(
-        0.0,
-        _scrollController.position.maxScrollExtent,
-      );
-      _scrollController.animateTo(
-        targetOffset,
+
+    if (activeContext != null) {
+      // alignment 0.5：把当前句滚动到列表中部。
+      //
+      // 这里用 Scrollable.ensureVisible 而不是手算偏移：
+      // 手算需要「行在内容中的绝对位置」，而列表行的实际高度随字幕
+      // 长度变化（实测同一列表内行高并不一致），估算常量并不可靠，
+      // 容易算出偏离目标的位置（实测出现当前行停在偏下的情况）。
+      // ensureVisible 由 Flutter 按真实布局计算，是这里最稳的做法。
+      Scrollable.ensureVisible(
+        activeContext,
         duration: const Duration(milliseconds: 220),
         curve: Curves.easeOut,
+        alignment: 0.5,
       );
       return;
     }
 
-    Scrollable.ensureVisible(
-      activeContext,
+    // 当前行尚未构建（距离较远）时的回退：按估算行高定位。
+    final ScrollPosition position = _scrollController.position;
+    final double targetOffset = (widget.activeIndex * 132.0).clamp(
+      position.minScrollExtent,
+      position.maxScrollExtent,
+    );
+    _scrollController.animateTo(
+      targetOffset,
       duration: const Duration(milliseconds: 220),
       curve: Curves.easeOut,
-      alignment: 0.5,
     );
   }
 
