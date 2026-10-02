@@ -472,7 +472,7 @@ class _FullscreenEpisodePanel extends StatelessWidget {
                 style: TextStyle(
                   color: Colors.white,
                   fontSize: 20,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ),
@@ -532,7 +532,7 @@ class _FullscreenEpisodePanel extends StatelessWidget {
                                         ? Colors.white
                                         : Colors.white70,
                                     fontSize: 14,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                   ),
                                 ),
                                 const SizedBox(height: 4),
@@ -554,7 +554,7 @@ class _FullscreenEpisodePanel extends StatelessWidget {
                                   style: const TextStyle(
                                     color: Colors.white60,
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w500,
                                   ),
                                 ),
                               ],

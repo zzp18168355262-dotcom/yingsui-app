@@ -643,7 +643,7 @@ class _CurrentLineBlock extends StatelessWidget {
                     style: TextStyle(
                       fontSize: 15,
                       height: 1.35,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       color: palette.textPrimary,
                     ),
                   ),

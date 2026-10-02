@@ -795,7 +795,7 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
                             style: const TextStyle(
                               color: Colors.white,
                               fontSize: 18,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                             ),
                           ),
                         ),
@@ -1192,7 +1192,7 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
         : (tinyControls ? 17 : 22);
     final TextStyle style = TextStyle(
       fontSize: baseSize * widget.fontScale,
-      fontWeight: FontWeight.w800,
+      fontWeight: FontWeight.w600,
       height: 1.25,
       color: Colors.white,
       shadows: const <Shadow>[
@@ -1373,7 +1373,7 @@ class _SceneHeader extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: compact ? 12 : 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               color: fullscreen ? Colors.white : AppDesignTokens.textPrimary,
             ),
           ),
@@ -1432,7 +1432,7 @@ class _StatusBubble extends StatelessWidget {
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                 fontSize: compact ? 10 : 11,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: foreground,
               ),
             ),
@@ -1531,7 +1531,7 @@ class _ControlDock extends StatelessWidget {
                 currentLabel,
                 style: TextStyle(
                   fontSize: 11,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   color: fullscreen
                       ? Colors.white
                       : AppDesignTokens.textPrimary,
@@ -1569,7 +1569,7 @@ class _ControlDock extends StatelessWidget {
                 totalLabel,
                 style: TextStyle(
                   fontSize: tiny ? 10 : 11,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: fullscreen
                       ? Colors.white70
                       : AppDesignTokens.textSecondary,
@@ -1696,7 +1696,7 @@ class _MiniPillAction extends StatelessWidget {
               iconText!,
               style: TextStyle(
                 fontSize: tiny ? 12 : 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: fullscreen
                     ? Colors.white
                     : AppDesignTokens.primaryBlueDark,
@@ -1716,7 +1716,7 @@ class _MiniPillAction extends StatelessWidget {
               label!,
               style: TextStyle(
                 fontSize: tiny ? 11 : 12,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: fullscreen
                     ? Colors.white
                     : AppDesignTokens.primaryBlueDark,

@@ -70,7 +70,7 @@ class PhraseReviewPanel extends StatelessWidget {
                           phrase.chinese,
                           style: TextStyle(
                             fontSize: compact ? 28 : 34,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             height: 1.45,
                             color: AppDesignTokens.textPrimary,
                           ),
@@ -131,7 +131,7 @@ class PhraseReviewPanel extends StatelessWidget {
                                 '英文原句',
                                 style: TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w500,
                                   color: AppDesignTokens.primaryBlueDark,
                                 ),
                               ),
@@ -140,7 +140,7 @@ class PhraseReviewPanel extends StatelessWidget {
                                 phrase.english,
                                 style: TextStyle(
                                   fontSize: compact ? 24 : 30,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   height: 1.4,
                                   color: AppDesignTokens.textPrimary,
                                 ),
@@ -216,7 +216,7 @@ class _ReviewActionDock extends StatelessWidget {
             icon: const Icon(Icons.visibility_rounded),
             label: const Text(
               '显示英文答案',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+              style: TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
             ),
           );
 
@@ -361,7 +361,7 @@ class _ResultButton extends StatelessWidget {
               children: <Widget>[
                 Text(
                   label,
-                  style: TextStyle(fontWeight: FontWeight.w900, color: color),
+                  style: TextStyle(fontWeight: FontWeight.w700, color: color),
                 ),
                 Text(timing, style: TextStyle(fontSize: 10, color: color)),
               ],

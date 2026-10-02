@@ -182,7 +182,7 @@ class _PadSidebarState extends ConsumerState<PadSidebar> {
                             '英语角',
                             style: TextStyle(
                               fontSize: compact ? 16 : 18,
-                              fontWeight: FontWeight.w900,
+                              fontWeight: FontWeight.w700,
                               color: AppDesignTokens.brandGreenDark,
                             ),
                           ),
@@ -265,7 +265,7 @@ class _PadSidebarState extends ConsumerState<PadSidebar> {
                                   style: TextStyle(
                                     fontSize: compact ? 14 : 15,
                                     fontWeight: selected
-                                        ? FontWeight.w800
+                                        ? FontWeight.w600
                                         : FontWeight.w700,
                                     color: selected
                                         ? AppDesignTokens.appWhite
@@ -307,7 +307,7 @@ class _PadSidebarState extends ConsumerState<PadSidebar> {
                                   'Lv.${growth.level} ${growth.title}',
                                   style: TextStyle(
                                     fontSize: compact ? 13 : 14,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: AppDesignTokens.textPrimary,
                                   ),
                                 ),
@@ -409,7 +409,7 @@ class _DailyEnglishBubble extends StatelessWidget {
                                 '今日英语',
                                 style: TextStyle(
                                   fontSize: 11,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w500,
                                   color: AppDesignTokens.brandGreenDark,
                                 ),
                               ),
@@ -426,7 +426,7 @@ class _DailyEnglishBubble extends StatelessWidget {
                           phrase!.english,
                           style: const TextStyle(
                             fontSize: 13,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                             color: AppDesignTokens.textPrimary,
                           ),
                         ),

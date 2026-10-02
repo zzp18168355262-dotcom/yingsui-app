@@ -118,7 +118,7 @@ class LibraryCourseListItem extends StatelessWidget {
                             '${course.episodes.length} 集',
                             style: const TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w500,
                               color: AppDesignTokens.appWhite,
                             ),
                           ),
@@ -150,7 +150,7 @@ class LibraryCourseListItem extends StatelessWidget {
                               course.category,
                               style: const TextStyle(
                                 fontSize: 10,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w500,
                                 color: AppDesignTokens.textPrimary,
                               ),
                             ),
@@ -177,7 +177,7 @@ class LibraryCourseListItem extends StatelessWidget {
                                   course.rating.toStringAsFixed(1),
                                   style: const TextStyle(
                                     fontSize: 12,
-                                    fontWeight: FontWeight.w700,
+                                    fontWeight: FontWeight.w500,
                                     color: AppDesignTokens.textPrimary,
                                   ),
                                 ),
@@ -191,7 +191,7 @@ class LibraryCourseListItem extends StatelessWidget {
                         course.title,
                         style: const TextStyle(
                           fontSize: 22,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                           color: AppDesignTokens.textPrimary,
                         ),
                       ),
@@ -231,7 +231,7 @@ class LibraryCourseListItem extends StatelessWidget {
                             '已完成 ${course.progressPercent}%',
                             style: const TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w500,
                               color: AppDesignTokens.brandGreenDark,
                             ),
                           ),
@@ -302,7 +302,7 @@ class _PosterBadge extends StatelessWidget {
         label,
         style: TextStyle(
           fontSize: 10,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w500,
           color: textColor,
         ),
       ),

@@ -126,7 +126,7 @@ class CourseOverviewCard extends StatelessWidget {
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
                                         fontSize: 13,
-                                        fontWeight: FontWeight.w800,
+                                        fontWeight: FontWeight.w600,
                                         color: AppDesignTokens.textPrimary,
                                       ),
                                     ),
@@ -150,7 +150,7 @@ class CourseOverviewCard extends StatelessWidget {
                       course.title,
                       style: TextStyle(
                         fontSize: compact ? 30 : 34,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: AppDesignTokens.textPrimary,
                       ),
                     ),
@@ -192,7 +192,7 @@ class CourseOverviewCard extends StatelessWidget {
                                 '学习进度',
                                 style: TextStyle(
                                   fontSize: 17,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w700,
                                   color: AppDesignTokens.textPrimary,
                                 ),
                               ),
@@ -201,7 +201,7 @@ class CourseOverviewCard extends StatelessWidget {
                                 '${course.progressPercent}%',
                                 style: const TextStyle(
                                   fontSize: 17,
-                                  fontWeight: FontWeight.w900,
+                                  fontWeight: FontWeight.w700,
                                   color: AppDesignTokens.brandGreenDark,
                                 ),
                               ),
@@ -273,7 +273,7 @@ class CourseOverviewCard extends StatelessWidget {
                               overflow: TextOverflow.ellipsis,
                               style: const TextStyle(
                                 fontSize: 14,
-                                fontWeight: FontWeight.w700,
+                                fontWeight: FontWeight.w600,
                                 color: AppDesignTokens.textPrimary,
                               ),
                             ),
@@ -313,7 +313,7 @@ class _StatBlock extends StatelessWidget {
             label,
             style: const TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: AppDesignTokens.textSecondary,
             ),
           ),
@@ -322,7 +322,7 @@ class _StatBlock extends StatelessWidget {
             value,
             style: const TextStyle(
               fontSize: 20,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppDesignTokens.textPrimary,
             ),
           ),
@@ -355,7 +355,7 @@ class _PillLabel extends StatelessWidget {
         label,
         style: TextStyle(
           fontSize: 11,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w500,
           color: textColor,
         ),
       ),

@@ -23,7 +23,7 @@ class PhraseFilterChipRow extends StatelessWidget {
           title,
           style: const TextStyle(
             fontSize: 12,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w500,
             color: Color(0xFF53625A),
           ),
         ),

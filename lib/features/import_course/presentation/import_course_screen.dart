@@ -208,7 +208,7 @@ class _ModalHeader extends StatelessWidget {
                   '影视库',
                   style: TextStyle(
                     fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                     color: AppDesignTokens.primaryBlueDark,
                   ),
                 ),
@@ -219,7 +219,7 @@ class _ModalHeader extends StatelessWidget {
                   '导入影视',
                   style: TextStyle(
                     fontSize: 28,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppDesignTokens.textPrimary,
                   ),
                 ),

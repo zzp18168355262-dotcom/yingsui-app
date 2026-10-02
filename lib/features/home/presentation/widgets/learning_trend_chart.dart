@@ -55,7 +55,7 @@ class LearningTrendChart extends StatelessWidget {
                     style: const TextStyle(
                       color: AppDesignTokens.textSecondary,
                       fontSize: 11,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 );
@@ -72,7 +72,7 @@ class LearningTrendChart extends StatelessWidget {
                     '${trend[spot.x.round()].studyMinutes} 分钟',
                     const TextStyle(
                       color: AppDesignTokens.appWhite,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                 )

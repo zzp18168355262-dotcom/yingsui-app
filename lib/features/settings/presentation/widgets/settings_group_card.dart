@@ -28,7 +28,7 @@ class SettingsGroupCard extends StatelessWidget {
               title,
               style: TextStyle(
                 fontSize: compact ? 12 : 13,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
                 color: const Color(0xFF00695C),
               ),
             ),

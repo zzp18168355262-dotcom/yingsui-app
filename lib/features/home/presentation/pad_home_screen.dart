@@ -114,7 +114,7 @@ class _PadHomeScreenState extends ConsumerState<PadHomeScreen> {
               '下一步想做什么？',
               style: TextStyle(
                 fontSize: compact ? 18 : 20,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: AppDesignTokens.textPrimary,
               ),
             ),
@@ -149,7 +149,7 @@ class _GreetingHeader extends StatelessWidget {
                 '${greetingForHour(DateTime.now().hour)} 👋',
                 style: const TextStyle(
                   fontSize: 26,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: AppDesignTokens.textPrimary,
                 ),
               ),
@@ -177,7 +177,7 @@ class _GreetingHeader extends StatelessWidget {
               Text(
                 '🔥 连续 ${stats.streakDays} 天',
                 style: const TextStyle(
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: AppDesignTokens.textPrimary,
                 ),
               ),
@@ -186,7 +186,7 @@ class _GreetingHeader extends StatelessWidget {
                 'Lv.${growth.level} ${growth.title}',
                 style: const TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                   color: AppDesignTokens.textSecondary,
                 ),
               ),
@@ -208,7 +208,7 @@ class _SectionTitle extends StatelessWidget {
     title,
     style: TextStyle(
       fontSize: compact ? 20 : 22,
-      fontWeight: FontWeight.w900,
+      fontWeight: FontWeight.w700,
       color: AppDesignTokens.textPrimary,
     ),
   );
@@ -342,7 +342,7 @@ class _MissionProgress extends StatelessWidget {
                 '+${item.rewardXP} XP',
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w500,
                   color: item.color,
                 ),
               ),
@@ -352,7 +352,7 @@ class _MissionProgress extends StatelessWidget {
           Text(
             item.label,
             style: const TextStyle(
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppDesignTokens.textPrimary,
             ),
           ),
@@ -376,7 +376,7 @@ class _MissionProgress extends StatelessWidget {
               Text(
                 '$progress / ${item.target}',
                 style: TextStyle(
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: item.color,
                 ),
               ),
@@ -451,7 +451,7 @@ class _EnglishLevelCard extends StatelessWidget {
                     '英语成长',
                     style: TextStyle(
                       color: AppDesignTokens.textSecondary,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   const SizedBox(height: 3),
@@ -459,7 +459,7 @@ class _EnglishLevelCard extends StatelessWidget {
                     'Lv.${growth.level} ${growth.title}',
                     style: const TextStyle(
                       fontSize: 21,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppDesignTokens.textPrimary,
                     ),
                   ),
@@ -469,7 +469,7 @@ class _EnglishLevelCard extends StatelessWidget {
                     style: const TextStyle(
                       fontSize: 12,
                       color: AppDesignTokens.textSecondary,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                   const SizedBox(height: 12),
@@ -551,7 +551,7 @@ class _SavedCollectionCard extends StatelessWidget {
                   const Text(
                     '最近收藏，随时温习',
                     style: TextStyle(
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w600,
                       color: AppDesignTokens.textSecondary,
                     ),
                   ),
@@ -653,7 +653,7 @@ class _CollectionMetric extends StatelessWidget {
                 style: const TextStyle(
                   fontSize: 17,
                   color: AppDesignTokens.textPrimary,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
             ],
@@ -727,7 +727,7 @@ class _RecentCourseCard extends StatelessWidget {
                 overflow: TextOverflow.ellipsis,
                 style: const TextStyle(
                   color: Colors.white,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   fontSize: 17,
                 ),
               ),
@@ -860,7 +860,7 @@ class _QuickAccessCard extends StatelessWidget {
                     title,
                     style: const TextStyle(
                       fontSize: 17,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppDesignTokens.textPrimary,
                     ),
                   ),

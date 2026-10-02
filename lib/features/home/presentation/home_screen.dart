@@ -49,7 +49,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                       'Learn',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -102,7 +102,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                 style: TextStyle(
                   fontSize: 40,
                   height: 0.98,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                   color: Color(0xFF050505),
                 ),
               ),
@@ -151,7 +151,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                           style: TextStyle(
                             color: Colors.white,
                             fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                           ),
                         ),
                       ),
@@ -161,7 +161,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                         style: const TextStyle(
                           color: Colors.white,
                           fontSize: 28,
-                          fontWeight: FontWeight.w900,
+                          fontWeight: FontWeight.w700,
                         ),
                       ),
                       const Gap(10),
@@ -199,7 +199,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const Gap(28),
               const Text(
                 'Stories',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w800),
+                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
               ),
               const Gap(14),
               GridView.builder(

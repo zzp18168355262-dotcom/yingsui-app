@@ -78,7 +78,7 @@ class _PlayerEpisodeStripState extends State<PlayerEpisodeStrip> {
               style: TextStyle(
                 color: Color(0xFF172033),
                 fontSize: 14,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(width: 6),
@@ -87,7 +87,7 @@ class _PlayerEpisodeStripState extends State<PlayerEpisodeStrip> {
               style: const TextStyle(
                 color: Color(0xFF8A9691),
                 fontSize: 11,
-                fontWeight: FontWeight.w600,
+                fontWeight: FontWeight.w500,
               ),
             ),
             const Spacer(),
@@ -103,7 +103,7 @@ class _PlayerEpisodeStripState extends State<PlayerEpisodeStrip> {
                 style: TextStyle(
                   color: Color(0xFF004D40),
                   fontSize: 12,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -273,7 +273,7 @@ class _EpisodeCard extends StatelessWidget {
                       statusText,
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                         color: isActive
                             ? const Color(0xFF004D40)
                             : const Color(0xFF64748B),
@@ -285,7 +285,7 @@ class _EpisodeCard extends StatelessWidget {
                       style: const TextStyle(
                         color: Color(0xFF172033),
                         fontSize: 15,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         height: 1.2,
                       ),
                       maxLines: 1,
@@ -296,7 +296,7 @@ class _EpisodeCard extends StatelessWidget {
                       style: const TextStyle(
                         color: Color(0xFF94A3B8),
                         fontSize: 10,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],

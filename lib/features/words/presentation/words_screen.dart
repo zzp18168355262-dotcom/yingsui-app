@@ -186,7 +186,7 @@ class _WordsScreenState extends ConsumerState<WordsScreen> {
                                       tag,
                                       style: const TextStyle(
                                         fontSize: 18,
-                                        fontWeight: FontWeight.w900,
+                                        fontWeight: FontWeight.w700,
                                         color: AppDesignTokens.brandGreenDark,
                                       ),
                                     ),
@@ -213,7 +213,7 @@ class _WordsScreenState extends ConsumerState<WordsScreen> {
                                       fontWeight:
                                           state ==
                                               AlphabetScrollbarItemState.active
-                                          ? FontWeight.w900
+                                          ? FontWeight.w700
                                           : FontWeight.w700,
                                     ),
                                   ),
@@ -300,7 +300,7 @@ class _Metric extends StatelessWidget {
           value,
           style: const TextStyle(
             fontSize: 26,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: Colors.white,
           ),
         ),
@@ -357,7 +357,7 @@ class _WordCard extends ConsumerWidget {
                       entry.word,
                       style: const TextStyle(
                         fontSize: 17,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(height: 2),
@@ -379,7 +379,7 @@ class _WordCard extends ConsumerWidget {
                       '${entry.occurrenceCount} 次',
                       style: const TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                       ),
                     ),
                     Text(

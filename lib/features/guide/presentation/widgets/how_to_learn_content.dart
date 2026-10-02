@@ -79,7 +79,7 @@ class _LearningHero extends StatelessWidget {
                 color: AppDesignTokens.textPrimary,
                 fontSize: 30,
                 height: 1.18,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 12),
@@ -149,7 +149,7 @@ class _HeroProgressPreview extends StatelessWidget {
           '今天的第一小步',
           style: TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w600,
             color: AppDesignTokens.primaryBlueDark,
           ),
         ),
@@ -162,7 +162,7 @@ class _HeroProgressPreview extends StatelessWidget {
         SizedBox(height: 14),
         Text(
           '先看懂一小段剧情',
-          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+          style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
         ),
         SizedBox(height: 8),
         Text(
@@ -191,12 +191,12 @@ class _MethodVideoCard extends StatelessWidget {
           children: <Widget>[
             const Text(
               '3 分钟了解完整学习方法',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             const Text(
               '看完你会知道：',
-              style: TextStyle(fontWeight: FontWeight.w800),
+              style: TextStyle(fontWeight: FontWeight.w600),
             ),
             const SizedBox(height: 8),
             const _Bullet(text: '为什么同一集要看三遍'),
@@ -305,7 +305,7 @@ class _VideoTag extends StatelessWidget {
         label,
         style: const TextStyle(
           color: Colors.white,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w600,
         ),
       ),
     ),
@@ -441,7 +441,7 @@ class _LearningStepCard extends StatelessWidget {
               foregroundColor: Colors.white,
               child: Text(
                 step.number,
-                style: const TextStyle(fontWeight: FontWeight.w900),
+                style: const TextStyle(fontWeight: FontWeight.w700),
               ),
             ),
             const SizedBox(width: 10),
@@ -451,7 +451,7 @@ class _LearningStepCard extends StatelessWidget {
         const SizedBox(height: 16),
         Text(
           step.title,
-          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+          style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
         ),
         const SizedBox(height: 8),
         Text(
@@ -510,7 +510,7 @@ class _WhyItWorksSection extends StatelessWidget {
           children: <Widget>[
             const Text(
               '为什么要重复同一集？',
-              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+              style: TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 20),
             if (constraints.maxWidth >= 760)
@@ -547,7 +547,7 @@ class _ReasonItem extends StatelessWidget {
           size: 22,
         ),
         const SizedBox(height: 8),
-        Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 5),
         Text(
           body,
@@ -581,7 +581,7 @@ class _LearningExampleSection extends StatelessWidget {
           style: TextStyle(
             fontSize: 26,
             height: 1.3,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppDesignTokens.primaryBlueDark,
           ),
         ),
@@ -623,7 +623,7 @@ class _ExampleAction extends StatelessWidget {
             label,
             style: const TextStyle(
               color: AppDesignTokens.primaryBlueDark,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -654,7 +654,7 @@ class _ExampleResult extends StatelessWidget {
         Expanded(
           child: Text(
             '收藏到短语库，第二天再复习一次。',
-            style: TextStyle(fontWeight: FontWeight.w800),
+            style: TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
       ],
@@ -708,7 +708,7 @@ class _PreparationItem extends StatelessWidget {
       children: <Widget>[
         Icon(icon, size: 18, color: AppDesignTokens.primaryBlueDark),
         const SizedBox(width: 8),
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w800)),
+        Text(label, style: const TextStyle(fontWeight: FontWeight.w600)),
       ],
     ),
   );
@@ -818,7 +818,7 @@ class _LevelCard extends StatelessWidget {
           const SizedBox(height: 14),
           Text(
             pieces.last,
-            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w900),
+            style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
           ),
           const SizedBox(height: 10),
           Text(
@@ -867,7 +867,7 @@ class _DifficultyTag extends StatelessWidget {
       style: TextStyle(
         color: highlighted ? Colors.white : AppDesignTokens.textSecondary,
         fontSize: 12,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w500,
       ),
     ),
   );
@@ -893,7 +893,7 @@ class _AdvancedTopicCard extends StatelessWidget {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
-              Text('进阶专题', style: TextStyle(fontWeight: FontWeight.w900)),
+              Text('进阶专题', style: TextStyle(fontWeight: FontWeight.w700)),
               SizedBox(height: 3),
               Text(
                 '能听懂日常对话后，再用律政或医疗剧积累专业表达。',
@@ -929,7 +929,7 @@ class _BottomLearningCta extends StatelessWidget {
           style: TextStyle(
             color: Colors.white,
             fontSize: 24,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
           ),
         ),
         const SizedBox(height: 10),
@@ -952,7 +952,7 @@ class _BottomLearningCta extends StatelessWidget {
             ),
             textStyle: const TextStyle(
               fontSize: 17,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
             ),
           ),
         ),
@@ -977,7 +977,7 @@ class _SectionTitle extends StatelessWidget {
     children: <Widget>[
       Text(
         title,
-        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+        style: const TextStyle(fontSize: 24, fontWeight: FontWeight.w700),
       ),
       if (subtitle != null) ...<Widget>[
         const SizedBox(height: 8),
@@ -1014,7 +1014,7 @@ class _InfoPill extends StatelessWidget {
           const SizedBox(width: 6),
           Text(
             label,
-            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w800),
+            style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
           ),
         ],
       ),
@@ -1061,5 +1061,5 @@ ButtonStyle _primaryButtonStyle() => FilledButton.styleFrom(
   minimumSize: const Size(0, 54),
   padding: const EdgeInsets.symmetric(horizontal: 22),
   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(27)),
-  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w900),
+  textStyle: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
 );

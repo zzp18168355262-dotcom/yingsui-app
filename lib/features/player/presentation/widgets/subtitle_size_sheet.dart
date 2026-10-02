@@ -52,7 +52,7 @@ Future<void> showSubtitleSizeSheet({
                               '字幕大小',
                               style: TextStyle(
                                 fontSize: 15,
-                                fontWeight: FontWeight.w800,
+                                fontWeight: FontWeight.w700,
                                 color: palette.textPrimary,
                               ),
                             ),
@@ -135,7 +135,7 @@ class _PreviewBox extends StatelessWidget {
             style: TextStyle(
               fontSize: 22 * scale,
               height: 1.25,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: Colors.white,
             ),
           ),
@@ -146,7 +146,7 @@ class _PreviewBox extends StatelessWidget {
             style: TextStyle(
               fontSize: 14 * scale,
               height: 1.35,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: const Color(0xFFF7F7F7),
             ),
           ),
@@ -193,7 +193,7 @@ class _SizeOption extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 14,
-              fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+              fontWeight: selected ? FontWeight.w600 : FontWeight.w600,
               color: selected ? palette.brand : palette.textPrimary,
             ),
           ),

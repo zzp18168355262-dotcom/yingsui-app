@@ -88,7 +88,7 @@ class LibraryCourseCard extends StatelessWidget {
                           course.level,
                           style: const TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w500,
                             color: AppDesignTokens.primaryBlueDark,
                           ),
                         ),
@@ -129,7 +129,7 @@ class LibraryCourseCard extends StatelessWidget {
                           '新',
                           style: TextStyle(
                             fontSize: 10,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w500,
                             color: AppDesignTokens.textPrimary,
                           ),
                         ),
@@ -155,7 +155,7 @@ class LibraryCourseCard extends StatelessWidget {
                             '${course.episodes.length} 集',
                             style: const TextStyle(
                               fontSize: 11,
-                              fontWeight: FontWeight.w700,
+                              fontWeight: FontWeight.w500,
                               color: Colors.white,
                             ),
                           ),
@@ -182,7 +182,7 @@ class LibraryCourseCard extends StatelessWidget {
                                 course.rating.toStringAsFixed(1),
                                 style: const TextStyle(
                                   fontSize: 12,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w500,
                                   color: AppDesignTokens.textPrimary,
                                 ),
                               ),
@@ -213,7 +213,7 @@ class LibraryCourseCard extends StatelessWidget {
                       course.category,
                       style: const TextStyle(
                         fontSize: 10,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                         color: AppDesignTokens.textPrimary,
                       ),
                     ),
@@ -223,7 +223,7 @@ class LibraryCourseCard extends StatelessWidget {
                     course.title,
                     style: const TextStyle(
                       fontSize: 20,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppDesignTokens.textPrimary,
                     ),
                   ),
@@ -263,7 +263,7 @@ class LibraryCourseCard extends StatelessWidget {
                         '已完成 ${course.progressPercent}%',
                         style: const TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w500,
                           color: AppDesignTokens.brandGreenDark,
                         ),
                       ),

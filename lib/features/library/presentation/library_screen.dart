@@ -404,7 +404,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                       '全部剧集',
                                       style: TextStyle(
                                         fontSize: compact ? 24 : 28,
-                                        fontWeight: FontWeight.w900,
+                                        fontWeight: FontWeight.w700,
                                         color: AppDesignTokens.textPrimary,
                                       ),
                                     ),
@@ -434,7 +434,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                   '${visibleEpisodes.length} 集',
                                   style: const TextStyle(
                                     fontSize: 13,
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: AppDesignTokens.textPrimary,
                                   ),
                                 ),
@@ -491,7 +491,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                                 label: const Text(
                                   '手动重排',
                                   style: TextStyle(
-                                    fontWeight: FontWeight.w800,
+                                    fontWeight: FontWeight.w600,
                                     color: AppDesignTokens.textPrimary,
                                   ),
                                 ),
@@ -610,7 +610,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       activeEpisode == null
                           ? '暂无可播放剧集'
                           : '继续播放第 ${activeEpisode.numberStr} 集',
-                      style: const TextStyle(fontWeight: FontWeight.w900),
+                      style: const TextStyle(fontWeight: FontWeight.w700),
                     ),
                   ),
                 ),
@@ -827,7 +827,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           selectedCoverImage.split(RegExp(r'[\\/]')).last,
                           style: const TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.w700,
+                            fontWeight: FontWeight.w500,
                             color: AppDesignTokens.textSecondary,
                           ),
                         ),
@@ -857,7 +857,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                   ),
                   child: const Text(
                     '保存',
-                    style: TextStyle(fontWeight: FontWeight.w800),
+                    style: TextStyle(fontWeight: FontWeight.w600),
                   ),
                 ),
               ],
@@ -929,7 +929,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
               ),
               child: const Text(
                 '确认删除',
-                style: TextStyle(fontWeight: FontWeight.w800),
+                style: TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           ],
@@ -1119,7 +1119,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
           ),
           child: const Text(
             '编辑',
-            style: TextStyle(fontWeight: FontWeight.w800),
+            style: TextStyle(fontWeight: FontWeight.w600),
           ),
         ),
         const SizedBox(width: 8),
@@ -1144,7 +1144,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         ),
         label: const Text(
           '导入新课程',
-          style: TextStyle(fontWeight: FontWeight.w900),
+          style: TextStyle(fontWeight: FontWeight.w700),
         ),
       ),
     ];
@@ -1199,7 +1199,7 @@ class _EmptyLibraryState extends StatelessWidget {
             hasQuery ? '没有找到匹配课程' : '还没有导入任何课程',
             style: const TextStyle(
               fontSize: 22,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppDesignTokens.textPrimary,
             ),
           ),
@@ -1329,7 +1329,7 @@ class _LibraryEditToolbar extends StatelessWidget {
               selectedCount == 0 ? '选择课程' : '已选 $selectedCount 项',
               style: const TextStyle(
                 fontSize: 12,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
                 color: AppDesignTokens.primaryBlueDark,
               ),
             ),
@@ -1403,7 +1403,7 @@ class _LibraryEditActionButton extends StatelessWidget {
                 label,
                 style: TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                   color: color,
                 ),
               ),
@@ -1438,7 +1438,7 @@ class _LibraryDetailTopStatus extends StatelessWidget {
           overflow: TextOverflow.ellipsis,
           style: const TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: Color(0xFF00695C),
           ),
         ),
@@ -1481,7 +1481,7 @@ class _EmptyEpisodesState extends StatelessWidget {
             '这个课程还没有可播放剧集',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w700,
               color: AppDesignTokens.textPrimary,
             ),
           ),
@@ -1525,7 +1525,7 @@ class _EpisodeSortChip extends StatelessWidget {
           icon: const Icon(Icons.keyboard_arrow_down_rounded),
           style: const TextStyle(
             fontSize: 13,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: Color(0xFF53625A),
           ),
           items: options

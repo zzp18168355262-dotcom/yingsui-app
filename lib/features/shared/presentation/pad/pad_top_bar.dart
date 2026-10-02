@@ -80,7 +80,7 @@ class PadTopBar extends ConsumerWidget {
                         subtitle!,
                         style: const TextStyle(
                           fontSize: 11,
-                          fontWeight: FontWeight.w800,
+                          fontWeight: FontWeight.w500,
                           color: AppDesignTokens.primaryBlueDark,
                         ),
                       ),
@@ -92,7 +92,7 @@ class PadTopBar extends ConsumerWidget {
                     overflow: TextOverflow.ellipsis,
                     style: TextStyle(
                       fontSize: compact ? 20 : 24,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: AppDesignTokens.textPrimary,
                     ),
                   ),
@@ -277,7 +277,7 @@ class _StatusAction extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: compact ? 11 : 12,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               color: color,
             ),
           ),

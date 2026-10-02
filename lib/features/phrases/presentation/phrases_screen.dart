@@ -121,7 +121,7 @@ class _PhrasesScreenState extends ConsumerState<PhrasesScreen> {
                       '短语',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: AppDesignTokens.textPrimary,
                       ),
                     ),
@@ -439,7 +439,7 @@ class _TodayReviewBanner extends StatelessWidget {
               : '今日有 $reviewCount 条待复习',
           style: TextStyle(
             fontSize: compact ? 18 : 20,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppDesignTokens.textPrimary,
           ),
         ),

@@ -95,7 +95,7 @@ class ImportStepHeader extends StatelessWidget {
                                 '$step',
                                 style: TextStyle(
                                   fontSize: compact ? 13 : 14,
-                                  fontWeight: FontWeight.w800,
+                                  fontWeight: FontWeight.w600,
                                   color: active
                                       ? AppDesignTokens.brandGreenDark
                                       : const Color(0xFF8B8782),
@@ -108,7 +108,7 @@ class ImportStepHeader extends StatelessWidget {
                       labels[index],
                       style: TextStyle(
                         fontSize: compact ? 12 : 13,
-                        fontWeight: active ? FontWeight.w800 : FontWeight.w700,
+                        fontWeight: active ? FontWeight.w600 : FontWeight.w700,
                         color: active || done
                             ? AppDesignTokens.brandGreenDark
                             : const Color(0xFF8B8782),

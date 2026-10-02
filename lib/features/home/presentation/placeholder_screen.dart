@@ -20,7 +20,7 @@ class PlaceholderScreen extends StatelessWidget {
             destination.title,
             style: const TextStyle(
               fontSize: 34,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               height: 1.05,
               color: Color(0xFF050505),
             ),
@@ -77,7 +77,7 @@ class _Header extends StatelessWidget {
             child: Center(
               child: Text(
                 title,
-                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w800),
+                style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
               ),
             ),
           ),
@@ -120,7 +120,7 @@ class _FeatureCard extends StatelessWidget {
           children: <Widget>[
             Text(
               title,
-              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w800),
+              style: const TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 12),
             Text(

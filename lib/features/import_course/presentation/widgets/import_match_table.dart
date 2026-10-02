@@ -28,7 +28,7 @@ class ImportMatchTable extends StatelessWidget {
           '匹配结果',
           style: TextStyle(
             fontSize: compact ? 24 : 28,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppDesignTokens.textPrimary,
           ),
         ),
@@ -226,7 +226,7 @@ class _HeaderText extends StatelessWidget {
       text,
       style: const TextStyle(
         fontSize: 12,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w500,
         color: AppDesignTokens.textSecondary,
       ),
     );
@@ -379,7 +379,7 @@ class _StatusBadge extends StatelessWidget {
             style: TextStyle(
               fontSize: 11,
               height: 1.3,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w500,
               color: ok ? AppDesignTokens.brandGreenDark : const Color(0xFFB56A00),
             ),
           ),

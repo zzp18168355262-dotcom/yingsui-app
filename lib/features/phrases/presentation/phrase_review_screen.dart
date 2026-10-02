@@ -209,7 +209,7 @@ class _ReviewHeader extends StatelessWidget {
                   '今日复习',
                   style: TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppDesignTokens.textPrimary,
                   ),
                 ),
@@ -218,7 +218,7 @@ class _ReviewHeader extends StatelessWidget {
                 '$current / $total',
                 style: const TextStyle(
                   fontSize: 16,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppDesignTokens.textSecondary,
                 ),
               ),
@@ -269,7 +269,7 @@ class _ReviewComplete extends StatelessWidget {
               const SizedBox(height: 18),
               const Text(
                 '今日复习已完成',
-                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w900),
+                style: TextStyle(fontSize: 28, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 8),
               Text(

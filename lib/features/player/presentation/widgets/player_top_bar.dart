@@ -82,7 +82,7 @@ class PlayerTopBar extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 11,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w500,
                             color: Color(0xFF64748B),
                           ),
                         ),
@@ -92,7 +92,7 @@ class PlayerTopBar extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: tiny ? 18 : (compact ? 20 : 24),
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: const Color(0xFF172033),
                           ),
                         ),
@@ -113,7 +113,7 @@ class PlayerTopBar extends StatelessWidget {
                       episodeTitle,
                       style: TextStyle(
                         fontSize: tiny ? 10 : 11,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFF004D40),
                       ),
                     ),

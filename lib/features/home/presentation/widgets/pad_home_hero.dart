@@ -139,7 +139,7 @@ class _VideoPreview extends StatelessWidget {
               style: const TextStyle(
                 color: AppDesignTokens.appWhite,
                 fontSize: 15,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 height: 1.3,
               ),
             ),
@@ -191,7 +191,7 @@ class _HeroDetails extends StatelessWidget {
             overflow: TextOverflow.ellipsis,
             style: TextStyle(
               fontSize: compact ? 28 : 32,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               height: 1.1,
               color: AppDesignTokens.textPrimary,
             ),
@@ -224,7 +224,7 @@ class _HeroDetails extends StatelessWidget {
                   style: TextStyle(
                     color: AppDesignTokens.primaryBlueDark,
                     fontSize: 14,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ],
@@ -249,7 +249,7 @@ class _HeroDetails extends StatelessWidget {
                 hasCourse ? '继续播放' : '去导入课程',
                 style: TextStyle(
                   fontSize: compact ? 17 : 18,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               style: FilledButton.styleFrom(
@@ -271,7 +271,7 @@ class _HeroDetails extends StatelessWidget {
                 const Text(
                   '课程进度',
                   style: TextStyle(
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w600,
                     color: AppDesignTokens.textPrimary,
                   ),
                 ),
@@ -279,7 +279,7 @@ class _HeroDetails extends StatelessWidget {
                 Text(
                   '${course!.progressPercent}%',
                   style: const TextStyle(
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: AppDesignTokens.brandGreenDark,
                   ),
                 ),
@@ -338,7 +338,7 @@ class _Pill extends StatelessWidget {
         label,
         style: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w800,
+          fontWeight: FontWeight.w500,
           color: textColor,
         ),
       ),

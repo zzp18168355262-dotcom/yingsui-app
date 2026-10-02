@@ -151,7 +151,7 @@ class _MoreNavItem extends StatelessWidget {
                     ? AppDesignTokens.appWhite
                     : AppDesignTokens.textSecondary,
                 fontSize: compact ? 10 : 11,
-                fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w700,
               ),
             ),
           ],
@@ -174,7 +174,7 @@ class _MoreNavItem extends StatelessWidget {
             children: <Widget>[
               const Text(
                 '更多功能',
-                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w900),
+                style: TextStyle(fontSize: 20, fontWeight: FontWeight.w700),
               ),
               const SizedBox(height: 12),
               ...destinations.map(
@@ -256,7 +256,7 @@ class _NavItem extends StatelessWidget {
                     ? AppDesignTokens.appWhite
                     : AppDesignTokens.textSecondary,
                 fontSize: compact ? 10 : 11,
-                fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
+                fontWeight: selected ? FontWeight.w600 : FontWeight.w700,
               ),
             ),
           ],

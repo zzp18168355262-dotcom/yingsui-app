@@ -800,7 +800,7 @@ class _ReaderHeader extends StatelessWidget {
                   style: const TextStyle(
                     color: AppDesignTokens.textPrimary,
                     fontSize: 15,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 if (!compact) ...<Widget>[
@@ -810,7 +810,7 @@ class _ReaderHeader extends StatelessWidget {
                     style: const TextStyle(
                       color: AppDesignTokens.textSecondary,
                       fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ],
@@ -826,7 +826,7 @@ class _ReaderHeader extends StatelessWidget {
                   style: TextStyle(
                     color: AppDesignTokens.textSecondary,
                     fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
                 const SizedBox(width: 6),
@@ -877,7 +877,7 @@ class _ReaderHeader extends StatelessWidget {
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 textStyle: const TextStyle(
                   fontSize: 13,
-                  fontWeight: FontWeight.w700,
+                  fontWeight: FontWeight.w600,
                 ),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(AppRadius.pill),
@@ -985,7 +985,7 @@ class _ReaderLine extends StatelessWidget {
                 style: const TextStyle(
                   color: AppDesignTokens.textSecondary,
                   fontSize: 12,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
               const Spacer(),
@@ -1115,7 +1115,7 @@ class _SentenceTranslationTextState
               : AppDesignTokens.textSecondary,
           fontSize: 14,
           height: 1.4,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
         ),
       ),
     );
@@ -1186,7 +1186,7 @@ class _WordMeaningTile extends StatelessWidget {
                           : AppDesignTokens.textPrimary,
                       fontSize: 19,
                       height: 1.15,
-                      fontWeight: active ? FontWeight.w900 : FontWeight.w700,
+                      fontWeight: active ? FontWeight.w700 : FontWeight.w700,
                     ),
                   ),
                   const IgnorePointer(
@@ -1208,7 +1208,7 @@ class _WordMeaningTile extends StatelessWidget {
                         color: Color(0xFF8A5A12),
                         fontSize: 10.5,
                         height: 1.2,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                     const IgnorePointer(child: Text(' ')),

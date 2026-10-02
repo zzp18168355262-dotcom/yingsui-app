@@ -33,7 +33,7 @@ class GuideScreen extends StatelessWidget {
                           '怎么学',
                           style: TextStyle(
                             fontSize: 22,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                           ),
                         ),
                       ),
@@ -114,7 +114,7 @@ class GuideScreen extends StatelessWidget {
           children: <Widget>[
             Text(
               resource.title,
-              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900),
+              style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w700),
             ),
             const SizedBox(height: 8),
             Text(resource.resourceHint),

@@ -283,7 +283,7 @@ class _ImportCourseFlowState extends ConsumerState<ImportCourseFlow> {
             '导入影视',
             style: TextStyle(
               fontSize: context.isPadCompact ? 30 : 36,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppDesignTokens.textPrimary,
             ),
           ),
@@ -792,7 +792,7 @@ class _ImportDestinationStep extends StatelessWidget {
           '导入到哪里',
           style: TextStyle(
             fontSize: context.isPadCompact ? 22 : 24,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppDesignTokens.textPrimary,
           ),
         ),
@@ -1018,7 +1018,7 @@ class _BottomActions extends StatelessWidget {
               primaryAction!.loading
                   ? primaryAction!.loadingLabel
                   : primaryAction!.idleLabel,
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ],
@@ -1112,7 +1112,7 @@ class _SourceSelectionStep extends StatelessWidget {
           '选择导入方式',
           style: TextStyle(
             fontSize: compact ? 24 : 28,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppDesignTokens.textPrimary,
           ),
         ),
@@ -1176,7 +1176,7 @@ class _SourceSelectionStep extends StatelessWidget {
                   : const Icon(Icons.folder_open_rounded, size: 18),
               label: Text(
                 selecting ? '正在整理文件...' : '选择视频文件夹',
-                style: const TextStyle(fontWeight: FontWeight.w800),
+                style: const TextStyle(fontWeight: FontWeight.w600),
               ),
             ),
           )
@@ -1216,7 +1216,7 @@ class _SourceSelectionStep extends StatelessWidget {
               downloadProgressText ?? '正在下载...',
               style: const TextStyle(
                 fontSize: 13,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w600,
                 color: AppDesignTokens.textSecondary,
               ),
             ),
@@ -1272,7 +1272,7 @@ class _SourceModeCard extends StatelessWidget {
             Text(
               title,
               style: const TextStyle(
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: AppDesignTokens.textPrimary,
               ),
             ),
@@ -1318,7 +1318,7 @@ class _ParsingStep extends StatelessWidget {
           '选择字幕文件夹并开始解析',
           style: TextStyle(
             fontSize: compact ? 24 : 28,
-            fontWeight: FontWeight.w900,
+            fontWeight: FontWeight.w700,
             color: AppDesignTokens.textPrimary,
           ),
         ),
@@ -1365,7 +1365,7 @@ class _ParsingStep extends StatelessWidget {
                 : const Icon(Icons.folder_open_rounded, size: 18),
             label: Text(
               selectingSubtitle ? '正在整理字幕...' : '选择字幕文件夹',
-              style: const TextStyle(fontWeight: FontWeight.w800),
+              style: const TextStyle(fontWeight: FontWeight.w600),
             ),
           ),
         ),
@@ -1411,7 +1411,7 @@ class _ParsingStep extends StatelessWidget {
                       parsing ? '正在分析视频和字幕...' : '已准备好开始智能解析',
                       style: const TextStyle(
                         fontSize: 16,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w700,
                         color: AppDesignTokens.textPrimary,
                       ),
                     ),
@@ -1569,7 +1569,7 @@ class _ImportPathRow extends StatelessWidget {
                   label,
                   style: const TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w500,
                     color: AppDesignTokens.textSecondary,
                   ),
                 ),
@@ -1578,7 +1578,7 @@ class _ImportPathRow extends StatelessWidget {
                   value,
                   style: const TextStyle(
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: AppDesignTokens.textPrimary,
                   ),
                 ),

@@ -143,7 +143,7 @@ class _PanelHeader extends StatelessWidget {
                   style: TextStyle(
                     color: AppDesignTokens.textPrimary,
                     fontSize: 18,
-                    fontWeight: FontWeight.w800,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
                 SizedBox(height: 4),
@@ -152,7 +152,7 @@ class _PanelHeader extends StatelessWidget {
                   style: TextStyle(
                     color: AppDesignTokens.textSecondary,
                     fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                   ),
                 ),
               ],
@@ -189,7 +189,7 @@ class _TranscriptViewSwitch extends StatelessWidget {
       style: const ButtonStyle(
         visualDensity: VisualDensity.compact,
         textStyle: WidgetStatePropertyAll<TextStyle>(
-          TextStyle(fontSize: 12, fontWeight: FontWeight.w700),
+          TextStyle(fontSize: 12, fontWeight: FontWeight.w500),
         ),
       ),
       onSelectionChanged: (Set<bool> selected) {

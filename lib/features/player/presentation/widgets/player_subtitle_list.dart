@@ -669,7 +669,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                             style: TextStyle(
                               color: AppDesignTokens.textPrimary,
                               fontSize: 11,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w500,
                             ),
                           ),
                         ),
@@ -711,7 +711,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                                 line.startTime,
                                 style: TextStyle(
                                   fontSize: 11,
-                                  fontWeight: FontWeight.w700,
+                                  fontWeight: FontWeight.w500,
                                   color: active
                                       ? const Color(0xFF7E8A82)
                                       : inactiveStartTimeColor.withValues(
@@ -777,7 +777,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                             style: TextStyle(
                               fontSize: chineseFontSize,
                               fontWeight: active
-                                  ? FontWeight.w800
+                                  ? FontWeight.w600
                                   : FontWeight.w600,
                               color: active
                                   ? const Color(0xFF191C1E)
@@ -1255,7 +1255,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                                 ? _activeFontSize * widget.fontScale
                                 : (_activeFontSize * widget.fontScale) - 2,
                             fontWeight: highlighted
-                                ? FontWeight.w800
+                                ? FontWeight.w600
                                 : FontWeight.w600,
                             color: AppDesignTokens.textPrimary,
                             decoration:
@@ -1367,7 +1367,7 @@ class _SubtitlePlaceholder extends StatelessWidget {
               title,
               style: const TextStyle(
                 fontSize: 18,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w700,
                 color: Color(0xFF53625A),
               ),
             ),
@@ -1411,7 +1411,7 @@ class _SubtitlePlaceholder extends StatelessWidget {
                   progressText ?? '正在准备音频...',
                   style: const TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: Color(0xFF53625A),
                   ),
                 ),
@@ -1511,7 +1511,7 @@ class _SelectionTranslateBarState extends State<_SelectionTranslateBar> {
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
                       fontSize: 12,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w500,
                       color: AppDesignTokens.textSecondary,
                     ),
                   ),
@@ -1526,7 +1526,7 @@ class _SelectionTranslateBarState extends State<_SelectionTranslateBar> {
                     minimumSize: const Size(0, 32),
                     textStyle: const TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w600,
                     ),
                   ),
                   icon: const Icon(Icons.translate_rounded, size: 16),

@@ -39,7 +39,7 @@ class PhraseFilterBar extends StatelessWidget {
                     : review
                     ? const Color(0xFF8F1D1D)
                     : const Color(0xFF4D5A52),
-                fontWeight: active ? FontWeight.w800 : FontWeight.w600,
+                fontWeight: active ? FontWeight.w600 : FontWeight.w600,
               ),
               side: BorderSide(
                 color: active

@@ -64,7 +64,7 @@ class LibraryCoursePosterTitle extends StatelessWidget {
       overflow: TextOverflow.ellipsis,
       style: const TextStyle(
         fontSize: 24,
-        fontWeight: FontWeight.w900,
+        fontWeight: FontWeight.w700,
         height: 1.15,
         color: AppDesignTokens.appWhite,
       ),

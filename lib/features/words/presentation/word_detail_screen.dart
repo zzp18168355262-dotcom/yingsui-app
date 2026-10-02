@@ -174,7 +174,7 @@ class _WordDetailDialogState extends ConsumerState<WordDetailDialog> {
                       '单词详情',
                       style: TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                       ),
                     ),
                   ),
@@ -213,7 +213,7 @@ class _WordDetailDialogState extends ConsumerState<WordDetailDialog> {
                     '影片语境 · ${entry.occurrenceCount} 次出现',
                     style: const TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                     ),
                   ),
                   const SizedBox(height: 10),
@@ -279,7 +279,7 @@ class _WordHeader extends StatelessWidget {
                 entry.word,
                 style: const TextStyle(
                   fontSize: 30,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w700,
                 ),
               ),
               if (loading)
@@ -349,7 +349,7 @@ class _DefinitionCard extends StatelessWidget {
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Text('中文释义', style: TextStyle(fontWeight: FontWeight.w900)),
+        const Text('中文释义', style: TextStyle(fontWeight: FontWeight.w700)),
         const SizedBox(height: 8),
         Text(
           offlineTranslation ??
@@ -358,7 +358,7 @@ class _DefinitionCard extends StatelessWidget {
         ),
         const SizedBox(height: 14),
         if (apiDefinition != null && apiDefinition!.isNotEmpty) ...<Widget>[
-          const Text('API 语境释义', style: TextStyle(fontWeight: FontWeight.w900)),
+          const Text('API 语境释义', style: TextStyle(fontWeight: FontWeight.w700)),
           const SizedBox(height: 6),
           Text(apiDefinition!),
           const SizedBox(height: 10),
@@ -408,7 +408,7 @@ class _OccurrenceCard extends StatelessWidget {
         const SizedBox(height: 8),
         Text(
           contextItem.sentence,
-          style: const TextStyle(fontWeight: FontWeight.w800),
+          style: const TextStyle(fontWeight: FontWeight.w600),
         ),
         if (contextItem.chinese.isNotEmpty) ...<Widget>[
           const SizedBox(height: 6),

@@ -49,7 +49,7 @@ class PadDashboardStatCard extends StatelessWidget {
             title,
             style: TextStyle(
               fontSize: compact ? 13 : 14,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               color: AppDesignTokens.textSecondary,
             ),
           ),
@@ -58,7 +58,7 @@ class PadDashboardStatCard extends StatelessWidget {
             value,
             style: TextStyle(
               fontSize: compact ? 24 : 30,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: AppDesignTokens.textPrimary,
             ),
           ),

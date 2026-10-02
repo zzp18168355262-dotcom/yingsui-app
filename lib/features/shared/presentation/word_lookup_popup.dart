@@ -161,7 +161,7 @@ class _WordLookupPopupCardState extends ConsumerState<WordLookupPopupCard> {
                 _entry?.word ?? widget.rawWord,
                 style: const TextStyle(
                   fontSize: 18,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: AppDesignTokens.textPrimary,
                 ),
               ),
@@ -298,7 +298,7 @@ class _WordLookupPopupBody extends StatelessWidget {
                 entry.definitionCn,
                 style: const TextStyle(
                   fontSize: 20,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   height: 1.35,
                   color: AppDesignTokens.textPrimary,
                 ),
@@ -358,7 +358,7 @@ class _WordLookupPopupBody extends StatelessWidget {
                           : '原句上下文',
                       style: const TextStyle(
                         fontSize: 12,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         color: AppDesignTokens.textSecondary,
                       ),
                     ),
@@ -423,7 +423,7 @@ class _WordLookupPopupBody extends StatelessWidget {
                         '新句子',
                         style: TextStyle(
                           fontSize: 12,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w500,
                           color: AppDesignTokens.textSecondary,
                         ),
                       ),
@@ -559,7 +559,7 @@ class _MeaningCard extends StatelessWidget {
                   label,
                   style: TextStyle(
                     fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w500,
                     color: labelColor,
                   ),
                 ),
@@ -626,7 +626,7 @@ class _InfoChip extends StatelessWidget {
         label,
         style: TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w600,
+          fontWeight: FontWeight.w500,
           color: foregroundColor,
         ),
       ),

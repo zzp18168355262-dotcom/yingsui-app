@@ -144,7 +144,7 @@ class _PhraseText extends StatelessWidget {
           phrase.english,
           style: const TextStyle(
             fontSize: 18,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w700,
             height: 1.35,
             color: AppDesignTokens.textPrimary,
           ),
@@ -210,7 +210,7 @@ class _ReviewStatus extends StatelessWidget {
       label,
       style: TextStyle(
         fontSize: 13,
-        fontWeight: FontWeight.w800,
+        fontWeight: FontWeight.w600,
         color: due
             ? AppDesignTokens.primaryBlueDark
             : phrase.isMastered

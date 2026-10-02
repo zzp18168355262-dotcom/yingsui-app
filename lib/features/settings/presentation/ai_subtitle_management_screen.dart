@@ -438,7 +438,7 @@ class _SubtitleCard extends StatelessWidget {
                             style: const TextStyle(
                               fontSize: 18,
                               height: 1.35,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppDesignTokens.textPrimary,
                             ),
                           ),
@@ -566,7 +566,7 @@ class _ManagementIntro extends StatelessWidget {
                           '已选择 $selectedCount 项',
                           style: const TextStyle(
                             fontSize: 20,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppDesignTokens.textPrimary,
                           ),
                         ),
@@ -616,7 +616,7 @@ class _ManagementIntro extends StatelessWidget {
                           '$count 份 AI 字幕',
                           style: const TextStyle(
                             fontSize: 20,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w700,
                             color: AppDesignTokens.textPrimary,
                           ),
                         ),
@@ -676,7 +676,7 @@ class _CardAction extends StatelessWidget {
           width: 2,
         ),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w800),
+        textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
       onPressed: onPressed,
       icon: loading
@@ -707,7 +707,7 @@ class _InfoBadge extends StatelessWidget {
         label,
         style: const TextStyle(
           fontSize: 12,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w500,
           color: AppDesignTokens.textSecondary,
         ),
       ),
@@ -767,7 +767,7 @@ class _SecondaryButton extends StatelessWidget {
         backgroundColor: AppDesignTokens.appWhite,
         side: const BorderSide(color: AppDesignTokens.borderGray, width: 2),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
-        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w800),
+        textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
       ),
       onPressed: onPressed,
       icon: Icon(icon),
@@ -905,7 +905,7 @@ class _AiSubtitleEditorScreenState extends State<AiSubtitleEditorScreen> {
                             '单词级编辑',
                             style: TextStyle(
                               fontSize: 16,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w700,
                               color: AppDesignTokens.textPrimary,
                             ),
                           ),
@@ -966,7 +966,7 @@ class _AiSubtitleEditorScreenState extends State<AiSubtitleEditorScreen> {
                           maxLines: 3,
                           style: const TextStyle(
                             fontSize: 18,
-                            fontWeight: FontWeight.w600,
+                            fontWeight: FontWeight.w700,
                           ),
                           decoration: const InputDecoration(
                             labelText: '英文整句',
@@ -1120,7 +1120,7 @@ class _EditorGuide extends StatelessWidget {
                     '点开一句字幕开始校对',
                     style: TextStyle(
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       color: AppDesignTokens.textPrimary,
                     ),
                   ),
@@ -1190,7 +1190,7 @@ class _EditorLineCard extends StatelessWidget {
                     '${index + 1}',
                     style: const TextStyle(
                       fontSize: 17,
-                      fontWeight: FontWeight.w900,
+                      fontWeight: FontWeight.w700,
                       color: Color(0xFF6B3FE8),
                     ),
                   ),
@@ -1217,7 +1217,7 @@ class _EditorLineCard extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 16,
                           height: 1.5,
-                          fontWeight: FontWeight.w500,
+                          fontWeight: FontWeight.w700,
                           color: AppDesignTokens.textSecondary,
                         ),
                       ),

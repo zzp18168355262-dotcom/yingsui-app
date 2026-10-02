@@ -53,7 +53,7 @@ class GuideSectionCard extends StatelessWidget {
                       '关键步骤',
                       style: TextStyle(
                         fontSize: compact ? 9 : 10,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w600,
                         color: const Color(0xFF00695C),
                       ),
                     ),
@@ -87,7 +87,7 @@ class GuideSectionCard extends StatelessWidget {
                           title,
                           style: TextStyle(
                             fontSize: compact ? 16 : 18,
-                            fontWeight: FontWeight.w800,
+                            fontWeight: FontWeight.w600,
                             color: const Color(0xFF191C1E),
                           ),
                         ),
@@ -129,7 +129,7 @@ class GuideSectionCard extends StatelessWidget {
                 step,
                 style: TextStyle(
                   fontSize: compact ? 11 : 12,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w600,
                   color: isKey
                       ? const Color(0xFF00695C)
                       : const Color(0xFF53625A),

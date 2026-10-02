@@ -44,7 +44,7 @@ class PillSegmentedControl<T extends Object> extends StatelessWidget {
                         ? const Color(0xFF00695C)
                         : const Color(0xFF222226),
                     fontSize: 14,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                   ),
                 ),
               ),

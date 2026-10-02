@@ -67,7 +67,7 @@ class SettingsScreen extends ConsumerWidget {
             '设置',
             style: TextStyle(
               fontSize: compact ? 30 : 34,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: const Color(0xFF191C1E),
             ),
           ),
@@ -675,7 +675,7 @@ class SettingsScreen extends ConsumerWidget {
                   FlavorConfig.appName,
                   style: TextStyle(
                     fontSize: 13,
-                    fontWeight: FontWeight.w700,
+                    fontWeight: FontWeight.w600,
                     color: Theme.of(context).colorScheme.onSurface,
                   ),
                 ),
@@ -1423,7 +1423,7 @@ class _TitleBlock extends StatelessWidget {
           title,
           style: const TextStyle(
             fontSize: 14,
-            fontWeight: FontWeight.w700,
+            fontWeight: FontWeight.w600,
             color: Color(0xFF191C1E),
           ),
         ),

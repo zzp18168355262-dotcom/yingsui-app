@@ -63,7 +63,7 @@ class EpisodeListItem extends StatelessWidget {
                   item.numberStr,
                   style: TextStyle(
                     fontSize: 24,
-                    fontWeight: FontWeight.w900,
+                    fontWeight: FontWeight.w700,
                     color: selected
                         ? Colors.white
                         : AppDesignTokens.primaryBlueDark,
@@ -85,7 +85,7 @@ class EpisodeListItem extends StatelessWidget {
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 20,
-                            fontWeight: FontWeight.w900,
+                            fontWeight: FontWeight.w700,
                             color: AppDesignTokens.textPrimary,
                           ),
                         ),
@@ -237,7 +237,7 @@ class _InfoChip extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w600,
               color: textColor,
             ),
           ),
@@ -277,7 +277,7 @@ class _StatusChip extends StatelessWidget {
             label,
             style: TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w800,
+              fontWeight: FontWeight.w600,
               color: textColor,
             ),
           ),

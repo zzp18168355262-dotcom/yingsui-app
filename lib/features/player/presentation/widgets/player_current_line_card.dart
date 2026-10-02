@@ -98,7 +98,7 @@ class _PlayerCurrentLineCardState extends State<PlayerCurrentLineCard> {
                     style: TextStyle(
                       color: AppDesignTokens.textPrimary,
                       fontSize: 12,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -109,7 +109,7 @@ class _PlayerCurrentLineCardState extends State<PlayerCurrentLineCard> {
                     style: TextStyle(
                       color: AppDesignTokens.textSecondary,
                       fontSize: 12,
-                      fontWeight: FontWeight.w700,
+                      fontWeight: FontWeight.w500,
                     ),
                   ),
                 ),
@@ -173,7 +173,7 @@ class _PlayerCurrentLineCardState extends State<PlayerCurrentLineCard> {
                             token,
                             style: TextStyle(
                               fontSize: englishFontSize,
-                              fontWeight: FontWeight.w800,
+                              fontWeight: FontWeight.w600,
                               height: 1.25,
                               color: AppDesignTokens.textPrimary,
                             ),

@@ -99,7 +99,7 @@ class StoryCard extends StatelessWidget {
                     style: const TextStyle(
                       color: Color(0xFF050505),
                       fontSize: 18,
-                      fontWeight: FontWeight.w800,
+                      fontWeight: FontWeight.w700,
                       height: 1.2,
                     ),
                   ),

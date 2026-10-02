@@ -325,7 +325,7 @@ class _LevelMembershipCard extends StatelessWidget {
                       style: TextStyle(
                         color: Color(0xFF6C3C00),
                         fontSize: 11,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ],
@@ -348,7 +348,7 @@ class _LevelMembershipCard extends StatelessWidget {
                   color: Colors.white.withValues(alpha: .82),
                   fontSize: 9,
                   letterSpacing: .7,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -369,7 +369,7 @@ class _LevelMembershipCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 10,
                         letterSpacing: .5,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w500,
                         color: const Color(0xFFFFD77C).withValues(alpha: .95),
                       ),
                     ),
@@ -379,7 +379,7 @@ class _LevelMembershipCard extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 42,
                         height: .95,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
                     ),
@@ -388,7 +388,7 @@ class _LevelMembershipCard extends StatelessWidget {
                       profile.title,
                       style: const TextStyle(
                         fontSize: 18,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w700,
                         color: Colors.white,
                       ),
                     ),
@@ -397,7 +397,7 @@ class _LevelMembershipCard extends StatelessWidget {
                       profile.englishTitle,
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white.withValues(alpha: .68),
                       ),
                     ),
@@ -409,7 +409,7 @@ class _LevelMembershipCard extends StatelessWidget {
                       style: TextStyle(
                         fontSize: 12,
                         height: 1.35,
-                        fontWeight: FontWeight.w700,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white.withValues(alpha: .84),
                       ),
                     ),
@@ -422,7 +422,7 @@ class _LevelMembershipCard extends StatelessWidget {
                           : '当前累计 ${growth.experience} XP',
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white.withValues(alpha: .75),
                       ),
                     ),
@@ -445,7 +445,7 @@ class _LevelMembershipCard extends StatelessWidget {
                           : '本等级总积分 $totalTargetXp XP · 还差 $remainingXp XP',
                       style: TextStyle(
                         fontSize: 11,
-                        fontWeight: FontWeight.w800,
+                        fontWeight: FontWeight.w500,
                         color: Colors.white.withValues(alpha: .78),
                       ),
                     ),
@@ -529,7 +529,7 @@ class _CardStatistics extends StatelessWidget {
               '${item.$1} ${item.$2}',
               style: TextStyle(
                 fontSize: 10,
-                fontWeight: FontWeight.w800,
+                fontWeight: FontWeight.w500,
                 color: Colors.white.withValues(alpha: .76),
               ),
             ),
@@ -673,7 +673,7 @@ class _LevelLearningRoute extends StatelessWidget {
             'Lv.$displayedLevel 学习路线',
             style: const TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: Color(0xFF28183A),
             ),
           ),
@@ -714,7 +714,7 @@ class _LevelLearningRoute extends StatelessWidget {
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 11,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w500,
                       ),
                     ),
                   ),
@@ -727,7 +727,7 @@ class _LevelLearningRoute extends StatelessWidget {
                         style: const TextStyle(
                           fontSize: 13,
                           height: 1.35,
-                          fontWeight: FontWeight.w700,
+                          fontWeight: FontWeight.w600,
                           color: Color(0xFF4A3A58),
                         ),
                       ),
@@ -848,7 +848,7 @@ class _HeroDetails extends StatelessWidget {
         style: TextStyle(
           letterSpacing: 1.2,
           fontSize: 11,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w500,
           color: const Color(0xFFFFD77C).withValues(alpha: .88),
         ),
       ),
@@ -858,7 +858,7 @@ class _HeroDetails extends StatelessWidget {
         style: const TextStyle(
           fontSize: 46,
           height: .9,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           color: Colors.white,
         ),
       ),
@@ -867,7 +867,7 @@ class _HeroDetails extends StatelessWidget {
         growth.title,
         style: const TextStyle(
           fontSize: 21,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           color: Colors.white,
         ),
       ),
@@ -876,7 +876,7 @@ class _HeroDetails extends StatelessWidget {
         growth.englishTitle,
         style: TextStyle(
           fontSize: 13,
-          fontWeight: FontWeight.w700,
+          fontWeight: FontWeight.w600,
           color: Colors.white.withValues(alpha: .64),
         ),
       ),
@@ -924,7 +924,7 @@ class _MemberTag extends StatelessWidget {
           text,
           style: const TextStyle(
             fontSize: 12,
-            fontWeight: FontWeight.w800,
+            fontWeight: FontWeight.w500,
             color: Colors.white,
           ),
         ),
@@ -956,7 +956,7 @@ class _HeroProgress extends StatelessWidget {
                 : '当前总积分 $total / $totalTarget XP',
             style: const TextStyle(
               fontSize: 13,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w600,
               color: Colors.white,
             ),
           ),
@@ -967,7 +967,7 @@ class _HeroProgress extends StatelessWidget {
                 : '本等级总积分 $totalTarget XP · 还差 $remaining XP',
             style: TextStyle(
               fontSize: 12,
-              fontWeight: FontWeight.w700,
+              fontWeight: FontWeight.w500,
               color: Colors.white.withValues(alpha: .65),
             ),
           ),
@@ -1064,7 +1064,7 @@ class _HowToLearn extends StatelessWidget {
             '怎么学习',
             style: TextStyle(
               fontSize: 18,
-              fontWeight: FontWeight.w900,
+              fontWeight: FontWeight.w700,
               color: Color(0xFF28183A),
             ),
           ),
@@ -1146,7 +1146,7 @@ class _LearningLoopAction extends StatelessWidget {
                       title,
                       style: const TextStyle(
                         fontSize: 13,
-                        fontWeight: FontWeight.w900,
+                        fontWeight: FontWeight.w600,
                         color: Color(0xFF39254D),
                       ),
                     ),
@@ -1158,7 +1158,7 @@ class _LearningLoopAction extends StatelessWidget {
                       style: const TextStyle(
                         fontSize: 11,
                         height: 1.3,
-                        fontWeight: FontWeight.w600,
+                        fontWeight: FontWeight.w500,
                         color: Color(0xFF776C82),
                       ),
                     ),
@@ -1185,7 +1185,7 @@ class _SectionHeader extends StatelessWidget {
         title,
         style: const TextStyle(
           fontSize: 23,
-          fontWeight: FontWeight.w900,
+          fontWeight: FontWeight.w700,
           color: Color(0xFF20152E),
         ),
       ),
@@ -1202,7 +1202,7 @@ class _SectionHeader extends StatelessWidget {
             foregroundColor: onAction == null
                 ? const Color(0xFF407B32)
                 : const Color(0xFF5E269D),
-            textStyle: const TextStyle(fontWeight: FontWeight.w900),
+            textStyle: const TextStyle(fontWeight: FontWeight.w700),
           ),
         ),
     ],
@@ -1319,7 +1319,7 @@ class _GrowthValueRow extends StatelessWidget {
                 label,
                 style: const TextStyle(
                   fontSize: 15,
-                  fontWeight: FontWeight.w800,
+                  fontWeight: FontWeight.w700,
                   color: Color(0xFF33263F),
                 ),
               ),
@@ -1334,7 +1334,7 @@ class _GrowthValueRow extends StatelessWidget {
                 '+$xp XP',
                 style: const TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w500,
                   color: Color(0xFF6B31B2),
                 ),
               ),
@@ -1356,7 +1356,7 @@ class _GrowthValueRow extends StatelessWidget {
                 ),
                 textStyle: const TextStyle(
                   fontSize: 12,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w500,
                 ),
               ),
             ),
@@ -1468,7 +1468,7 @@ class _Badges extends StatelessWidget {
               '成长勋章',
               style: TextStyle(
                 fontSize: 23,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w700,
                 color: Color(0xFF20152E),
               ),
             ),
@@ -1484,7 +1484,7 @@ class _Badges extends StatelessWidget {
                 style: TextStyle(
                   fontSize: 9,
                   letterSpacing: .55,
-                  fontWeight: FontWeight.w900,
+                  fontWeight: FontWeight.w500,
                   color: Color(0xFF91651B),
                 ),
               ),
@@ -1675,7 +1675,7 @@ class _BadgeView extends StatelessWidget {
               style: TextStyle(
                 fontSize: 12,
                 height: 1.2,
-                fontWeight: FontWeight.w900,
+                fontWeight: FontWeight.w500,
                 color: badge.unlocked
                     ? const Color(0xFF372747)
                     : const Color(0xFF8E8594),
@@ -1686,7 +1686,7 @@ class _BadgeView extends StatelessWidget {
               badge.unlocked ? '已获得' : badge.progress,
               style: TextStyle(
                 fontSize: 11,
-                fontWeight: FontWeight.w700,
+                fontWeight: FontWeight.w500,
                 color: badge.unlocked ? foreground : const Color(0xFFA69FAC),
               ),
             ),
