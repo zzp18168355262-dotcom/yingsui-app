@@ -795,14 +795,6 @@ class PadLandscapePlayerScreenState
                                   : _handleGenerateAiSubtitles,
                             ),
                           ),
-                          const SizedBox(height: 12),
-                          PlayerEpisodeStrip(
-                            episodes:
-                                course?.episodes ??
-                                const <LibraryEpisodeItem>[],
-                            activeEpisodeId: widget.episodeId,
-                            onOpenEpisode: _openEpisode,
-                          ),
                         ],
                       ),
                     ),
@@ -953,6 +945,16 @@ class PadLandscapePlayerScreenState
                                       ),
                                     ),
                             ),
+                          // 课程目录移到右侧列底部：原先它占着视频下方的整行，
+                          // 既挤压视频，又抢走了阅读器最需要的竖向空间。
+                          const SizedBox(height: 12),
+                          PlayerEpisodeStrip(
+                            episodes:
+                                course?.episodes ??
+                                const <LibraryEpisodeItem>[],
+                            activeEpisodeId: widget.episodeId,
+                            onOpenEpisode: _openEpisode,
+                          ),
                           ],
                         ),
                       ),
