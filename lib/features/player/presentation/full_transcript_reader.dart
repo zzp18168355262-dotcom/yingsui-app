@@ -587,9 +587,20 @@ class _FullTranscriptReaderScreenState
   }
 
   Widget _buildContent(BuildContext context) {
+    // 按可用宽度决定头部形态：窄屏（手机竖屏、嵌入面板）用紧凑版，
+    // 否则带文字标签的「听全文 / 翻译」会横向溢出。
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        return _buildContentFor(context, compact: constraints.maxWidth < 620);
+      },
+    );
+  }
+
+  Widget _buildContentFor(BuildContext context, {required bool compact}) {
     return Column(
           children: <Widget>[
             _ReaderHeader(
+              compact: compact,
               courseTitle: widget.snapshot.courseTitle,
               episodeTitle: widget.snapshot.episodeTitle,
               showTranslations: _showTranslations,
@@ -683,6 +694,7 @@ class _ReaderHeader extends StatelessWidget {
     required this.onListenFullTranscript,
     required this.onLocateCurrentWord,
     required this.onClose,
+    this.compact = false,
   });
 
   final String courseTitle;
@@ -695,30 +707,38 @@ class _ReaderHeader extends StatelessWidget {
   final VoidCallback onLocateCurrentWord;
   final VoidCallback onClose;
 
+  /// 窄屏（手机竖屏 / 嵌入面板）下的紧凑形态：
+  /// 放大取按钮收成图标、隐藏副标题，避免横向溢出。
+  final bool compact;
+
   @override
   Widget build(BuildContext context) {
     return Container(
-      padding: const EdgeInsets.fromLTRB(24, 16, 18, 14),
+      padding: compact
+          ? const EdgeInsets.fromLTRB(12, 8, 8, 8)
+          : const EdgeInsets.fromLTRB(24, 16, 18, 14),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: AppDesignTokens.borderGray)),
       ),
       child: Row(
         children: <Widget>[
-          Container(
-            width: 42,
-            height: 42,
-            decoration: BoxDecoration(
-              color: const Color(0xFFECFDF5),
-              borderRadius: BorderRadius.circular(13),
+          if (!compact) ...<Widget>[
+            Container(
+              width: 42,
+              height: 42,
+              decoration: BoxDecoration(
+                color: const Color(0xFFECFDF5),
+                borderRadius: BorderRadius.circular(13),
+              ),
+              child: const Icon(
+                Icons.menu_book_rounded,
+                color: AppDesignTokens.brandGreenDark,
+                size: 22,
+              ),
             ),
-            child: const Icon(
-              Icons.menu_book_rounded,
-              color: AppDesignTokens.brandGreenDark,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 14),
+            const SizedBox(width: 14),
+          ],
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
@@ -733,30 +753,34 @@ class _ReaderHeader extends StatelessWidget {
                     fontWeight: FontWeight.w900,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  '$episodeTitle · 逐词全文',
-                  style: const TextStyle(
-                    color: AppDesignTokens.textSecondary,
-                    fontSize: 12,
-                    fontWeight: FontWeight.w700,
+                if (!compact) ...<Widget>[
+                  const SizedBox(height: 2),
+                  Text(
+                    '$episodeTitle · 逐词全文',
+                    style: const TextStyle(
+                      color: AppDesignTokens.textSecondary,
+                      fontSize: 12,
+                      fontWeight: FontWeight.w700,
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
           Row(
             mainAxisSize: MainAxisSize.min,
             children: <Widget>[
-              const Text(
-                '翻译',
-                style: TextStyle(
-                  color: AppDesignTokens.textSecondary,
-                  fontSize: 12,
-                  fontWeight: FontWeight.w800,
+              if (!compact) ...<Widget>[
+                const Text(
+                  '翻译',
+                  style: TextStyle(
+                    color: AppDesignTokens.textSecondary,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w800,
+                  ),
                 ),
-              ),
-              const SizedBox(width: 4),
+                const SizedBox(width: 4),
+              ],
               Switch(
                 key: const ValueKey<String>('reader-translation-toggle'),
                 value: showTranslations,
@@ -766,23 +790,39 @@ class _ReaderHeader extends StatelessWidget {
             ],
           ),
           const SizedBox(width: 8),
-          OutlinedButton.icon(
-            key: const ValueKey<String>('reader-play-full-transcript'),
-            onPressed: onListenFullTranscript,
-            icon: Icon(
-              isListeningFullTranscript
-                  ? Icons.pause_rounded
-                  : Icons.play_arrow_rounded,
-            ),
-            label: Text(
-              isListeningFullTranscript
+          if (compact)
+            IconButton.outlined(
+              key: const ValueKey<String>('reader-play-full-transcript'),
+              onPressed: onListenFullTranscript,
+              tooltip: isListeningFullTranscript
                   ? '暂停'
                   : isFullTranscriptPaused
                   ? '继续'
                   : '听全文',
+              icon: Icon(
+                isListeningFullTranscript
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
+              ),
+            )
+          else
+            OutlinedButton.icon(
+              key: const ValueKey<String>('reader-play-full-transcript'),
+              onPressed: onListenFullTranscript,
+              icon: Icon(
+                isListeningFullTranscript
+                    ? Icons.pause_rounded
+                    : Icons.play_arrow_rounded,
+              ),
+              label: Text(
+                isListeningFullTranscript
+                    ? '暂停'
+                    : isFullTranscriptPaused
+                    ? '继续'
+                    : '听全文',
+              ),
             ),
-          ),
-          const SizedBox(width: 8),
+          SizedBox(width: compact ? 2 : 8),
           IconButton.outlined(
             key: const ValueKey<String>('reader-locate-current-word'),
             onPressed: onLocateCurrentWord,
