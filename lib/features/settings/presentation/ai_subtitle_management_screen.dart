@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../player/presentation/asr_subtitle_cache.dart';
 import '../../player/presentation/asr_subtitle_job.dart';
 import '../../player/presentation/player_mock_state.dart';
@@ -390,20 +391,14 @@ class _SubtitleCard extends StatelessWidget {
       duration: const Duration(milliseconds: 160),
       decoration: BoxDecoration(
         color: selected ? const Color(0xFFF4FFEC) : AppDesignTokens.appWhite,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(
-          color: selected
-              ? AppDesignTokens.brandGreen
-              : AppDesignTokens.borderGray,
-          width: selected ? 3 : 2,
-        ),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         boxShadow: AppDesignTokens.toyCardShadow,
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         child: InkWell(
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           onTap: selectionMode ? onToggleSelection : null,
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -417,7 +412,7 @@ class _SubtitleCard extends StatelessWidget {
                       height: 56,
                       decoration: BoxDecoration(
                         color: AppDesignTokens.skyLight,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
                       ),
                       child: const Icon(
                         Icons.closed_caption_rounded,
@@ -546,7 +541,7 @@ class _ManagementIntro extends StatelessWidget {
           color: selectionMode
               ? const Color(0xFFF4FFEC)
               : AppDesignTokens.skyLight,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(
             color: selectionMode
                 ? AppDesignTokens.brandGreen
@@ -598,7 +593,7 @@ class _ManagementIntro extends StatelessWidget {
                     height: 56,
                     decoration: BoxDecoration(
                       color: AppDesignTokens.appWhite,
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
                     ),
                     child: const Icon(
                       Icons.auto_awesome_rounded,
@@ -674,7 +669,7 @@ class _CardAction extends StatelessWidget {
               : AppDesignTokens.borderGray,
           width: 2,
         ),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
         textStyle: const TextStyle(fontSize: 14, fontWeight: FontWeight.w600),
       ),
       onPressed: onPressed,
@@ -765,7 +760,7 @@ class _SecondaryButton extends StatelessWidget {
             : AppDesignTokens.primaryBlueDark,
         backgroundColor: AppDesignTokens.appWhite,
         side: const BorderSide(color: AppDesignTokens.borderGray, width: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(28)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xxl)),
         textStyle: const TextStyle(fontSize: 15, fontWeight: FontWeight.w700),
       ),
       onPressed: onPressed,
@@ -1100,7 +1095,7 @@ class _EditorGuide extends StatelessWidget {
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
           color: AppDesignTokens.skyLight,
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(color: const Color(0xFFBDEBFF), width: 2),
         ),
         child: const Row(
@@ -1161,16 +1156,15 @@ class _EditorLineCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppDesignTokens.appWhite,
-        borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: AppDesignTokens.borderGray, width: 2),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         boxShadow: AppDesignTokens.toyCardShadow,
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         child: InkWell(
           key: ValueKey<String>('ai-subtitle-line-$index'),
-          borderRadius: BorderRadius.circular(24),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           onTap: onEdit,
           child: Padding(
             padding: const EdgeInsets.all(20),
@@ -1183,7 +1177,7 @@ class _EditorLineCard extends StatelessWidget {
                   alignment: Alignment.center,
                   decoration: BoxDecoration(
                     color: AppDesignTokens.purpleLight,
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: Text(
                     '${index + 1}',
@@ -1241,7 +1235,7 @@ class _EditorLineCard extends StatelessWidget {
                   height: 48,
                   decoration: BoxDecoration(
                     color: const Color(0xFFF4FFEC),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                     border: Border.all(
                       color: AppDesignTokens.brandGreen,
                       width: 2,

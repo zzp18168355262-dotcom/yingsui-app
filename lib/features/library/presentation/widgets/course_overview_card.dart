@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../library_mock_data.dart';
 import 'library_course_poster.dart';
@@ -24,8 +25,7 @@ class CourseOverviewCard extends StatelessWidget {
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppDesignTokens.appWhite,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppDesignTokens.borderGray),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
         boxShadow: AppDesignTokens.toyCardShadow,
       ),
       child: LayoutBuilder(
@@ -36,7 +36,7 @@ class CourseOverviewCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               ClipRRect(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
                 child: SizedBox(
                   width: compact ? 176 : 220,
                   height: compact ? 224 : 272,
@@ -46,7 +46,7 @@ class CourseOverviewCard extends StatelessWidget {
                       LibraryCoursePoster(
                         title: course.title,
                         path: course.coverImage,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
                       ),
                       Positioned.fill(
                         child: DecoratedBox(
@@ -90,7 +90,7 @@ class CourseOverviewCard extends StatelessWidget {
                           color: Colors.transparent,
                           child: InkWell(
                             onTap: onPlayTap,
-                            borderRadius: BorderRadius.circular(18),
+                            borderRadius: BorderRadius.circular(AppRadius.xl),
                             child: Ink(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
@@ -100,7 +100,7 @@ class CourseOverviewCard extends StatelessWidget {
                                 color: AppDesignTokens.appWhite.withValues(
                                   alpha: 0.94,
                                 ),
-                                borderRadius: BorderRadius.circular(18),
+                                borderRadius: BorderRadius.circular(AppRadius.xl),
                               ),
                               child: Row(
                                 children: <Widget>[
@@ -180,7 +180,7 @@ class CourseOverviewCard extends StatelessWidget {
                       padding: const EdgeInsets.all(18),
                       decoration: BoxDecoration(
                         color: AppDesignTokens.softWhite,
-                        borderRadius: BorderRadius.circular(24),
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
                         border: Border.all(color: AppDesignTokens.borderGray),
                       ),
                       child: Column(
@@ -256,7 +256,7 @@ class CourseOverviewCard extends StatelessWidget {
                       ),
                       decoration: BoxDecoration(
                         color: AppDesignTokens.purpleLight,
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
                       ),
                       child: Row(
                         children: <Widget>[
@@ -304,7 +304,7 @@ class _StatBlock extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
       decoration: BoxDecoration(
         color: AppDesignTokens.appWhite,
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,

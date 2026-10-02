@@ -586,7 +586,7 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: const Color(0xFF111827),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: const Color(0x1FFFFFFF)),
         boxShadow: AppElevation.high,
       ),
@@ -782,7 +782,7 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xCC101827),
-                            borderRadius: BorderRadius.circular(20),
+                            borderRadius: BorderRadius.circular(AppRadius.xl),
                           ),
                           child: Text(
                             _gestureHintText!,
@@ -1358,7 +1358,7 @@ class _SceneHeader extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: fullscreen ? const Color(0x33101827) : const Color(0xCCFFFFFF),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1412,7 +1412,7 @@ class _StatusBubble extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: background,
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
@@ -1514,7 +1514,7 @@ class _ControlDock extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: fullscreen ? const Color(0xA6101827) : const Color(0xCCFFFFFF),
-        borderRadius: BorderRadius.circular(26),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
       ),
       child: Column(
         mainAxisSize: MainAxisSize.min,
@@ -1642,7 +1642,7 @@ class _RoundActionButton extends StatelessWidget {
                         ? Colors.white
                         : AppDesignTokens.primaryBlueDark),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
             ),
             child: Icon(icon, size: tiny ? 16 : (compact ? 18 : 22)),
@@ -1680,7 +1680,7 @@ class _MiniPillAction extends StatelessWidget {
       ),
       decoration: BoxDecoration(
         color: fullscreen ? const Color(0x33101827) : Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,

@@ -119,7 +119,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
               const Gap(24),
               DecoratedBox(
                 decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(30),
+                  borderRadius: BorderRadius.circular(AppRadius.xxl),
                   gradient: const LinearGradient(
                     begin: Alignment.topLeft,
                     end: Alignment.bottomRight,

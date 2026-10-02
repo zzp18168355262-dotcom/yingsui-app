@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../library/presentation/library_catalog_provider.dart';
 import '../../player/presentation/player_course_lookup.dart';
 import '../../player/presentation/player_media_source.dart';
@@ -266,7 +267,7 @@ class _WordHeader extends StatelessWidget {
     padding: const EdgeInsets.all(22),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
     ),
     child: Row(
       children: <Widget>[
@@ -343,7 +344,7 @@ class _DefinitionCard extends StatelessWidget {
     padding: const EdgeInsets.all(18),
     decoration: BoxDecoration(
       color: const Color(0xFFF2FBEA),
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -396,7 +397,7 @@ class _OccurrenceCard extends StatelessWidget {
     padding: const EdgeInsets.all(16),
     decoration: BoxDecoration(
       color: Colors.white,
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
     ),
     child: Column(
       crossAxisAlignment: CrossAxisAlignment.start,

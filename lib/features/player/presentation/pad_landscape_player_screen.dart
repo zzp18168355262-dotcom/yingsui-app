@@ -828,7 +828,7 @@ class PadLandscapePlayerScreenState
                         padding: const EdgeInsets.all(16),
                         decoration: BoxDecoration(
                           color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(AppRadius.xl),
                           border: Border.all(color: const Color(0xFFE2E8F0)),
                           boxShadow: AppElevation.high,
                         ),

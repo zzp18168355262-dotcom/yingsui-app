@@ -1104,7 +1104,7 @@ class _SentenceTranslationTextState
       padding: const EdgeInsets.fromLTRB(12, 10, 12, 11),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF7E8),
-        borderRadius: BorderRadius.circular(10),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
       ),
       child: Text(
         text,

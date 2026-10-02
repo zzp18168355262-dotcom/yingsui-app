@@ -256,7 +256,7 @@ class _LevelMembershipCard extends StatelessWidget {
         18,
       ),
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
         gradient: LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
@@ -657,7 +657,7 @@ class _LevelLearningRoute extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: <Color>[Color(0xFFF7F4FF), Color(0xFFEEF7FF)],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: Colors.white),
         boxShadow: AppElevation.high,
       ),
@@ -1030,7 +1030,7 @@ class _HowToLearn extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: <Color>[Color(0xFFFDF5FF), Color(0xFFF0F6FF)],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: Colors.white),
         boxShadow: AppElevation.high,
       ),
@@ -1098,7 +1098,7 @@ class _LearningLoopAction extends StatelessWidget {
           child: VerticalDivider(width: 1, color: Color(0xFFDCCFE6)),
         ),
       InkWell(
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(AppRadius.sm),
         onTap: () => context.go(route),
         child: Padding(
           padding: const EdgeInsets.symmetric(vertical: 5, horizontal: 4),
@@ -1220,7 +1220,7 @@ class _TodayGrowthValue extends StatelessWidget {
           end: Alignment.bottomRight,
           colors: <Color>[Color(0xFFFFFEFF), Color(0xFFF5F8FF)],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: const Color(0xFFE3E7F5)),
         boxShadow: AppElevation.high,
       ),
@@ -1260,14 +1260,14 @@ class _GrowthValueRow extends StatelessWidget {
   Widget build(BuildContext context) => Material(
     color: Colors.transparent,
     child: InkWell(
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.md),
       onTap: () => context.go(route),
       child: Container(
         height: 64,
         padding: const EdgeInsets.symmetric(horizontal: 12),
         decoration: BoxDecoration(
           color: Colors.white.withValues(alpha: .72),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           border: Border.all(color: const Color(0xFFECECF5)),
         ),
         child: Row(
@@ -1280,7 +1280,7 @@ class _GrowthValueRow extends StatelessWidget {
                 gradient: const LinearGradient(
                   colors: <Color>[Color(0xFFECE2FF), Color(0xFFD9EEFF)],
                 ),
-                borderRadius: BorderRadius.circular(12),
+                borderRadius: BorderRadius.circular(AppRadius.sm),
               ),
               child: Icon(icon, size: 18, color: const Color(0xFF68409E)),
             ),
@@ -1477,7 +1477,7 @@ class _Badges extends StatelessWidget {
               end: Alignment.bottomRight,
               colors: <Color>[Color(0xFFFFFCF8), Color(0xFFF6F3FF)],
             ),
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
             border: Border.all(color: Colors.white),
             boxShadow: AppElevation.high,
           ),
@@ -1548,7 +1548,7 @@ class _BadgeView extends StatelessWidget {
         : const Color(0xFF99919E);
     return InkWell(
       key: Key('growth-badge-${badge.title}'),
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppRadius.md),
       onTap: () => showDialog<void>(
         context: context,
         builder: (BuildContext dialogContext) => AlertDialog(

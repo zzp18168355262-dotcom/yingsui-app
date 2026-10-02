@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../phrase_book_provider.dart';
 
@@ -33,8 +34,7 @@ class PhraseCard extends StatelessWidget {
         return DecoratedBox(
           decoration: BoxDecoration(
             color: AppDesignTokens.appWhite,
-            borderRadius: BorderRadius.circular(24),
-            border: Border.all(color: AppDesignTokens.borderGray, width: 2),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
             boxShadow: AppDesignTokens.toyCardShadow,
           ),
           child: Padding(
@@ -124,7 +124,7 @@ class _PlayButton extends StatelessWidget {
             ? AppDesignTokens.skyLight
             : AppDesignTokens.appWhite,
         side: const BorderSide(color: AppDesignTokens.primaryBlue, width: 2),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(18)),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.xl)),
       ),
     );
   }

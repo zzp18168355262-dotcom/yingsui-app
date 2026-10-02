@@ -6,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../../router/app_router.dart';
 import '../../guide/presentation/guide_screen.dart';
 import '../../home/presentation/learning_dashboard_provider.dart';
@@ -820,7 +821,7 @@ class _PadPortraitPlayerScreenState
                           padding: const EdgeInsets.all(14),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(22),
+                            borderRadius: BorderRadius.circular(AppRadius.xl),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
                           child: state.isShadowing && state.hasLines

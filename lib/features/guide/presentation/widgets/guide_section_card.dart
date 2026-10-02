@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/pad_compact.dart';
 
 class GuideSectionCard extends StatelessWidget {
@@ -47,7 +48,7 @@ class GuideSectionCard extends StatelessWidget {
                     ),
                     decoration: BoxDecoration(
                       color: const Color(0xFFEFFFF5),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
                     ),
                     child: Text(
                       '关键步骤',

@@ -170,7 +170,7 @@ class _GreetingHeader extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
             color: const Color(0xFFFFF1D6),
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
           ),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
@@ -310,7 +310,7 @@ class _MissionProgress extends StatelessWidget {
             item.color.withValues(alpha: 0.055),
           ],
         ),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: item.color.withValues(alpha: 0.12)),
         boxShadow: AppElevation.high,
       ),
@@ -324,7 +324,7 @@ class _MissionProgress extends StatelessWidget {
                 height: 40,
                 decoration: BoxDecoration(
                   color: item.color.withValues(alpha: 0.16),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Icon(
                   completed ? Icons.check_rounded : item.icon,
@@ -397,7 +397,7 @@ class _EnglishLevelCard extends StatelessWidget {
         ? '最高等级'
         : 'Lv.${growth.level + 1} ${growthLevelProfile(growth.level + 1).title}';
     return InkWell(
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(AppRadius.xxl),
       onTap: () => context.go(AppNavDestination.growth.route),
       child: Container(
         padding: const EdgeInsets.all(24),
@@ -407,7 +407,7 @@ class _EnglishLevelCard extends StatelessWidget {
             end: Alignment.bottomRight,
             colors: <Color>[Color(0xFFE4F6DD), Color(0xFFE6F0FF)],
           ),
-          borderRadius: BorderRadius.circular(28),
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
           boxShadow: AppElevation.modal,
         ),
         child: Row(
@@ -526,7 +526,7 @@ class _SavedCollectionCard extends StatelessWidget {
     );
     return Material(
       color: AppDesignTokens.appWhite,
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(AppRadius.xxl),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -685,7 +685,7 @@ class _RecentCourseCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Material(
       color: AppDesignTokens.primaryBlueDark,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
       clipBehavior: Clip.antiAlias,
       child: InkWell(
         onTap: onTap,
@@ -695,7 +695,7 @@ class _RecentCourseCard extends StatelessWidget {
             LibraryCoursePoster(
               title: course.title,
               path: course.coverImage,
-              borderRadius: BorderRadius.circular(24),
+              borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
             const DecoratedBox(
               decoration: BoxDecoration(
@@ -735,7 +735,7 @@ class _EmptyCourses extends StatelessWidget {
     padding: const EdgeInsets.all(24),
     decoration: BoxDecoration(
       color: AppDesignTokens.appWhite,
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(AppRadius.xxl),
     ),
     child: const Text(
       '导入课程后，这里会保留你的学习足迹。',
@@ -815,12 +815,12 @@ class _QuickAccessCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return DecoratedBox(
       decoration: BoxDecoration(
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
         boxShadow: AppDesignTokens.toyCardShadow,
       ),
       child: Material(
         color: AppDesignTokens.appWhite,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
         clipBehavior: Clip.antiAlias,
         child: InkWell(
           onTap: onTap,
@@ -836,7 +836,7 @@ class _QuickAccessCard extends StatelessWidget {
                     height: 52,
                     decoration: BoxDecoration(
                       color: AppDesignTokens.skyLight,
-                      borderRadius: BorderRadius.circular(16),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     child: Icon(
                       icon,

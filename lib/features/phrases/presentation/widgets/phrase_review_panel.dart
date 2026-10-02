@@ -60,11 +60,7 @@ class PhraseReviewPanel extends StatelessWidget {
                           color: AppDesignTokens.skyLight.withValues(
                             alpha: 0.62,
                           ),
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(
-                            color: AppDesignTokens.primaryBlue,
-                            width: 2,
-                          ),
+                          borderRadius: BorderRadius.circular(AppRadius.xl),
                           boxShadow: AppDesignTokens.toyCardShadow,
                         ),
                         child: Text(
@@ -95,7 +91,7 @@ class PhraseReviewPanel extends StatelessWidget {
                                 width: 2,
                               ),
                               shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(28),
+                                borderRadius: BorderRadius.circular(AppRadius.xxl),
                               ),
                             ),
                           ),
@@ -118,11 +114,7 @@ class PhraseReviewPanel extends StatelessWidget {
                           padding: EdgeInsets.all(compact ? 20 : 26),
                           decoration: BoxDecoration(
                             color: AppDesignTokens.appWhite,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: AppDesignTokens.borderGray,
-                              width: 2,
-                            ),
+                            borderRadius: BorderRadius.circular(AppRadius.xl),
                             boxShadow: AppDesignTokens.toyCardShadow,
                           ),
                           child: Column(
@@ -211,7 +203,7 @@ class _ReviewActionDock extends StatelessWidget {
               backgroundColor: AppDesignTokens.brandGreen,
               foregroundColor: Colors.white,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(30),
+                borderRadius: BorderRadius.circular(AppRadius.xxl),
               ),
             ),
             icon: const Icon(Icons.visibility_rounded),
@@ -335,12 +327,12 @@ class _ResultButton extends StatelessWidget {
   Widget build(BuildContext context) {
     return InkWell(
       onTap: onPressed,
-      borderRadius: BorderRadius.circular(22),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
       child: Ink(
         height: 64,
         decoration: BoxDecoration(
           color: AppDesignTokens.appWhite,
-          borderRadius: BorderRadius.circular(22),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(color: color, width: 2),
           boxShadow: <BoxShadow>[
             BoxShadow(color: color, offset: const Offset(0, 4)),

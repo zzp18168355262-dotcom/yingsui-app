@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 
 class GuideLearningResource {
@@ -140,7 +141,7 @@ class _HeroProgressPreview extends StatelessWidget {
     padding: const EdgeInsets.all(22),
     decoration: BoxDecoration(
       color: AppDesignTokens.skyLight,
-      borderRadius: BorderRadius.circular(24),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
     ),
     child: const Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -251,7 +252,7 @@ class _VideoPreview extends StatelessWidget {
                   AppDesignTokens.primaryBlue,
                 ],
               ),
-              borderRadius: BorderRadius.circular(22),
+              borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
             child: const Center(
               child: Icon(
@@ -496,7 +497,7 @@ class _WhyItWorksSection extends StatelessWidget {
     padding: const EdgeInsets.all(24),
     decoration: BoxDecoration(
       color: AppDesignTokens.skyLight,
-      borderRadius: BorderRadius.circular(26),
+      borderRadius: BorderRadius.circular(AppRadius.xxl),
     ),
     child: LayoutBuilder(
       builder: (BuildContext context, BoxConstraints constraints) {
@@ -617,7 +618,7 @@ class _ExampleAction extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
           decoration: BoxDecoration(
             color: AppDesignTokens.skyLight,
-            borderRadius: BorderRadius.circular(12),
+            borderRadius: BorderRadius.circular(AppRadius.sm),
           ),
           child: Text(
             label,
@@ -642,7 +643,7 @@ class _ExampleResult extends StatelessWidget {
     padding: const EdgeInsets.all(14),
     decoration: BoxDecoration(
       color: const Color(0xFFEFFFF5),
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.md),
     ),
     child: const Row(
       children: <Widget>[
@@ -701,7 +702,7 @@ class _PreparationItem extends StatelessWidget {
     padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
     decoration: BoxDecoration(
       color: AppDesignTokens.softWhite,
-      borderRadius: BorderRadius.circular(16),
+      borderRadius: BorderRadius.circular(AppRadius.md),
     ),
     child: Row(
       mainAxisSize: MainAxisSize.min,
@@ -836,7 +837,7 @@ class _LevelCard extends StatelessWidget {
               side: const BorderSide(color: AppDesignTokens.primaryBlue),
               minimumSize: const Size(0, 44),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(22),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
             ),
             child: const Text('查看学习资源'),
@@ -919,7 +920,7 @@ class _BottomLearningCta extends StatelessWidget {
     padding: const EdgeInsets.all(28),
     decoration: BoxDecoration(
       color: AppDesignTokens.primaryBlue,
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(AppRadius.xxl),
     ),
     child: Column(
       children: <Widget>[
@@ -948,7 +949,7 @@ class _BottomLearningCta extends StatelessWidget {
             foregroundColor: AppDesignTokens.primaryBlueDark,
             minimumSize: const Size(220, 56),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(28),
+              borderRadius: BorderRadius.circular(AppRadius.xxl),
             ),
             textStyle: const TextStyle(
               fontSize: 17,
@@ -1050,8 +1051,7 @@ BoxDecoration _cardDecoration({
   List<BoxShadow> shadow = const <BoxShadow>[],
 }) => BoxDecoration(
   color: color,
-  borderRadius: BorderRadius.circular(26),
-  border: Border.all(color: border),
+  borderRadius: BorderRadius.circular(AppRadius.xxl),
   boxShadow: shadow,
 );
 

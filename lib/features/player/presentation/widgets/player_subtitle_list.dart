@@ -629,12 +629,12 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                 widget.onTapLine(originalIndex);
               },
               onLongPress: () => _openActions(context, line, originalIndex),
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(AppRadius.xl),
               child: Ink(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
                   color: active ? const Color(0xFFEFFFF5) : Colors.white,
-                  borderRadius: BorderRadius.circular(24),
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
                   border: Border.all(
                     color: active
                         ? AppDesignTokens.brandGreen
@@ -656,7 +656,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFFFF7D6),
-                            borderRadius: BorderRadius.circular(14),
+                            borderRadius: BorderRadius.circular(AppRadius.md),
                           ),
                           child: const Text(
                             '正在学习',
@@ -690,7 +690,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                                     : AppDesignTokens.primaryBlueDark,
                                 minimumSize: const Size(44, 44),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(AppRadius.md),
                                 ),
                               ),
                               child: Icon(
@@ -729,7 +729,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                                     : AppDesignTokens.textSecondary,
                                 minimumSize: const Size(44, 44),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(AppRadius.md),
                                 ),
                               ),
                               child: const Icon(Icons.repeat_one_rounded),
@@ -743,7 +743,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                                 foregroundColor: const Color(0xFFB58600),
                                 minimumSize: const Size(44, 44),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(AppRadius.md),
                                 ),
                               ),
                               child: const Icon(Icons.star_rounded),
@@ -757,7 +757,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                                 foregroundColor: AppDesignTokens.textSecondary,
                                 minimumSize: const Size(44, 44),
                                 shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(AppRadius.md),
                                 ),
                               ),
                               child: const Icon(Icons.more_horiz_rounded),
@@ -1212,14 +1212,14 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                       tokenId,
                     );
                   },
-                  borderRadius: BorderRadius.circular(8),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 3,
                       vertical: 2,
                     ),
                     decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(8),
+                      borderRadius: BorderRadius.circular(AppRadius.sm),
                       // 拖动中命中的词块加深底色，让用户看清选到哪了。
                       color: inDragRange
                           ? const Color(0xFFB7D9CE)
@@ -1490,7 +1490,7 @@ class _SelectionTranslateBarState extends State<_SelectionTranslateBar> {
   Widget build(BuildContext context) {
     return Material(
       elevation: 6,
-      borderRadius: BorderRadius.circular(14),
+      borderRadius: BorderRadius.circular(AppRadius.md),
       color: AppDesignTokens.appWhite,
       child: Padding(
         padding: const EdgeInsets.fromLTRB(10, 6, 4, 6),

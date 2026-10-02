@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../player_mock_state.dart';
 import 'player_subtitle_list.dart';
@@ -129,7 +130,7 @@ class _PanelHeader extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(18, 16, 14, 16),
       decoration: BoxDecoration(
         color: const Color(0xFFF0FDFA),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: const Color(0xFFCCFBF1)),
       ),
       child: Row(

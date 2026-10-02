@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../library_mock_data.dart';
 
@@ -31,20 +32,14 @@ class EpisodeListItem extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(26),
+      borderRadius: BorderRadius.circular(AppRadius.xxl),
       child: Ink(
         padding: const EdgeInsets.all(18),
         decoration: BoxDecoration(
           color: selected
               ? const Color(0xFFEFFFF5)
               : AppDesignTokens.appWhite,
-          borderRadius: BorderRadius.circular(26),
-          border: Border.all(
-            color: selected
-                ? AppDesignTokens.brandGreen
-                : AppDesignTokens.borderGray,
-            width: selected ? 2 : 1.2,
-          ),
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
           boxShadow: AppDesignTokens.toyCardShadow,
         ),
         child: Row(
@@ -56,7 +51,7 @@ class EpisodeListItem extends StatelessWidget {
                 color: selected
                     ? AppDesignTokens.brandGreen
                     : AppDesignTokens.skyLight,
-                borderRadius: BorderRadius.circular(20),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
               child: Center(
                 child: Text(

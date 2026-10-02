@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../home/presentation/learning_dashboard_provider.dart';
 import 'app_design_tokens.dart';
 
@@ -192,7 +193,7 @@ class PadBackButton extends StatelessWidget {
           padding: EdgeInsets.zero,
           side: const BorderSide(color: AppDesignTokens.borderGray),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
         ),
         child: const Icon(Icons.arrow_back_rounded, size: 18),

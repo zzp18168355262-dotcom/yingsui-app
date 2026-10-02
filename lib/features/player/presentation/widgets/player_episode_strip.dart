@@ -228,7 +228,7 @@ class _EpisodeCard extends StatelessWidget {
       child: DecoratedBox(
         decoration: BoxDecoration(
           color: isActive ? const Color(0xFFECFDF5) : Colors.white,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(
             color: isActive ? const Color(0xFF34D399) : const Color(0xFFE2E8F0),
             width: isActive ? 2 : 1,
@@ -246,7 +246,7 @@ class _EpisodeCard extends StatelessWidget {
                   color: isActive
                       ? const Color(0xFF00695C)
                       : const Color(0xFFF1F5F9),
-                  borderRadius: BorderRadius.circular(14),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                 ),
                 child: Icon(
                   isActive

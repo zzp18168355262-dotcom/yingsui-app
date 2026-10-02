@@ -46,7 +46,7 @@ class AppEmptyState extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(AppRadius.xxl),
           ),
           child: Padding(
             padding: const EdgeInsets.all(28),
@@ -104,7 +104,7 @@ class AppErrorState extends StatelessWidget {
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(AppRadius.xxl),
             boxShadow: AppElevation.high,
           ),
           child: Padding(

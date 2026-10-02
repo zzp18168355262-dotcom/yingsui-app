@@ -18,7 +18,7 @@ class StoryCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return InkWell(
-      borderRadius: BorderRadius.circular(28),
+      borderRadius: BorderRadius.circular(AppRadius.xxl),
       onTap: () => context.pushNamed(
         SGRoute.player.name,
         pathParameters: <String, String>{'episodeId': episode.id},

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../growth/presentation/growth_provider.dart';
 import '../../../navigation/presentation/navigation_destination.dart';
 import '../../data/daily_english_service.dart';
@@ -214,7 +215,7 @@ class _PadSidebarState extends ConsumerState<PadSidebar> {
                     final bool selected = destination == widget.current;
 
                     return InkWell(
-                      borderRadius: BorderRadius.circular(24),
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
                       onTap: () {
                         if (!selected) {
                           context.go(destination.route);
@@ -225,7 +226,7 @@ class _PadSidebarState extends ConsumerState<PadSidebar> {
                           color: selected
                               ? AppDesignTokens.brandGreen
                               : Colors.transparent,
-                          borderRadius: BorderRadius.circular(24),
+                          borderRadius: BorderRadius.circular(AppRadius.xl),
                           boxShadow: selected
                               ? AppDesignTokens.toyButtonShadow
                               : const <BoxShadow>[],
@@ -242,7 +243,7 @@ class _PadSidebarState extends ConsumerState<PadSidebar> {
                                   color: selected
                                       ? AppDesignTokens.appWhite
                                       : Colors.transparent,
-                                  borderRadius: BorderRadius.circular(16),
+                                  borderRadius: BorderRadius.circular(AppRadius.md),
                                 ),
                                 child: SizedBox(
                                   width: compact ? 36 : 40,
@@ -285,7 +286,7 @@ class _PadSidebarState extends ConsumerState<PadSidebar> {
               ),
               InkWell(
                 key: const Key('pad-sidebar-growth-entry'),
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
                 onTap: () => context.go(AppNavDestination.growth.route),
                 child: Stack(
                   clipBehavior: Clip.none,
@@ -385,11 +386,11 @@ class _DailyEnglishBubble extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         key: const Key('pad-sidebar-daily-english-bubble'),
-        borderRadius: BorderRadius.circular(18),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         child: DecoratedBox(
           decoration: BoxDecoration(
             color: AppDesignTokens.appWhite,
-            borderRadius: BorderRadius.circular(18),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
             boxShadow: AppDesignTokens.toyCardShadow,
           ),
           child: SizedBox(

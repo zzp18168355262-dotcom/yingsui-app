@@ -69,7 +69,7 @@ class _PlayerCurrentLineCardState extends State<PlayerCurrentLineCard> {
       padding: const EdgeInsets.fromLTRB(24, 22, 24, 24),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: const Color(0xFFE5E5E5), width: 2),
         boxShadow: AppElevation.medium,
       ),
@@ -86,7 +86,7 @@ class _PlayerCurrentLineCardState extends State<PlayerCurrentLineCard> {
                   ),
                   decoration: BoxDecoration(
                     color: const Color(0xFFFFF7D6),
-                    borderRadius: BorderRadius.circular(16),
+                    borderRadius: BorderRadius.circular(AppRadius.md),
                   ),
                   child: const Text(
                     '当前',
@@ -116,7 +116,7 @@ class _PlayerCurrentLineCardState extends State<PlayerCurrentLineCard> {
                     foregroundColor: AppDesignTokens.primaryBlueDark,
                     minimumSize: const Size(48, 48),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(18),
+                      borderRadius: BorderRadius.circular(AppRadius.xl),
                     ),
                   ),
                   child: const Icon(Icons.bookmark_rounded),
@@ -146,7 +146,7 @@ class _PlayerCurrentLineCardState extends State<PlayerCurrentLineCard> {
                             selectedWord = token;
                           });
                         },
-                        borderRadius: BorderRadius.circular(8),
+                        borderRadius: BorderRadius.circular(AppRadius.sm),
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 6,
@@ -156,7 +156,7 @@ class _PlayerCurrentLineCardState extends State<PlayerCurrentLineCard> {
                             color: selectedToken || highlighted
                                 ? const Color(0xFFDFF8C8)
                                 : Colors.transparent,
-                            borderRadius: BorderRadius.circular(8),
+                            borderRadius: BorderRadius.circular(AppRadius.sm),
                             border: Border.all(
                               color: highlighted
                                   ? AppDesignTokens.brandGreen

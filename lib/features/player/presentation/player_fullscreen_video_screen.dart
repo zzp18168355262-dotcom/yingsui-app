@@ -4,6 +4,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../library/presentation/library_mock_data.dart';
 import '../../settings/presentation/settings_provider.dart';
 import '../../shared/presentation/pad/app_design_tokens.dart';
@@ -485,14 +486,14 @@ class _FullscreenEpisodePanel extends StatelessWidget {
                   final bool isActive = episode.id == activeEpisodeId;
                   return InkWell(
                     onTap: () => onOpenEpisode(episode),
-                    borderRadius: BorderRadius.circular(18),
+                    borderRadius: BorderRadius.circular(AppRadius.xl),
                     child: Container(
                       padding: const EdgeInsets.all(14),
                       decoration: BoxDecoration(
                         color: isActive
                             ? AppDesignTokens.brandGreen.withValues(alpha: 0.18)
                             : Colors.white.withValues(alpha: 0.06),
-                        borderRadius: BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(AppRadius.xl),
                         border: Border.all(
                           color: isActive
                               ? AppDesignTokens.brandGreen

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/theme/app_theme.dart';
+
 class AppLoadingOverlay extends StatelessWidget {
   const AppLoadingOverlay({
     required this.isLoading,
@@ -29,7 +31,7 @@ class AppLoadingOverlay extends StatelessWidget {
               padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
               decoration: BoxDecoration(
                 color: Colors.white,
-                borderRadius: BorderRadius.circular(24),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
               child: Column(
                 mainAxisSize: MainAxisSize.min,

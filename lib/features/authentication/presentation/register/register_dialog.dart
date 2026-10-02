@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../../utils/context_extensions.dart';
 import '../../domain/register_response.dart';
 import '../login/login_controller.dart';
@@ -38,7 +39,7 @@ class _RegisterDialogState extends ConsumerState<RegisterDialog> {
         width: size.width * 0.8,
         height: size.height * 0.5,
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(borderRadius: BorderRadius.circular(10)),
+        decoration: BoxDecoration(borderRadius: BorderRadius.circular(AppRadius.sm)),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -68,7 +69,7 @@ class _RegisterDialogState extends ConsumerState<RegisterDialog> {
               decoration: InputDecoration(
                 hintText: 'Enter your username',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   borderSide: BorderSide(color: context.colorScheme.primary),
                 ),
               ),
@@ -87,7 +88,7 @@ class _RegisterDialogState extends ConsumerState<RegisterDialog> {
               decoration: InputDecoration(
                 hintText: 'Enter your password',
                 border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(10),
+                  borderRadius: BorderRadius.circular(AppRadius.sm),
                   borderSide: BorderSide(color: context.colorScheme.primary),
                 ),
               ),

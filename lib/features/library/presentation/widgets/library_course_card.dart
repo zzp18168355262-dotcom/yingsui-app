@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../library_mock_data.dart';
 import 'library_course_poster.dart';
@@ -24,11 +25,11 @@ class LibraryCourseCard extends StatelessWidget {
 
     return InkWell(
       onTap: onTap,
-      borderRadius: BorderRadius.circular(32),
+      borderRadius: BorderRadius.circular(AppRadius.xxl),
       child: Ink(
         decoration: BoxDecoration(
           color: AppDesignTokens.appWhite,
-          borderRadius: BorderRadius.circular(32),
+          borderRadius: BorderRadius.circular(AppRadius.xxl),
           boxShadow: AppDesignTokens.toyCardShadow,
         ),
         child: Column(
@@ -108,7 +109,7 @@ class LibraryCourseCard extends StatelessWidget {
                           color: AppDesignTokens.borderGray,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(6),
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                       ),
                     )

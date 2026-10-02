@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
+
 class PhraseInput extends StatelessWidget {
   const PhraseInput({
     required this.label,
@@ -33,7 +35,7 @@ class PhraseInput extends StatelessWidget {
             filled: true,
             fillColor: const Color(0xFFF8F9FB),
             border: OutlineInputBorder(
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               borderSide: BorderSide.none,
             ),
             contentPadding: const EdgeInsets.symmetric(

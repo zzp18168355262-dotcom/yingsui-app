@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../config/app_links.dart';
 import '../../../config/theme/app_colors.dart';
+import '../../../config/theme/app_theme.dart';
 import '../../../flavors/app_flavor.dart';
 import '../../../utils/url_utils.dart';
 import '../../navigation/presentation/navigation_destination.dart';
@@ -890,7 +891,7 @@ class _TtsEngineRow extends StatelessWidget {
           DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(color: const Color(0xFFB9CDBE)),
             ),
             child: Padding(
@@ -898,7 +899,7 @@ class _TtsEngineRow extends StatelessWidget {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: value,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                   icon: const Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: Color(0xFF53625A),
@@ -987,7 +988,7 @@ class _TtsVoiceRow extends StatelessWidget {
           DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(color: const Color(0xFFB9CDBE)),
             ),
             child: Padding(
@@ -995,7 +996,7 @@ class _TtsVoiceRow extends StatelessWidget {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: value,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                   icon: const Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: Color(0xFF53625A),
@@ -1052,7 +1053,7 @@ class _SubtitleWordHighlightBorderWidthRow extends StatelessWidget {
           DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(color: const Color(0xFFB9CDBE)),
             ),
             child: Padding(
@@ -1060,7 +1061,7 @@ class _SubtitleWordHighlightBorderWidthRow extends StatelessWidget {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<double>(
                   value: value,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                   icon: const Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: Color(0xFF53625A),
@@ -1110,7 +1111,7 @@ class _TtsRateRow extends StatelessWidget {
           DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(color: const Color(0xFFB9CDBE)),
             ),
             child: Padding(
@@ -1118,7 +1119,7 @@ class _TtsRateRow extends StatelessWidget {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<double>(
                   value: value,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                   icon: const Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: Color(0xFF53625A),
@@ -1189,15 +1190,15 @@ class _InputRow extends StatelessWidget {
                 vertical: 14,
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 borderSide: const BorderSide(color: Color(0xFFB9CDBE)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 borderSide: const BorderSide(color: Color(0xFFB9CDBE)),
               ),
               disabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 borderSide: const BorderSide(color: Color(0xFFD4DDD7)),
               ),
             ),
@@ -1237,7 +1238,7 @@ class _SelectRow extends StatelessWidget {
           DecoratedBox(
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(14),
+              borderRadius: BorderRadius.circular(AppRadius.md),
               border: Border.all(color: const Color(0xFFB9CDBE)),
             ),
             child: Padding(
@@ -1245,7 +1246,7 @@ class _SelectRow extends StatelessWidget {
               child: DropdownButtonHideUnderline(
                 child: DropdownButton<String>(
                   value: value,
-                  borderRadius: BorderRadius.circular(16),
+                  borderRadius: BorderRadius.circular(AppRadius.md),
                   icon: const Icon(
                     Icons.keyboard_arrow_down_rounded,
                     color: Color(0xFF53625A),

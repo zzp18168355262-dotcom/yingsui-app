@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../../../shared/presentation/pad/pad_compact.dart';
 
@@ -36,7 +37,7 @@ class PadDashboardStatCard extends StatelessWidget {
           DecoratedBox(
             decoration: BoxDecoration(
               color: accentBackground,
-              borderRadius: BorderRadius.circular(18),
+              borderRadius: BorderRadius.circular(AppRadius.xl),
             ),
             child: SizedBox(
               width: compact ? 42 : 48,

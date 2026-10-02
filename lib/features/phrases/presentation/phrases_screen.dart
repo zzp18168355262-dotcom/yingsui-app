@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../../router/app_router.dart';
 import '../../library/presentation/library_catalog_provider.dart';
 import '../../library/presentation/library_mock_data.dart';
@@ -466,8 +467,7 @@ class _TodayReviewBanner extends StatelessWidget {
       padding: EdgeInsets.all(compact ? 18 : 22),
       decoration: BoxDecoration(
         color: const Color(0xFFF0FAE8),
-        borderRadius: BorderRadius.circular(22),
-        border: Border.all(color: AppDesignTokens.brandGreen, width: 2),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         boxShadow: AppDesignTokens.toyCardShadow,
       ),
       child: stacked
@@ -562,7 +562,16 @@ class _LibraryControls extends StatelessWidget {
             items: courseOptions
                 .map(
                   (String item) =>
-                      DropdownMenuItem<String>(value: item, child: Text(item)),
+                      DropdownMenuItem<String>(
+                value: item,
+                // 课程名可能较长（如「全部课程」在窄屏上会折行），
+                // 统一单行 + 省略，避免破坏这一行的对齐。
+                child: Text(
+                  item,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ),
                 )
                 .toList(growable: false),
             onChanged: (String? value) {
@@ -644,7 +653,7 @@ class _ControlSurface extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppDesignTokens.appWhite,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: AppDesignTokens.borderGray, width: 2),
       ),
       child: SizedBox(height: 56, child: child),
@@ -664,7 +673,7 @@ class _EmptyPhraseList extends StatelessWidget {
       padding: const EdgeInsets.all(36),
       decoration: BoxDecoration(
         color: AppDesignTokens.appWhite,
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Column(
         children: <Widget>[

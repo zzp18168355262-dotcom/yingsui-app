@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../../router/app_router.dart';
 import '../../import_course/presentation/import_course_screen.dart';
 import '../../import_course/presentation/widgets/import_course_flow.dart';
@@ -288,7 +289,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                           color: AppDesignTokens.borderGray,
                         ),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(14),
+                          borderRadius: BorderRadius.circular(AppRadius.md),
                         ),
                         elevation: 0,
                       ),
@@ -315,7 +316,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       color: AppDesignTokens.borderGray,
                     ),
                     shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(14),
+                      borderRadius: BorderRadius.circular(AppRadius.md),
                     ),
                     elevation: 0,
                   ),
@@ -387,7 +388,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
                       padding: EdgeInsets.all(compact ? 18 : 20),
                       decoration: BoxDecoration(
                         color: AppDesignTokens.appWhite,
-                        borderRadius: BorderRadius.circular(28),
+                        borderRadius: BorderRadius.circular(AppRadius.xxl),
                         boxShadow: AppDesignTokens.toyCardShadow,
                       ),
                       child: Column(
@@ -780,7 +781,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
             return AlertDialog(
               backgroundColor: AppDesignTokens.appWhite,
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(28),
+                borderRadius: BorderRadius.circular(AppRadius.xxl),
               ),
               title: Text(single ? '编辑课程' : '批量编辑'),
               content: Column(
@@ -904,7 +905,7 @@ class _LibraryScreenState extends ConsumerState<LibraryScreen> {
         return AlertDialog(
           backgroundColor: AppDesignTokens.appWhite,
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(AppRadius.xxl),
           ),
           title: const Text('删除已选课程'),
           content: Text('将删除 ${selectedCourseIds.length} 个已选课程。'),
@@ -1188,8 +1189,7 @@ class _EmptyLibraryState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 28),
       decoration: BoxDecoration(
         color: AppDesignTokens.appWhite,
-        borderRadius: BorderRadius.circular(28),
-        border: Border.all(color: AppDesignTokens.borderGray),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
         boxShadow: AppDesignTokens.toyCardShadow,
       ),
       child: Column(
@@ -1471,7 +1471,7 @@ class _EmptyEpisodesState extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
       decoration: BoxDecoration(
         color: AppDesignTokens.softWhite,
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: AppDesignTokens.borderGray),
       ),
       child: const Column(
@@ -1514,13 +1514,13 @@ class _EpisodeSortChip extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 2),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(AppRadius.md),
         border: Border.all(color: const Color(0xFFDCE4DA)),
       ),
       child: DropdownButtonHideUnderline(
         child: DropdownButton<String>(
           value: value,
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(AppRadius.md),
           onChanged: onChanged,
           icon: const Icon(Icons.keyboard_arrow_down_rounded),
           style: const TextStyle(

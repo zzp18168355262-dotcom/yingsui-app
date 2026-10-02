@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
+
 class TutorialOverlay extends StatelessWidget {
   const TutorialOverlay({required this.onDismiss, super.key});
 
@@ -95,7 +97,7 @@ class _InstructionRow extends StatelessWidget {
         color: highlighted
             ? const Color(0xFF2B2B31)
             : Colors.white.withValues(alpha: 0.06),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
       ),
       child: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 16),

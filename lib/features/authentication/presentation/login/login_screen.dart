@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../../constants/assets.dart';
 import '../../../../router/app_router.dart';
 import '../../domain/login_response.dart';
@@ -263,7 +264,7 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
                       style: TextButton.styleFrom(
                         minimumSize: const Size.fromHeight(50),
                         shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
+                          borderRadius: BorderRadius.circular(AppRadius.sm),
                         ),
                         side: BorderSide(
                           color: Theme.of(context).colorScheme.primary,

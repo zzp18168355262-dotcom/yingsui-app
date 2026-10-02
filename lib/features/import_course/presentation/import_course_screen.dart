@@ -256,7 +256,7 @@ class _IconAction extends StatelessWidget {
           padding: EdgeInsets.zero,
           side: const BorderSide(color: AppDesignTokens.borderGray),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           elevation: 0,
         ),

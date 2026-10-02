@@ -105,7 +105,7 @@ class _FeatureCard extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: tone,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
         boxShadow: AppElevation.high,
       ),
       child: Padding(

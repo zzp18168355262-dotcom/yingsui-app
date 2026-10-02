@@ -853,7 +853,7 @@ class _WebImportNotice extends StatelessWidget {
       padding: EdgeInsets.all(compact ? 16 : 20),
       decoration: BoxDecoration(
         color: const Color(0xFFFFF9ED),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: const Color(0xFFF5DFA8)),
       ),
       child: const Column(
@@ -896,7 +896,7 @@ class _BottomActionBar extends StatelessWidget {
     return DecoratedBox(
       decoration: BoxDecoration(
         color: AppDesignTokens.appWhite.withValues(alpha: 0.98),
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
         border: Border.all(color: const Color(0xFFF0ECE6)),
         boxShadow: AppElevation.high,
       ),
@@ -943,7 +943,7 @@ class _TaskCard extends StatelessWidget {
       padding: EdgeInsets.all(compact ? 28 : 34),
       decoration: BoxDecoration(
         color: AppDesignTokens.appWhite.withValues(alpha: 0.98),
-        borderRadius: BorderRadius.circular(32),
+        borderRadius: BorderRadius.circular(AppRadius.xxl),
         border: Border.all(color: const Color(0xFFF0ECE6)),
         boxShadow: AppElevation.modal,
       ),
@@ -1058,7 +1058,7 @@ class _HeaderIconButton extends StatelessWidget {
           padding: EdgeInsets.zero,
           side: const BorderSide(color: AppDesignTokens.borderGray),
           shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(AppRadius.md),
           ),
           elevation: 0,
         ),
@@ -1184,7 +1184,7 @@ class _SourceSelectionStep extends StatelessWidget {
                 icon: const Icon(Icons.close_rounded),
               ),
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(18),
+                borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
             ),
           ),
@@ -1237,7 +1237,7 @@ class _SourceModeCard extends StatelessWidget {
     final bool selected = mode == current;
     return InkWell(
       onTap: () => onTap(mode),
-      borderRadius: BorderRadius.circular(18),
+      borderRadius: BorderRadius.circular(AppRadius.xl),
       child: Container(
         width: 220,
         padding: const EdgeInsets.all(18),
@@ -1245,7 +1245,7 @@ class _SourceModeCard extends StatelessWidget {
           color: selected
               ? AppDesignTokens.skyLight
               : AppDesignTokens.softWhite,
-          borderRadius: BorderRadius.circular(18),
+          borderRadius: BorderRadius.circular(AppRadius.xl),
           border: Border.all(
             color: selected
                 ? AppDesignTokens.primaryBlueDark
@@ -1365,7 +1365,7 @@ class _ParsingStep extends StatelessWidget {
             color: parsing
                 ? AppDesignTokens.skyLight.withValues(alpha: 0.72)
                 : AppDesignTokens.softWhite,
-            borderRadius: BorderRadius.circular(24),
+            borderRadius: BorderRadius.circular(AppRadius.xl),
             border: Border.all(color: const Color(0xFFE7E1DA)),
           ),
           child: Row(
@@ -1375,7 +1375,7 @@ class _ParsingStep extends StatelessWidget {
                 height: compact ? 52 : 60,
                 decoration: BoxDecoration(
                   color: AppDesignTokens.appWhite,
-                  borderRadius: BorderRadius.circular(20),
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
                 ),
                 child: Center(
                   child: parsing
@@ -1446,7 +1446,7 @@ class _FolderTray extends StatelessWidget {
       padding: const EdgeInsets.symmetric(horizontal: 22, vertical: 18),
       decoration: BoxDecoration(
         color: const Color(0xFFFDFCFB),
-        borderRadius: BorderRadius.circular(24),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: const Color(0xFFE5E1DC)),
       ),
       // 用 LayoutBuilder 拿到真实可用宽度，窄屏时把按钮换到下一行。
@@ -1464,7 +1464,7 @@ class _FolderTray extends StatelessWidget {
                 height: 52,
                 decoration: BoxDecoration(
                   color: const Color(0xFFEFF8F1),
-                  borderRadius: BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(AppRadius.xl),
                 ),
                 child: Icon(
                   icon,
@@ -1535,7 +1535,7 @@ class _ImportPathRow extends StatelessWidget {
       padding: const EdgeInsets.all(18),
       decoration: BoxDecoration(
         color: const Color(0xFFFDFCFB),
-        borderRadius: BorderRadius.circular(22),
+        borderRadius: BorderRadius.circular(AppRadius.xl),
         border: Border.all(color: const Color(0xFFE5E1DC)),
       ),
       child: Row(
@@ -1545,7 +1545,7 @@ class _ImportPathRow extends StatelessWidget {
             height: 44,
             decoration: BoxDecoration(
               color: const Color(0xFFEFF8F1),
-              borderRadius: BorderRadius.circular(16),
+              borderRadius: BorderRadius.circular(AppRadius.md),
             ),
             child: Icon(icon, color: AppDesignTokens.brandGreenDark),
           ),

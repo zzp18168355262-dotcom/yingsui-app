@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../../../shared/presentation/pad/pad_compact.dart';
 import '../../domain/import_match.dart';
@@ -45,7 +46,7 @@ class ImportMatchTable extends StatelessWidget {
         DecoratedBox(
           decoration: BoxDecoration(
             color: const Color(0xFFFFFDFC),
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(AppRadius.xxl),
             border: Border.all(color: const Color(0xFFE8E2DB)),
           ),
           child: rows.isEmpty
@@ -306,11 +307,11 @@ class _SubtitleCell extends StatelessWidget {
               filled: true,
               fillColor: AppDesignTokens.appWhite,
               border: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 borderSide: const BorderSide(color: Color(0xFFE0D9D1)),
               ),
               enabledBorder: OutlineInputBorder(
-                borderRadius: BorderRadius.circular(14),
+                borderRadius: BorderRadius.circular(AppRadius.md),
                 borderSide: const BorderSide(color: Color(0xFFE0D9D1)),
               ),
             ),
