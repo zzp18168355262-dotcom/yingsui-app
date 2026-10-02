@@ -164,8 +164,14 @@ for name in sorted(os.listdir(dist)):
     with open(path, "rb") as fh:
         for chunk in iter(lambda: fh.read(1 << 20), b""):
             h.update(chunk)
-    platform = "macos" if name.endswith(".dmg") else (
-        "ios" if name.endswith(".ipa") else "android")
+    # 注意：macOS 分发包是 .zip（DMG 在当前环境不可用），
+    # 只判断 .dmg 会把 macOS 包误标成 android，导致检查更新时推错包。
+    if name.endswith((".zip", ".dmg")):
+        platform = "macos"
+    elif name.endswith(".ipa"):
+        platform = "ios"
+    else:
+        platform = "android"
     assets.append({
         "name": name,
         "platform": platform,
@@ -256,6 +262,28 @@ A：只保存在你的设备本地，不会上传。
 如需确认下载文件完整，可比对 SHA256SUMS.txt 中的值：
   macOS/Linux:  shasum -a 256 <文件名>
   Windows:      certutil -hashfile <文件名> SHA256
+EOF
+
+# ---- 更新说明 ----
+# manifest.json 里的 releaseNotesUrl 指向它。
+# 不生成的话，用户点「查看更新说明」会 404。
+echo
+echo "==> 生成 release-notes.txt"
+cat > "$DIST/release-notes.txt" <<EOF
+英语角 English Corner ${VERSION} (build ${BUILD_NO})
+
+下载文件 / Downloads
+  macOS               EnglishCorner-${VERSION}-macos.zip
+  Android             EnglishCorner-${VERSION}-android.apk
+  Android (Play)      EnglishCorner-${VERSION}-android.aab
+  iOS (需签名)         EnglishCorner-${VERSION}-ios-unsigned.ipa
+
+安装说明见 安装说明.txt。
+Windows 版暂未提供。
+
+English Corner ${VERSION} (build ${BUILD_NO})
+See 安装说明.txt for installation steps.
+Windows build is not available yet.
 EOF
 
 echo
