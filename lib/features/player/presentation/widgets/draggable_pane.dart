@@ -156,28 +156,44 @@ class _DraggablePaneState extends State<DraggablePane> {
           ),
         ),
         // 右下角缩放把手。
+        //
+        // 做大的原因：最初只有 14×14 的可见区域，图标也不像缩放手柄，
+        // 用户根本找不到（反馈「没法调整大小」）。实测功能本身是好的
+        // （拖拽后宽度从 620 变为 770），问题是可发现性与可抓取性。
         Positioned(
-          left: clampedLeft + width - 22,
-          top: clampedTop + height - 22,
-          child: GestureDetector(
-            onPanUpdate: (DragUpdateDetails details) {
-              setState(() {
-                _size = Size(
-                  _size.width + details.delta.dx,
-                  _size.height + details.delta.dy,
-                );
-              });
-            },
+          left: clampedLeft + width - 30,
+          top: clampedTop + height - 30,
+          child: Tooltip(
+            message: '拖动可调整窗格大小',
             child: MouseRegion(
               cursor: SystemMouseCursors.resizeDownRight,
-              child: Container(
-                width: 22,
-                height: 22,
-                alignment: Alignment.center,
-                child: Icon(
-                  Icons.signal_cellular_4_bar_rounded,
-                  size: 14,
-                  color: palette.textTertiary,
+              child: GestureDetector(
+                behavior: HitTestBehavior.opaque,
+                onPanUpdate: (DragUpdateDetails details) {
+                  setState(() {
+                    _size = Size(
+                      _size.width + details.delta.dx,
+                      _size.height + details.delta.dy,
+                    );
+                  });
+                },
+                child: Container(
+                  width: 30,
+                  height: 30,
+                  alignment: Alignment.center,
+                  decoration: BoxDecoration(
+                    color: palette.surfaceAlt.withValues(alpha: 0.92),
+                    borderRadius: const BorderRadius.only(
+                      topLeft: Radius.circular(10),
+                      bottomRight: Radius.circular(AppRadius.lg),
+                    ),
+                  ),
+                  child: Icon(
+                    // 双向对角箭头，是「可缩放」的通用视觉语言。
+                    Icons.open_in_full_rounded,
+                    size: 20,
+                    color: palette.textSecondary,
+                  ),
                 ),
               ),
             ),

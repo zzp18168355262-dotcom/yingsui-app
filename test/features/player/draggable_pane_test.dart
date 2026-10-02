@@ -68,6 +68,49 @@ void main() {
     expect(after.dy, greaterThan(before.dy + 30), reason: '应能向下拖动');
   });
 
+  testWidgets('拖动右下角把手可改变窗格尺寸', (WidgetTester tester) async {
+    // 用户反馈「这个页面没法调整大小」。
+    // 实测功能本身可用，但把手原先只有 14×14、图标也不明显，
+    // 用户找不到。这里同时验证「能找到」与「拖动能改尺寸」。
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page(onClose: () {}));
+    await tester.pumpAndSettle();
+
+    // 用标题栏宽度代表窗格宽度。
+    Size paneSize() {
+      final Finder bar = find.ancestor(
+        of: find.text('逐词全文'),
+        matching: find.byType(Container),
+      );
+      return tester.getSize(bar.first);
+    }
+
+    final Finder handle = find.byIcon(Icons.open_in_full_rounded);
+    expect(handle, findsOneWidget, reason: '缩放把手应存在且可被找到');
+
+    // 实际可拖区域应足够大、便于抓取（图标本身是可视部分，会小一些）。
+    final Rect hitArea = tester.getRect(
+      find
+          .ancestor(of: handle, matching: find.byType(GestureDetector))
+          .first,
+    );
+    expect(
+      hitArea.width,
+      greaterThanOrEqualTo(28),
+      reason: '把手可拖区域不应小于 28 逻辑像素',
+    );
+
+    final Size before = paneSize();
+    await tester.drag(handle, const Offset(160, 120));
+    await tester.pumpAndSettle();
+    final Size after = paneSize();
+
+    expect(after.width, greaterThan(before.width + 50), reason: '拖拽应增大宽度');
+  });
+
   testWidgets('点击关闭按钮触发回调', (WidgetTester tester) async {
     tester.view.physicalSize = const Size(1200, 800);
     tester.view.devicePixelRatio = 1;
