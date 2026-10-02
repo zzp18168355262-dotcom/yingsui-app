@@ -121,6 +121,31 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
   /// 选中去抖定时器：拖选过程中不显示提示条，停稳后再出现。
   Timer? _selectionDebounce;
 
+  /// 「长按并划过相邻词块」这一手势的起点信息。
+  ///
+  /// 为什么自己做而不用系统文本选择：
+  /// 列表是 ListView（可滚动）+ 每个词块各自是 InkWell（要响应点词查词），
+  /// 两者与 SelectionArea 的手势竞争在这一结构下不可靠 ——
+  /// 实测长按词块**无法稳定**产生文本选中（同一页面的简化结构却可以），
+  /// 用户反馈的正是「第一行能选、第二行选不了」。
+  /// 这里改为显式手势：长按起点词 → 划过相邻词 → 直接得到短语。
+  int? _dragStartTokenIndex;
+  int? _dragEndTokenIndex;
+  List<GlobalKey> _activeTokenKeys = const <GlobalKey>[];
+
+  /// 词块 key 的持久缓存：'行号-词序号' → GlobalKey。
+  ///
+  /// 必须持久化。原先在 build 里为每个词块新建 GlobalKey，
+  /// 而 setState 重建会让这些 key 全部作废（currentContext 变 null），
+  /// 于是拖动时的命中判定永远失败 —— 实测只能选中起点那一个词。
+  final Map<String, GlobalKey> _tokenKeyCache = <String, GlobalKey>{};
+
+  GlobalKey _tokenKeyFor(int lineIndex, int tokenIndex) =>
+      _tokenKeyCache.putIfAbsent(
+        '$lineIndex-$tokenIndex',
+        () => GlobalKey(debugLabel: 'token-$lineIndex-$tokenIndex'),
+      );
+
   String get _selectedText => _selectedTextNotifier.value;
 
   /// 上一帧是否在播放，用于检测「暂停 → 继续播放」的切换。
@@ -769,6 +794,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                                 ? widget.currentWordIndex
                                 : null,
                             active,
+                            originalIndex,
                           ),
                         if (widget.subtitleMode != '单英') ...<Widget>[
                           const _SelectableLineBreak(),
@@ -1029,12 +1055,98 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
     }
   }
 
-  Widget _buildWordLine(String text, int? highlightIndex, bool active) {
+  /// 开始拖选短语：记录起点词，并把当前选中设为该词。
+  void _beginPhraseDrag(
+    int tokenIndex,
+    String lineText,
+    List<GlobalKey> tokenKeys,
+  ) {
+    setState(() {
+      _dragStartTokenIndex = tokenIndex;
+      _dragEndTokenIndex = tokenIndex;
+      _activeTokenKeys = tokenKeys;
+    });
+    _selectedTextNotifier.value = _tokensOf(lineText)
+        .sublist(tokenIndex, tokenIndex + 1)
+        .join(' ');
+  }
+
+  /// 拖动过程中按指针位置更新结束词。
+  void _updatePhraseDrag(Offset globalPosition) {
+    final int? start = _dragStartTokenIndex;
+    if (start == null) {
+      return;
+    }
+    int? hit;
+    for (int i = 0; i < _activeTokenKeys.length; i++) {
+      final BuildContext? ctx = _activeTokenKeys[i].currentContext;
+      final RenderObject? obj = ctx?.findRenderObject();
+      if (obj is! RenderBox || !obj.hasSize) {
+        continue;
+      }
+      final Offset topLeft = obj.localToGlobal(Offset.zero);
+      final Rect tileRect = Rect.fromLTWH(
+        topLeft.dx,
+        topLeft.dy,
+        obj.size.width,
+        obj.size.height,
+      );
+      if (tileRect.contains(globalPosition)) {
+        hit = i;
+        break;
+      }
+    }
+    if (hit == null || hit == _dragEndTokenIndex) {
+      return;
+    }
+    setState(() => _dragEndTokenIndex = hit);
+    final int lo = start < hit ? start : hit;
+    final int hi = start < hit ? hit : start;
+    final List<String> tokens = _tokensOf(_lineTextOfActiveDrag());
+    if (hi < tokens.length) {
+      _selectedTextNotifier.value = tokens.sublist(lo, hi + 1).join(' ');
+    }
+  }
+
+  void _endPhraseDrag() {
+    setState(() {
+      _dragStartTokenIndex = null;
+      _dragEndTokenIndex = null;
+    });
+  }
+
+  /// 拖选期间用于拼接短语的原文（取当前句）。
+  String _lineTextOfActiveDrag() {
+    final int index = widget.activeIndex;
+    if (index < 0 || index >= widget.lines.length) {
+      return '';
+    }
+    return widget.lines[index].english;
+  }
+
+  List<String> _tokensOf(String text) =>
+      text.split(' ').where((String w) => w.isNotEmpty).toList(growable: false);
+
+  Widget _buildWordLine(
+    String text,
+    int? highlightIndex,
+    bool active,
+    int lineIndex,
+  ) {
     final List<_WordToken> tokens = text
         .split(' ')
         .where((String rawWord) => rawWord.isNotEmpty)
         .map((String rawWord) => _WordToken(value: rawWord))
         .toList(growable: false);
+
+    // 为本行每个词块取（持久化的）key，拖动时据此在屏幕坐标上做命中判定。
+    final List<GlobalKey> tokenKeys = <GlobalKey>[
+      for (int i = 0; i < tokens.length; i++) _tokenKeyFor(lineIndex, i),
+    ];
+    final bool isActiveLine = lineIndex == widget.activeIndex;
+    if (isActiveLine) {
+      _activeTokenKeys = tokenKeys;
+    }
 
     return Wrap(
       spacing: 4,
@@ -1052,9 +1164,48 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                 index == highlightIndex;
             final String tokenId = '$text-$index';
 
+            // 拖动范围高亮：让用户看到自己拖过了哪些词。
+            final int dragLo = _dragStartTokenIndex == null
+                ? -1
+                : (_dragStartTokenIndex! <
+                          (_dragEndTokenIndex ?? _dragStartTokenIndex!)
+                      ? _dragStartTokenIndex!
+                      : (_dragEndTokenIndex ?? _dragStartTokenIndex!));
+            final int dragHi = _dragStartTokenIndex == null
+                ? -1
+                : (_dragStartTokenIndex! >
+                          (_dragEndTokenIndex ?? _dragStartTokenIndex!)
+                      ? _dragStartTokenIndex!
+                      : (_dragEndTokenIndex ?? _dragStartTokenIndex!));
+            final bool inDragRange =
+                isActiveLine && index >= dragLo && index <= dragHi;
+
             return Builder(
+              key: tokenKeys[index],
               builder: (BuildContext wordContext) {
-                return InkWell(
+                // 长按后划过相邻词块即可选中短语。
+                //
+                // 不用系统文本选择：列表是 ListView（可滚动）且每个词块
+                // 各自是 InkWell（要响应点词查词），两者与 SelectionArea
+                // 的手势竞争在这一结构下不可靠 —— 实测长按词块无法稳定
+                // 产生文本选中，用户反馈「第一行能选、第二行选不了」。
+                //
+                // 长按必须放在 GestureDetector：InkWell 不支持
+                // onLongPressMoveUpdate，而拖动过程中需要持续收到位置。
+                return GestureDetector(
+                  behavior: HitTestBehavior.deferToChild,
+                  onLongPressStart: isActiveLine
+                      ? (LongPressStartDetails _) =>
+                          _beginPhraseDrag(index, text, tokenKeys)
+                      : null,
+                  onLongPressMoveUpdate: isActiveLine
+                      ? (LongPressMoveUpdateDetails details) =>
+                          _updatePhraseDrag(details.globalPosition)
+                      : null,
+                  onLongPressEnd: isActiveLine
+                      ? (LongPressEndDetails _) => _endPhraseDrag()
+                      : null,
+                  child: InkWell(
                   onTap: () {
                     // 点词查词时收起「翻译选中」入口，避免两个浮层并存。
                     if (_selectedText.isNotEmpty) {
@@ -1075,10 +1226,13 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                     ),
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(8),
-                      color: SubtitleWordHighlightStyle.background(
-                        widget.subtitleWordHighlightStyle,
-                        highlighted: highlighted,
-                      ),
+                      // 拖动中命中的词块加深底色，让用户看清选到哪了。
+                      color: inDragRange
+                          ? const Color(0xFFB7D9CE)
+                          : SubtitleWordHighlightStyle.background(
+                              widget.subtitleWordHighlightStyle,
+                              highlighted: highlighted,
+                            ),
                       border: Border.all(
                         color: SubtitleWordHighlightStyle.borderColor(
                           widget.subtitleWordHighlightStyle,
@@ -1131,6 +1285,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                       ],
                     ),
                   ),
+                ),
                 );
               },
             );

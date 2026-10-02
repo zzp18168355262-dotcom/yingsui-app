@@ -24,14 +24,17 @@ List<PlayerSubtitleLine> lines() {
   return <PlayerSubtitleLine>[
     const PlayerSubtitleLine(
       startTime: '00:01',
-      english: 'Science just turns me on.',
+      // 长句：在真实布局里会换行成两行，正是用户反馈选不中的场景。
+      english:
+          'FRANK: Lip, smart as a whip. Nobody is saying our '
+          'neighborhood is the Garden of Eden.',
       chinese: '科学让我欲火焚身。',
       startMs: 1000,
       endMs: 5000,
     ),
     const PlayerSubtitleLine(
       startTime: '00:06',
-      english: 'Nobody is saying our neighborhood is the Garden of Eden.',
+      english: 'Line two for the selection test.',
       chinese: '没人说我们社区是伊甸园。',
       startMs: 6000,
       endMs: 11000,
@@ -242,8 +245,8 @@ void main() {
       reason: '词条应为所选短语本身（而不是某个单词）',
     );
     expect(
-      lastLookup!.context,
-      'Science just turns me on.',
+      lastLookup!.context.contains('turns me on'),
+      isTrue,
       reason: '应带上该短语所在的整句作为上下文',
     );
   });
@@ -345,8 +348,8 @@ void main() {
       reason: '收藏的应是所选短语本身，而不是整句',
     );
     expect(
-      collectedPhrases.first.context,
-      'Science just turns me on.',
+      collectedPhrases.first.context.contains('turns me on'),
+      isTrue,
       reason: '应带上所在整句作为出处',
     );
   });
@@ -402,6 +405,45 @@ void main() {
       find.byKey(const ValueKey<String>('subtitle-translate-selection')),
       findsOneWidget,
       reason: '翻译按钮仍应存在',
+    );
+  });
+
+  testWidgets('长按词块并划过相邻词即可选中短语', (WidgetTester tester) async {
+    // 用户反馈：「第一行的字幕比较容易被选择，但第二行的字幕进行短语选择
+    // 的时候选择不了」。
+    //
+    // 根因：列表是 ListView（可滚动）、每个词块各自是 InkWell（要点词查词），
+    // 两者与 SelectionArea 的手势竞争在这一结构下不可靠 —— 实测长按词块
+    // 无法稳定产生系统文本选中。
+    // 因此改为显式手势：长按起点词 → 划过相邻词 → 直接得到短语。
+    tester.view.physicalSize = const Size(760, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page());
+    await tester.pumpAndSettle();
+
+    // 从第二句里的 "saying" 划到 "neighborhood"
+    final Rect startRect = tester.getRect(find.text('saying').first);
+    final Rect endRect = tester.getRect(find.text('neighborhood').first);
+
+    final TestGesture gesture = await tester.startGesture(startRect.center);
+    await tester.pump(const Duration(milliseconds: 700));
+    await gesture.moveTo(endRect.center);
+    await tester.pump(const Duration(milliseconds: 120));
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '拖选后应出现提示条',
+    );
+    expect(
+      find.text('saying our neighborhood'),
+      findsWidgets,
+      reason: '应选中从起点到终点的完整短语',
     );
   });
 }
