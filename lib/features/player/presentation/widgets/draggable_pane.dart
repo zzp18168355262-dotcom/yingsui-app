@@ -38,6 +38,15 @@ class _DraggablePaneState extends State<DraggablePane> {
   late Size _size = widget.initialSize;
   Offset? _offset;
 
+  /// 拖动/缩放的起点快照。
+  ///
+  /// 必须记录起点，而不是在每次回调里用「当前位置 + 本次增量」：
+  /// 后者在连续拖动时会把中间若干次位移丢掉
+  /// （实测拖动累计 (-100, +150)，结果只应用了最后一个增量）。
+  Offset? _dragStartPointer;
+  Offset? _dragStartOffset;
+  Size? _dragStartSize;
+
   /// 边与角的命中厚度。
   static const double _handleThickness = 14;
 
@@ -45,6 +54,9 @@ class _DraggablePaneState extends State<DraggablePane> {
   static const double _cornerSize = 22;
 
   static const double _titleBarHeight = 40;
+
+  /// 标题栏至少要留在屏幕内的可抓高度。
+  static const double _titleBarSafeMargin = 16;
 
   @override
   Widget build(BuildContext context) {
@@ -59,54 +71,60 @@ class _DraggablePaneState extends State<DraggablePane> {
     final double height = _size.height.clamp(minHeight, maxHeight);
 
     final Offset base = _offset ?? Offset(screen.width - width - 24, 72);
-    final double left = base.dx.clamp(-width + 140, screen.width - 140);
-    final double top = base.dy.clamp(0, screen.height - _titleBarHeight);
+    // 位置夹取：允许窗格大部分移出屏幕，只保证**标题栏**仍有足够部分
+    // 留在可视区内（可以抓到并拖回来）。
+    //
+    // 原先左右各留 140、上边完全不能出屏，导致窗格默认位置偏右时
+    // 往右/往上几乎拖不动，感觉像「不能随意移动」。
+    final double left = base.dx.clamp(-width + 180, screen.width - 180);
+    // 上边最多露出 _titleBarSafeMargin 的标题栏，保证还能抓回来。
+    final double top = base.dy.clamp(
+      -_titleBarHeight + _titleBarSafeMargin,
+      screen.height - 48,
+    );
 
     final AppPalette palette = AppColors.of(context);
 
-    /// 四角：等比例缩放（宽高同比）。
-    void resizeProportional(Offset delta, _Direction direction) {
-      final double rawDx = direction.extendsWidth ? delta.dx : -delta.dx;
-      final double rawDy = direction.extendsHeight ? delta.dy : -delta.dy;
-      // 取主导方向，避免斜向拖动过于敏感。
-      final double dominant = rawDx.abs() >= rawDy.abs() ? rawDx : rawDy;
+    /// 缩放共用的换算：以**拖动起点**为基准计算总位移。
+    void resize(
+      Offset totalDelta,
+      _Direction direction, {
+      required bool proportional,
+    }) {
+      final Size startSize = _dragStartSize ?? _size;
+      final Offset startOffset = _dragStartOffset ?? Offset(left, top);
 
-      final double factor = (_size.width + dominant) / _size.width;
-      final double nextWidth = (_size.width * factor).clamp(minWidth, maxWidth);
-      final double appliedFactor = nextWidth / _size.width;
-      final double nextHeight = (_size.height * appliedFactor).clamp(
-        minHeight,
-        maxHeight,
-      );
-      final double appliedDx = nextWidth - _size.width;
-      final double appliedDy = nextHeight - _size.height;
+      // 朝该方向为正的位移。
+      final double dx = direction.movesLeft ? -totalDelta.dx : totalDelta.dx;
+      final double dy = direction.movesTop ? -totalDelta.dy : totalDelta.dy;
 
-      setState(() {
-        _size = Size(nextWidth, nextHeight);
-        // 拉左上/左下角时左边缘要跟着移动，视觉上才是「拉着这个角」。
-        _offset = Offset(
-          left + (direction.movesLeft ? -appliedDx : 0),
-          top + (direction.movesTop ? -appliedDy : 0),
-        );
-      });
-    }
+      double nextWidth = startSize.width;
+      double nextHeight = startSize.height;
 
-    /// 四边：单向缩放。
-    void resizeSingle(Offset delta, _Direction direction) {
-      final double nextWidth = direction.extendsWidth
-          ? (_size.width + delta.dx).clamp(minWidth, maxWidth)
-          : _size.width;
-      final double nextHeight = direction.extendsHeight
-          ? (_size.height + delta.dy).clamp(minHeight, maxHeight)
-          : _size.height;
-      final double appliedDx = nextWidth - _size.width;
-      final double appliedDy = nextHeight - _size.height;
+      if (proportional && direction.extendsWidth && direction.extendsHeight) {
+        // 四角：等比例。取主导方向，避免斜向拖动过于敏感。
+        final double dominant = dx.abs() >= dy.abs() ? dx : dy;
+        final double factor = (startSize.width + dominant) / startSize.width;
+        nextWidth = (startSize.width * factor).clamp(minWidth, maxWidth);
+        final double applied = nextWidth / startSize.width;
+        nextHeight = (startSize.height * applied).clamp(minHeight, maxHeight);
+      } else {
+        if (direction.extendsWidth) {
+          nextWidth = (startSize.width + dx).clamp(minWidth, maxWidth);
+        }
+        if (direction.extendsHeight) {
+          nextHeight = (startSize.height + dy).clamp(minHeight, maxHeight);
+        }
+      }
+
+      final double appliedDx = nextWidth - startSize.width;
+      final double appliedDy = nextHeight - startSize.height;
 
       setState(() {
         _size = Size(nextWidth, nextHeight);
         _offset = Offset(
-          left + (direction.movesLeft ? -appliedDx : 0),
-          top + (direction.movesTop ? -appliedDy : 0),
+          startOffset.dx + (direction.movesLeft ? -appliedDx : 0),
+          startOffset.dy + (direction.movesTop ? -appliedDy : 0),
         );
       });
     }
@@ -129,13 +147,26 @@ class _DraggablePaneState extends State<DraggablePane> {
                   // 标题栏：拖动移动窗格。
                   GestureDetector(
                     behavior: HitTestBehavior.opaque,
+                    onPanStart: (DragStartDetails details) {
+                      _dragStartPointer = details.globalPosition;
+                      _dragStartOffset = Offset(left, top);
+                    },
                     onPanUpdate: (DragUpdateDetails details) {
+                      final Offset? startPointer = _dragStartPointer;
+                      final Offset? startOffset = _dragStartOffset;
+                      if (startPointer == null || startOffset == null) {
+                        return;
+                      }
+                      // 以起点为基准：全程跟随指针的总位移。
+                      // 若用「当前位置 + 本次增量」，连续拖动会丢掉中间位移。
+                      final Offset total = details.globalPosition - startPointer;
                       setState(() {
-                        _offset = Offset(
-                          left + details.delta.dx,
-                          top + details.delta.dy,
-                        );
+                        _offset = startOffset + total;
                       });
+                    },
+                    onPanEnd: (DragEndDetails details) {
+                      _dragStartPointer = null;
+                      _dragStartOffset = null;
                     },
                     child: Container(
                       height: _titleBarHeight,
@@ -206,7 +237,8 @@ class _DraggablePaneState extends State<DraggablePane> {
             top: top,
             width: width,
             height: height,
-            onDrag: resizeSingle,
+            onDrag: (Offset d, _Direction dir) =>
+                resize(d, dir, proportional: false),
           ),
 
         // ── 四角：等比例缩放 ──
@@ -223,7 +255,8 @@ class _DraggablePaneState extends State<DraggablePane> {
             top: top,
             width: width,
             height: height,
-            onDrag: resizeProportional,
+            onDrag: (Offset d, _Direction dir) =>
+                resize(d, dir, proportional: true),
           ),
 
         // 右下角可视提示：说明「这里可以缩放」。
@@ -312,8 +345,23 @@ class _DraggablePaneState extends State<DraggablePane> {
             'pane-resize-${isCorner ? 'corner-' : ''}${direction.name}',
           ),
           behavior: HitTestBehavior.opaque,
-          onPanUpdate: (DragUpdateDetails details) =>
-              onDrag(details.delta, direction),
+          onPanStart: (DragStartDetails details) {
+            _dragStartPointer = details.globalPosition;
+            _dragStartOffset = Offset(left, top);
+            _dragStartSize = Size(width, height);
+          },
+          onPanUpdate: (DragUpdateDetails details) {
+            final Offset? startPointer = _dragStartPointer;
+            if (startPointer == null) {
+              return;
+            }
+            onDrag(details.globalPosition - startPointer, direction);
+          },
+          onPanEnd: (DragEndDetails details) {
+            _dragStartPointer = null;
+            _dragStartOffset = null;
+            _dragStartSize = null;
+          },
           child: SizedBox(width: hWidth, height: hHeight),
         ),
       ),

@@ -222,13 +222,30 @@ void main() {
     await tester.drag(handle, const Offset(-2000, -2000));
     await tester.pumpAndSettle();
 
-    final Rect handleRect = tester.getRect(handle);
     final Size screen = tester.view.physicalSize / tester.view.devicePixelRatio;
-    expect(
-      handleRect.left,
-      lessThan(screen.width),
-      reason: '标题栏不应被拖到屏幕右侧之外',
+
+    // 直接用标题栏本身判定（图标只是标题栏里的一小块，测它会偏小）。
+    final Rect barRect = tester.getRect(
+      find
+          .ancestor(of: find.text('逐词全文'), matching: find.byType(Container))
+          .first,
     );
-    expect(handleRect.top, greaterThanOrEqualTo(-1), reason: '标题栏不应被拖到屏幕上方之外');
+    expect(
+      barRect.right,
+      greaterThan(0),
+      reason: '标题栏不应被整个拖出屏幕左侧',
+    );
+    expect(
+      barRect.left,
+      lessThan(screen.width),
+      reason: '标题栏不应被整个拖出屏幕右侧',
+    );
+    // 允许部分移出上边缘（放宽后可自由摆放），但必须留有可抓高度。
+    expect(
+      barRect.bottom,
+      greaterThanOrEqualTo(12),
+      reason: '标题栏应留有足够可抓高度，否则无法拖回',
+    );
+    expect(handle, findsOneWidget);
   });
 }
