@@ -85,6 +85,9 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
   String? _activeDictionaryTokenId;
   OverlayEntry? _dictionaryOverlayEntry;
   bool _autoFollowCurrentLine = true;
+
+  /// 上一帧是否在播放，用于检测「暂停 → 继续播放」的切换。
+  late bool _wasPlaying;
   int? _regeneratingAiLineIndex;
 
   bool get _showCurrentOnly => widget.showCurrentOnly;
@@ -92,6 +95,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
   @override
   void initState() {
     super.initState();
+    _wasPlaying = widget.isPlaying;
     _scrollController.addListener(_dismissDictionary);
     if (widget.isPlaying) {
       _scheduleScrollToActiveLine();
@@ -106,11 +110,26 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
         oldWidget.lines.length != widget.lines.length ||
         oldWidget.subtitleMode != widget.subtitleMode ||
         oldWidget.showCurrentOnly != widget.showCurrentOnly;
+    // 播放恢复时自动重新跟随。
+    //
+    // 原先只要用户手动滚动过列表，_autoFollowCurrentLine 就会被永久置 false，
+    // 之后字幕列表再不跟随视频移动，表现为「右边对不上视频里的字幕」，
+    // 而且唯一的恢复入口是「定位当前」按钮 —— 用户播放时不会想到去点它。
+    // 这里让「暂停后继续播放」成为自动恢复的时机，符合直觉：
+    // 用户重新开始播放，通常就是希望继续跟读当前进度。
+    final bool resumedPlaying = !oldWidget.isPlaying && widget.isPlaying;
+    if (resumedPlaying) {
+      _autoFollowCurrentLine = true;
+      _scheduleScrollToActiveLine();
+    }
+    final bool wasPlaying = _wasPlaying;
+    _wasPlaying = widget.isPlaying;
+
     final bool shouldFollowCurrentLine =
         _autoFollowCurrentLine &&
         widget.isPlaying &&
         (oldWidget.activeIndex != widget.activeIndex ||
-            oldWidget.isPlaying != widget.isPlaying);
+            wasPlaying != widget.isPlaying);
 
     if (!listStateChanged && !shouldFollowCurrentLine) {
       return;
@@ -404,7 +423,11 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
 
             return InkWell(
               key: _rowKeyFor(originalIndex),
-              onTap: () => widget.onTapLine(originalIndex),
+              onTap: () {
+                // 点选某句＝用户明确想定位，恢复自动跟随。
+                _autoFollowCurrentLine = true;
+                widget.onTapLine(originalIndex);
+              },
               onLongPress: () => _openActions(context, line, originalIndex),
               borderRadius: BorderRadius.circular(20),
               child: Ink(
@@ -459,7 +482,11 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                             FilledButton.tonal(
                               onPressed: active
                                   ? widget.onTogglePlaying
-                                  : () => widget.onTapLine(originalIndex),
+                                  : () {
+                                      // 同上：点句即恢复自动跟随。
+                                      _autoFollowCurrentLine = true;
+                                      widget.onTapLine(originalIndex);
+                                    },
                               style: FilledButton.styleFrom(
                                 backgroundColor: active
                                     ? const Color(0xFFDFF8C8)

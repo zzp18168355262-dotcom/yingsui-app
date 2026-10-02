@@ -385,6 +385,64 @@ void main() {
     expect(afterResumeCenter.abs(), lessThan(afterReleaseCenter.abs()));
   });
 
+  testWidgets('暂停期间手动滚动后，继续播放会重新跟随', (WidgetTester tester) async {
+    // 用户反馈：播放时右侧逐句精听有时对不上视频字幕、列表不移动。
+    // 根因是「手动滚动 → 永久停止跟随」，而恢复入口只有「定位当前」按钮。
+    // 修复后「暂停 → 继续播放」会重新跟随；本测试守住该行为。
+    tester.view.physicalSize = const Size(900, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    final GlobalKey<_SubtitleListHarnessState> harnessKey =
+        GlobalKey<_SubtitleListHarnessState>();
+    await tester.pumpWidget(
+      MaterialApp(home: _SubtitleListHarness(key: harnessKey)),
+    );
+    await tester.pumpAndSettle();
+
+    // 播放中，建立「会跟随」的基准。
+    harnessKey.currentState!.setPlaying(value: true);
+    await tester.pumpAndSettle();
+
+    // 用户手动拖动列表 → 跟随被暂停。
+    final Finder listFinder = find.byType(ListView);
+    final TestGesture gesture = await tester.startGesture(
+      tester.getCenter(listFinder),
+    );
+    await gesture.moveBy(const Offset(0, -140));
+    await tester.pump();
+    await gesture.up();
+    await tester.pumpAndSettle();
+
+    // 暂停。
+    harnessKey.currentState!.setPlaying(value: false);
+    await tester.pumpAndSettle();
+
+    // 暂停期间当前行前进：不应被强行拉回（尊重用户正在浏览的位置）。
+    harnessKey.currentState!.setActiveIndex(3);
+    await tester.pumpAndSettle();
+
+    // 继续播放 → 应重新跟随到新的当前行。
+    harnessKey.currentState!.setPlaying(value: true);
+    await tester.pumpAndSettle();
+    harnessKey.currentState!.setActiveIndex(3);
+    await tester.pumpAndSettle();
+
+    // fallbackLines 共 4 句，索引 3 即这一句。
+    final Finder targetLine = find.text('一个纯粹专注和平静的地方。');
+    expect(targetLine, findsOneWidget);
+    final double center =
+        tester.getCenter(targetLine).dy - tester.getCenter(listFinder).dy;
+    // 列表高度有限，当前行不可能总是精确居中；
+    // 关键是它已被拉回可视区域（而非留在手动滚动后的位置）。
+    final double listHalfHeight = tester.getSize(listFinder).height / 2;
+    expect(
+      center.abs(),
+      lessThan(listHalfHeight),
+      reason: '继续播放后当前行应回到可视区域内',
+    );
+  });
+
   testWidgets('player video panel does not overflow with many scrubber dots', (
     WidgetTester tester,
   ) async {
