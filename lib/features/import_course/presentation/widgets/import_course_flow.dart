@@ -1460,33 +1460,68 @@ class _FolderTray extends StatelessWidget {
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFE5E1DC)),
       ),
-      child: Row(
-        children: <Widget>[
-          Container(
-            width: 52,
-            height: 52,
-            decoration: BoxDecoration(
-              color: const Color(0xFFEFF8F1),
-              borderRadius: BorderRadius.circular(18),
-            ),
-            child: Icon(icon, color: AppDesignTokens.brandGreenDark, size: 28),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Text(
-              value,
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: empty ? FontWeight.w600 : FontWeight.w700,
-                color: empty
-                    ? const Color(0xFF9A9A9A)
-                    : AppDesignTokens.textPrimary,
+      // 用 LayoutBuilder 拿到真实可用宽度，窄屏时把按钮换到下一行。
+      //
+      // 为什么不是压缩按钮：该按钮内边距为横 22、纵 18，
+      // 图标 + 文字 + 内边距的最小宽度约 150；即便外层用 Flexible
+      // 把它压到 46 宽，**按钮内部**仍会溢出（实测 24px）。
+      // 换行是唯一既保留按钮完整性、又不溢出的做法。
+      child: LayoutBuilder(
+        builder: (BuildContext context, BoxConstraints constraints) {
+          final Widget info = Row(
+            children: <Widget>[
+              Container(
+                width: 52,
+                height: 52,
+                decoration: BoxDecoration(
+                  color: const Color(0xFFEFF8F1),
+                  borderRadius: BorderRadius.circular(18),
+                ),
+                child: Icon(
+                  icon,
+                  color: AppDesignTokens.brandGreenDark,
+                  size: 28,
+                ),
               ),
-            ),
-          ),
-          const SizedBox(width: 16),
-          action,
-        ],
+              const SizedBox(width: 16),
+              Expanded(
+                child: Text(
+                  value,
+                  // 窄屏下文件名可能很长，不设 maxLines/overflow 会撑破整行。
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: empty ? FontWeight.w600 : FontWeight.w700,
+                    color: empty
+                        ? const Color(0xFF9A9A9A)
+                        : AppDesignTokens.textPrimary,
+                  ),
+                ),
+              ),
+            ],
+          );
+
+          // 320 宽时留给按钮的空间不足，改为上下排列。
+          final bool stackVertically = constraints.maxWidth < 340;
+          if (!stackVertically) {
+            return Row(
+              children: <Widget>[
+                Expanded(child: info),
+                const SizedBox(width: 16),
+                action,
+              ],
+            );
+          }
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              info,
+              const SizedBox(height: 14),
+              Align(alignment: Alignment.centerRight, child: action),
+            ],
+          );
+        },
       ),
     );
   }
