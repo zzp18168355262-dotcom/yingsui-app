@@ -15,7 +15,6 @@ import '../../library/presentation/library_mock_data.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../phrases/presentation/phrase_book_provider.dart';
 import '../../settings/presentation/settings_provider.dart';
-import '../../shared/data/word_lookup_service.dart';
 import '../../shared/presentation/app_loading_overlay.dart';
 import '../../shared/presentation/pad/pad_scaffold.dart';
 import '../../words/data/offline_word_dictionary.dart';
@@ -67,6 +66,9 @@ class PadLandscapePlayerScreenState
   late final PlayerMockState state;
   final TranscriptReaderSession _transcriptReaderSession =
       TranscriptReaderSession();
+
+  /// 非空表示正在页内展示「逐词全文」。视频保持可见，不跳转整页。
+  TranscriptReaderSnapshot? _transcriptReaderSnapshot;
   Player? _videoPlayer;
   VideoController? _videoController;
   StreamSubscription<Duration>? _videoPositionSubscription;
@@ -616,33 +618,13 @@ class PadLandscapePlayerScreenState
           dictionary: ref.read(offlineWordDictionaryProvider),
         );
     if (!mounted) return;
-    final LearningSettingsState lookupSettings = ref.read(
-      learningSettingsProvider,
-    );
-    final WordLookupService lookupService = ref.read(wordLookupServiceProvider);
-    try {
-      await _transcriptReaderSession.open(
-        context: context,
-        snapshot: snapshot,
-        lookupWord:
-            ({required String rawWord, required String contextSentence}) =>
-                lookupService.lookupWord(
-                  rawWord: rawWord,
-                  contextSentence: contextSentence,
-                  settings: lookupSettings,
-                ),
-        translateSentence: (String sentence) => lookupService.translateSentence(
-          sentence: sentence,
-          settings: lookupSettings,
-        ),
-        playFullTranscript: _handlePlayFullTranscript,
-        toggleLineLoop: (int lineIndex) async {
-          _handleLoopFromLine(lineIndex);
-        },
-      );
-    } catch (_) {
-      _showMessage('无法打开逐词全文，请稍后重试');
-    }
+    // 与竖屏一致：在页面内展示，视频保持可见，不跳转整页。
+    setState(() => _transcriptReaderSnapshot = snapshot);
+  }
+
+  void _closeTranscriptReader() {
+    if (_transcriptReaderSnapshot == null) return;
+    setState(() => _transcriptReaderSnapshot = null);
   }
 
   @override
@@ -828,7 +810,21 @@ class PadLandscapePlayerScreenState
                         child: Column(
                           children: <Widget>[
                             Expanded(
-                              child: state.isShadowing && state.hasLines
+                              child: _transcriptReaderSnapshot != null
+                                  // 逐词全文：页内展示，视频保持可见。
+                                  ? FullTranscriptReaderScreen(
+                                      embedded: true,
+                                      snapshot: _transcriptReaderSnapshot!,
+                                      progressListenable:
+                                          _transcriptReaderSession.progress,
+                                      onClose: _closeTranscriptReader,
+                                      onPlayFullTranscript:
+                                          _handlePlayFullTranscript,
+                                      onToggleLineLoop: (int lineIndex) async {
+                                        _handleLoopFromLine(lineIndex);
+                                      },
+                                    )
+                                  : state.isShadowing && state.hasLines
                                   // 跟读模式：面板内联在右侧内容区，不再用弹窗。
                                   // 横屏空间充裕，字幕列表与面板可以并存。
                                   ? Align(

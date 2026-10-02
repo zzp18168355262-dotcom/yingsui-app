@@ -172,6 +172,7 @@ class FullTranscriptReaderScreen extends ConsumerStatefulWidget {
     required this.onClose,
     this.onPlayFullTranscript,
     this.onToggleLineLoop,
+    this.embedded = false,
     super.key,
   });
 
@@ -180,6 +181,12 @@ class FullTranscriptReaderScreen extends ConsumerStatefulWidget {
   final VoidCallback onClose;
   final FutureOr<void> Function()? onPlayFullTranscript;
   final FutureOr<void> Function(int lineIndex)? onToggleLineLoop;
+
+  /// 嵌入模式：不套 [Scaffold]，作为面板放进播放页。
+  ///
+  /// 用于「视频 + 逐词全文」同屏显示的场景，
+  /// 避免整页跳转让用户看不到视频。
+  final bool embedded;
 
   @override
   ConsumerState<FullTranscriptReaderScreen> createState() =>
@@ -568,10 +575,19 @@ class _FullTranscriptReaderScreenState
 
   @override
   Widget build(BuildContext context) {
+    final Widget content = _buildContent(context);
+    if (widget.embedded) {
+      // 嵌入播放页时由外层容器决定背景与安全区。
+      return content;
+    }
     return Scaffold(
       backgroundColor: const Color(0xFFF3F9F4),
-      body: SafeArea(
-        child: Column(
+      body: SafeArea(child: content),
+    );
+  }
+
+  Widget _buildContent(BuildContext context) {
+    return Column(
           children: <Widget>[
             _ReaderHeader(
               courseTitle: widget.snapshot.courseTitle,
@@ -651,9 +667,7 @@ class _FullTranscriptReaderScreenState
                 ),
               ),
             ),
-          ],
-        ),
-      ),
+      ],
     );
   }
 }

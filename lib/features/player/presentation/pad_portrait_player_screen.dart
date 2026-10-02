@@ -15,7 +15,6 @@ import '../../library/presentation/library_mock_data.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../phrases/presentation/phrase_book_provider.dart';
 import '../../settings/presentation/settings_provider.dart';
-import '../../shared/data/word_lookup_service.dart';
 import '../../shared/presentation/app_loading_overlay.dart';
 import '../../shared/presentation/pad/pad_scaffold.dart';
 import '../../words/data/offline_word_dictionary.dart';
@@ -66,6 +65,10 @@ class _PadPortraitPlayerScreenState
   late final PlayerMockState state;
   final TranscriptReaderSession _transcriptReaderSession =
       TranscriptReaderSession();
+
+  /// 非空表示正在页内展示「逐词全文」。视频保持可见，不跳转整页。
+  TranscriptReaderSnapshot? _transcriptReaderSnapshot;
+
   Player? _videoPlayer;
   VideoController? _videoController;
   StreamSubscription<Duration>? _videoPositionSubscription;
@@ -607,33 +610,18 @@ class _PadPortraitPlayerScreenState
           dictionary: ref.read(offlineWordDictionaryProvider),
         );
     if (!mounted) return;
-    final LearningSettingsState lookupSettings = ref.read(
-      learningSettingsProvider,
-    );
-    final WordLookupService lookupService = ref.read(wordLookupServiceProvider);
-    try {
-      await _transcriptReaderSession.open(
-        context: context,
-        snapshot: snapshot,
-        lookupWord:
-            ({required String rawWord, required String contextSentence}) =>
-                lookupService.lookupWord(
-                  rawWord: rawWord,
-                  contextSentence: contextSentence,
-                  settings: lookupSettings,
-                ),
-        translateSentence: (String sentence) => lookupService.translateSentence(
-          sentence: sentence,
-          settings: lookupSettings,
-        ),
-        playFullTranscript: _handlePlayFullTranscript,
-        toggleLineLoop: (int lineIndex) async {
-          _handleLoopFromLine(lineIndex);
-        },
-      );
-    } catch (_) {
-      _showMessage('无法打开逐词全文，请稍后重试');
-    }
+    // 在页面内展示，而不是跳转整页。
+    //
+    // 这个页面的用途是「逐词看全文」，用户仍然需要看着视频画面
+    // 与字幕。整页跳转（或另开窗口）会让视频消失，体验上很割裂。
+    // 因此这里只记录快照，由 build 把它渲染在下方内容区，
+    // 视频保持可见，右上角关闭即可回到逐句精听。
+    setState(() => _transcriptReaderSnapshot = snapshot);
+  }
+
+  void _closeTranscriptReader() {
+    if (_transcriptReaderSnapshot == null) return;
+    setState(() => _transcriptReaderSnapshot = null);
   }
 
   @override
@@ -799,7 +787,22 @@ class _PadPortraitPlayerScreenState
                             borderRadius: BorderRadius.circular(22),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
-                          child: state.isShadowing && state.hasLines
+                          child: _transcriptReaderSnapshot != null
+                              // 逐词全文：页内展示，视频保持可见。
+                              // 优先级高于跟读与字幕列表，因为用户是主动打开的。
+                              ? FullTranscriptReaderScreen(
+                                  embedded: true,
+                                  snapshot: _transcriptReaderSnapshot!,
+                                  progressListenable:
+                                      _transcriptReaderSession.progress,
+                                  onClose: _closeTranscriptReader,
+                                  onPlayFullTranscript:
+                                      _handlePlayFullTranscript,
+                                  onToggleLineLoop: (int lineIndex) async {
+                                    _handleLoopFromLine(lineIndex);
+                                  },
+                                )
+                              : state.isShadowing && state.hasLines
                               // 跟读模式：面板内联在下方内容区，而不是弹窗盖住画面。
                               // 这样字幕与视频全程可见 —— 跟读时需要看着字幕读。
                               ? Align(
