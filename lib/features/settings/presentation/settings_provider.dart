@@ -327,6 +327,9 @@ class TranslationModelService {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
               },
+              // 拉取模型列表属于辅助功能，不能让它无限等待。
+              connectTimeout: const Duration(seconds: 10),
+              receiveTimeout: const Duration(seconds: 20),
             ),
           ).get<dynamic>('/models');
 

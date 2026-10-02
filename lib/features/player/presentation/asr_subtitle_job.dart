@@ -565,6 +565,8 @@ class AsrSubtitleJobRunner {
         settings: settings,
         jobDir: jobDir,
         cancellationToken: cancellationToken,
+        onProgress: onProgress,
+        totalMs: totalMs,
       );
       completedRaw = _repairFinalWordTimelines(translatedRaw, report: report);
     } catch (error) {
@@ -697,6 +699,8 @@ class AsrSubtitleJobRunner {
     required LearningSettingsState settings,
     required Directory jobDir,
     AsrSubtitleCancellationToken? cancellationToken,
+    AsrProgressCallback? onProgress,
+    int? totalMs,
   }) async {
     if (!settings.generateBilingualAsrSubtitles) {
       return raw;
@@ -810,6 +814,19 @@ class AsrSubtitleJobRunner {
           'translations': translations,
         });
       }
+
+      // 上报翻译进度。
+      //
+      // 这一步很关键：转写结束后翻译可能还要跑数分钟，
+      // 若不给任何反馈，用户会以为程序卡死了（进度停在转写的最后一帧）。
+      onProgress?.call(
+        AsrSubtitleProgress(
+          completedChunks: end,
+          totalChunks: pending.length,
+          // 用预览文案区分「转写中」与「翻译中」。
+          previewText: '正在翻译字幕 $end/${pending.length} 句',
+        ),
+      );
 
       // 批次之间留出间隔，避免把第三方接口打到限流。
       if (end < pending.length) {

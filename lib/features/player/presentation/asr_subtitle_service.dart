@@ -95,6 +95,26 @@ class AsrSubtitleProgress {
   }
 }
 
+/// 语音识别请求的网络超时。
+///
+/// 必须显式设置：Dio 默认不超时，请求可能永久挂起，
+/// 用户看到的现象就是字幕「一直卡在生成中」。
+///
+/// 取值比翻译宽松得多，因为这里要上传音频分片并等待整段转写：
+/// 长分片的处理时间可能达到分钟级。
+const Duration _asrConnectTimeout = Duration(seconds: 20);
+const Duration _asrReceiveTimeout = Duration(minutes: 5);
+const Duration _asrSendTimeout = Duration(minutes: 2);
+
+/// 给 BaseOptions 统一补上超时（已设置则不覆盖）。
+BaseOptions _withAsrTimeouts(BaseOptions options) {
+  return options.copyWith(
+    connectTimeout: options.connectTimeout ?? _asrConnectTimeout,
+    receiveTimeout: options.receiveTimeout ?? _asrReceiveTimeout,
+    sendTimeout: options.sendTimeout ?? _asrSendTimeout,
+  );
+}
+
 class AsrSubtitleService {
   const AsrSubtitleService({
     this.postTranscriptionOverride,
@@ -146,12 +166,14 @@ class AsrSubtitleService {
       ),
     );
 
-    final BaseOptions options = BaseOptions(
-      baseUrl: settings.asrBaseUrl,
-      headers: <String, String>{
-        'Authorization': 'Bearer ${settings.asrApiKey}',
-        'Accept': 'application/json',
-      },
+    final BaseOptions options = _withAsrTimeouts(
+      BaseOptions(
+        baseUrl: settings.asrBaseUrl,
+        headers: <String, String>{
+          'Authorization': 'Bearer ${settings.asrApiKey}',
+          'Accept': 'application/json',
+        },
+      ),
     );
     final List<Map<String, Object?>> lines = <Map<String, Object?>>[];
     try {
@@ -192,12 +214,14 @@ class AsrSubtitleService {
   }) async {
     final BaseOptions resolvedOptions =
         options ??
-        BaseOptions(
-          baseUrl: settings.asrBaseUrl,
-          headers: <String, String>{
-            'Authorization': 'Bearer ${settings.asrApiKey}',
-            'Accept': 'application/json',
-          },
+        _withAsrTimeouts(
+          BaseOptions(
+            baseUrl: settings.asrBaseUrl,
+            headers: <String, String>{
+              'Authorization': 'Bearer ${settings.asrApiKey}',
+              'Accept': 'application/json',
+            },
+          ),
         );
     final Object? normalized = _usesAlibabaCloudAsr(settings)
         ? await _generateAlibabaQwenChunk(
@@ -271,13 +295,15 @@ class AsrSubtitleService {
         '"words":[{"text":"word","startMs":0,"endMs":100}]}],'
         '"glossary":[{"word":"word","definitionCn":"中文释义"}]}. '
         '$chineseInstruction $glossaryInstruction';
-    final BaseOptions options = BaseOptions(
-      baseUrl: settings.asrBaseUrl,
-      headers: <String, String>{
-        'Authorization': 'Bearer ${settings.asrApiKey}',
-        'Accept': 'application/json',
-        'Content-Type': 'application/json',
-      },
+    final BaseOptions options = _withAsrTimeouts(
+      BaseOptions(
+        baseUrl: settings.asrBaseUrl,
+        headers: <String, String>{
+          'Authorization': 'Bearer ${settings.asrApiKey}',
+          'Accept': 'application/json',
+          'Content-Type': 'application/json',
+        },
+      ),
     );
     final Map<String, Object?> data = <String, Object?>{
       'model': settings.asrModel,
@@ -348,7 +374,9 @@ class AsrSubtitleService {
                   1000)
               .floor(),
     );
-    final BaseOptions options = BaseOptions(baseUrl: settings.asrBaseUrl);
+    final BaseOptions options = _withAsrTimeouts(
+      BaseOptions(baseUrl: settings.asrBaseUrl),
+    );
 
     try {
       final Response<dynamic> response = postJsonOverride != null
@@ -374,12 +402,14 @@ class AsrSubtitleService {
     required LearningSettingsState settings,
     required int offsetMs,
   }) async {
-    final BaseOptions options = BaseOptions(
-      baseUrl: settings.asrBaseUrl,
-      headers: <String, String>{
-        'Authorization': 'Bearer ${settings.asrApiKey}',
-        'Accept': 'application/json',
-      },
+    final BaseOptions options = _withAsrTimeouts(
+      BaseOptions(
+        baseUrl: settings.asrBaseUrl,
+        headers: <String, String>{
+          'Authorization': 'Bearer ${settings.asrApiKey}',
+          'Accept': 'application/json',
+        },
+      ),
     );
     final Map<String, String> headers = <String, String>{
       'Authorization': 'Bearer ${settings.asrApiKey}',
@@ -457,7 +487,8 @@ class AsrSubtitleService {
             throw StateError('阿里云 ASR 未返回识别结果。');
           }
           final Response<dynamic> resultResponse = await _getJson(
-            options: BaseOptions(),
+            // 轮询识别结果同样需要超时，否则可能永久挂起。
+            options: _withAsrTimeouts(BaseOptions()),
             path: resultUrl,
             headers: const <String, String>{},
           );

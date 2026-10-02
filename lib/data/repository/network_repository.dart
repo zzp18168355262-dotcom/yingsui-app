@@ -18,7 +18,16 @@ part 'network_repository.g.dart';
 class NetworkRepository extends _$NetworkRepository {
   @override
   Dio build() {
-    final Dio dio = Dio(BaseOptions(baseUrl: Endpoints.baseUrl));
+    final Dio dio = Dio(
+      BaseOptions(
+        baseUrl: Endpoints.baseUrl,
+        // 必须显式设置超时，Dio 默认不超时会导致请求永久挂起。
+        connectTimeout: const Duration(
+          milliseconds: Endpoints.connectionTimeout,
+        ),
+        receiveTimeout: const Duration(milliseconds: Endpoints.receiveTimeout),
+      ),
+    );
     // Accept: application/json"
     dio.options.headers['Accept'] = 'application/json';
 
