@@ -58,8 +58,17 @@ class AppDesignTokens {
     BoxShadow(color: Color(0x140F1416), blurRadius: 24, offset: Offset(0, 12)),
   ];
 
-  /// 按钮投影：跟随主色，形成有分量的"实体按键"感。
+  /// 按钮阴影（已修正）。
+  ///
+  /// 原实现为 `BoxShadow(color: brandGreenDark, offset: Offset(0, 5))`，
+  /// 且**没有 blurRadius（即 0）** —— 那不是阴影，而是在按钮正下方
+  /// 画了一块实心深绿色方块，视觉上像贴纸或早期 3D 按钮的「厚底」。
+  /// 这是界面显得廉价最典型的手法，全项目有 35 处引用。
+  ///
+  /// 现改为柔和的品牌色光晕 + 极淡中性阴影：保留「按钮有分量」的意图，
+  /// 但不再有硬边。
   static const List<BoxShadow> toyButtonShadow = <BoxShadow>[
-    BoxShadow(color: brandGreenDark, offset: Offset(0, 5)),
+    BoxShadow(color: Color(0x1F00695C), blurRadius: 16, offset: Offset(0, 6)),
+    BoxShadow(color: Color(0x0A0F1416), blurRadius: 4, offset: Offset(0, 1)),
   ];
 }
