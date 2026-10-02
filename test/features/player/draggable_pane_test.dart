@@ -88,10 +88,10 @@ void main() {
       'bottom',
       'left',
       'right',
-      'topLeft',
-      'topRight',
-      'bottomLeft',
-      'bottomRight',
+      'corner-topLeft',
+      'corner-topRight',
+      'corner-bottomLeft',
+      'corner-bottomRight',
     ]) {
       expect(
         find.byKey(ValueKey<String>('pane-resize-$name')),
@@ -123,6 +123,41 @@ void main() {
     );
   });
 
+  testWidgets('拖角把手按比例缩放（宽高同比变化）', (WidgetTester tester) async {
+    // 用户反馈：「放大为什么不能按比例进行，只能先放大高度再放大宽度」。
+    // 角把手现在应保持宽高比不变，一次拖动即整体缩放。
+    tester.view.physicalSize = const Size(1200, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page(onClose: () {}));
+    await tester.pumpAndSettle();
+
+    Size paneSize() =>
+        tester.getSize(find.byKey(const ValueKey<String>('pane-surface')));
+
+    final Size before = paneSize();
+    final double ratioBefore = before.width / before.height;
+
+    // 拖右下角：斜向拖动应让宽高一起变大。
+    await tester.drag(
+      find.byKey(const ValueKey<String>('pane-resize-corner-bottomRight')),
+      const Offset(160, 120),
+    );
+    await tester.pumpAndSettle();
+
+    final Size after = paneSize();
+    expect(after.width, greaterThan(before.width + 50), reason: '宽度应变大');
+    expect(after.height, greaterThan(before.height + 30), reason: '高度也应变大');
+
+    final double ratioAfter = after.width / after.height;
+    expect(
+      (ratioAfter - ratioBefore).abs(),
+      lessThan(0.02),
+      reason: '宽高比应基本不变（等比缩放）',
+    );
+  });
+
   testWidgets('尺寸调节范围足够大（可缩到很小、也可铺满窗口）', (WidgetTester tester) async {
     // 用户反馈「可以调节的大小范围还是有限」。
     tester.view.physicalSize = const Size(1200, 800);
@@ -138,7 +173,7 @@ void main() {
 
     // 缩到最小：往左上角猛拖右下角把手。
     await tester.drag(
-      find.byKey(const ValueKey<String>('pane-resize-bottomRight')),
+      find.byKey(const ValueKey<String>('pane-resize-corner-bottomRight')),
       const Offset(-2000, -2000),
     );
     await tester.pumpAndSettle();
@@ -147,7 +182,7 @@ void main() {
 
     // 放到最大：往右下角猛拖。
     await tester.drag(
-      find.byKey(const ValueKey<String>('pane-resize-bottomRight')),
+      find.byKey(const ValueKey<String>('pane-resize-corner-bottomRight')),
       const Offset(3000, 3000),
     );
     await tester.pumpAndSettle();

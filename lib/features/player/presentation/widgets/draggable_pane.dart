@@ -3,16 +3,14 @@ import 'package:flutter/material.dart';
 import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_theme.dart';
 
-/// 可拖动、可从**四边与四角**缩放的浮动窗格。
+/// 可拖动、可缩放的浮动窗格（用于「逐词全文」，与播放页并存）。
 ///
-/// 用于「逐词全文」：与播放页并存，而不是整页盖住。
-///
-/// 设计取舍（来自用户反馈）：
-/// - 缩放把手做成八方向（上/下/左/右 + 四角），而不是只有一个右下角
-///   ——「只能按住右下角那个图标缩放，不方便」。
-/// - 尺寸上限放开到接近满窗、下限收到 240×160
-///   ——「可以调节的大小范围还是有限」。原先上限是屏幕九成，
-///   窗格接近上限时就几乎无法再调。
+/// 缩放行为依据用户反馈逐步定型：
+/// - **四角 = 等比例缩放**：宽高同比变化，一次拖动即可整体放大/缩小。
+///   用户反馈过「放大为什么不能按比例进行，只能先放大高度再放大宽度」。
+/// - **四边 = 单向缩放**：只改一个维度，保留精确控制。
+/// - 尺寸下限 240×160；上限接近满窗（不设「九成」上限，
+///   否则窗格接近上限时就几乎调不动）。
 /// - 位置夹取在可视区内，保证标题栏始终可点到。
 class DraggablePane extends StatefulWidget {
   const DraggablePane({
@@ -46,18 +44,14 @@ class _DraggablePaneState extends State<DraggablePane> {
   /// 角块尺寸（比边略大，便于抓取）。
   static const double _cornerSize = 22;
 
-  /// 标题栏高度。
   static const double _titleBarHeight = 40;
 
   @override
   Widget build(BuildContext context) {
     final Size screen = MediaQuery.sizeOf(context);
 
-    // 上限：允许几乎铺满整个窗口，只留一点点边距便于再拖回。
     final double maxWidth = screen.width - 16;
     final double maxHeight = screen.height - 16;
-
-    // 下限不超过上限，否则 clamp 参数非法。
     final double minWidth = widget.minSize.width.clamp(120, maxWidth);
     final double minHeight = widget.minSize.height.clamp(100, maxHeight);
 
@@ -65,32 +59,55 @@ class _DraggablePaneState extends State<DraggablePane> {
     final double height = _size.height.clamp(minHeight, maxHeight);
 
     final Offset base = _offset ?? Offset(screen.width - width - 24, 72);
-
-    // 夹取位置：标题栏始终可点到（否则拖出屏幕就找不回来了）。
     final double left = base.dx.clamp(-width + 140, screen.width - 140);
     final double top = base.dy.clamp(0, screen.height - _titleBarHeight);
 
     final AppPalette palette = AppColors.of(context);
 
-    void resize(Offset delta, {required bool fromLeft, required bool fromTop}) {
+    /// 四角：等比例缩放（宽高同比）。
+    void resizeProportional(Offset delta, _Direction direction) {
+      final double rawDx = direction.extendsWidth ? delta.dx : -delta.dx;
+      final double rawDy = direction.extendsHeight ? delta.dy : -delta.dy;
+      // 取主导方向，避免斜向拖动过于敏感。
+      final double dominant = rawDx.abs() >= rawDy.abs() ? rawDx : rawDy;
+
+      final double factor = (_size.width + dominant) / _size.width;
+      final double nextWidth = (_size.width * factor).clamp(minWidth, maxWidth);
+      final double appliedFactor = nextWidth / _size.width;
+      final double nextHeight = (_size.height * appliedFactor).clamp(
+        minHeight,
+        maxHeight,
+      );
+      final double appliedDx = nextWidth - _size.width;
+      final double appliedDy = nextHeight - _size.height;
+
       setState(() {
-        final double nextWidth = (_size.width + (fromLeft ? -delta.dx : delta.dx))
-            .clamp(minWidth, maxWidth);
-        final double nextHeight =
-            (_size.height + (fromTop ? -delta.dy : delta.dy)).clamp(
-              minHeight,
-              maxHeight,
-            );
-        final double appliedDx = nextWidth - _size.width;
-        final double appliedDy = nextHeight - _size.height;
         _size = Size(nextWidth, nextHeight);
-        // 从左边/上边缩放时窗格位置同步移动，视觉上才是「边被拉动」。
-        if (fromLeft || fromTop) {
-          _offset = Offset(
-            left + (fromLeft ? -appliedDx : 0),
-            top + (fromTop ? -appliedDy : 0),
-          );
-        }
+        // 拉左上/左下角时左边缘要跟着移动，视觉上才是「拉着这个角」。
+        _offset = Offset(
+          left + (direction.movesLeft ? -appliedDx : 0),
+          top + (direction.movesTop ? -appliedDy : 0),
+        );
+      });
+    }
+
+    /// 四边：单向缩放。
+    void resizeSingle(Offset delta, _Direction direction) {
+      final double nextWidth = direction.extendsWidth
+          ? (_size.width + delta.dx).clamp(minWidth, maxWidth)
+          : _size.width;
+      final double nextHeight = direction.extendsHeight
+          ? (_size.height + delta.dy).clamp(minHeight, maxHeight)
+          : _size.height;
+      final double appliedDx = nextWidth - _size.width;
+      final double appliedDy = nextHeight - _size.height;
+
+      setState(() {
+        _size = Size(nextWidth, nextHeight);
+        _offset = Offset(
+          left + (direction.movesLeft ? -appliedDx : 0),
+          top + (direction.movesTop ? -appliedDy : 0),
+        );
       });
     }
 
@@ -114,7 +131,10 @@ class _DraggablePaneState extends State<DraggablePane> {
                     behavior: HitTestBehavior.opaque,
                     onPanUpdate: (DragUpdateDetails details) {
                       setState(() {
-                        _offset = Offset(left, top) + details.delta;
+                        _offset = Offset(
+                          left + details.delta.dx,
+                          top + details.delta.dy,
+                        );
                       });
                     },
                     child: Container(
@@ -172,89 +192,41 @@ class _DraggablePaneState extends State<DraggablePane> {
           ),
         ),
 
-        // ── 缩放把手：四边 + 四角，共八处 ──
-        _handle(
-          key: const ValueKey<String>('pane-resize-top'),
-          left: left,
-          top: top,
-          width: width,
-          height: height,
-          cursor: SystemMouseCursors.resizeUpDown,
-          position: _HandlePosition.top,
-          onDrag: (Offset d) => resize(d, fromLeft: false, fromTop: true),
-        ),
-        _handle(
-          key: const ValueKey<String>('pane-resize-bottom'),
-          left: left,
-          top: top,
-          width: width,
-          height: height,
-          cursor: SystemMouseCursors.resizeUpDown,
-          position: _HandlePosition.bottom,
-          onDrag: (Offset d) => resize(d, fromLeft: false, fromTop: false),
-        ),
-        _handle(
-          key: const ValueKey<String>('pane-resize-left'),
-          left: left,
-          top: top,
-          width: width,
-          height: height,
-          cursor: SystemMouseCursors.resizeLeftRight,
-          position: _HandlePosition.left,
-          onDrag: (Offset d) => resize(d, fromLeft: true, fromTop: false),
-        ),
-        _handle(
-          key: const ValueKey<String>('pane-resize-right'),
-          left: left,
-          top: top,
-          width: width,
-          height: height,
-          cursor: SystemMouseCursors.resizeLeftRight,
-          position: _HandlePosition.right,
-          onDrag: (Offset d) => resize(d, fromLeft: false, fromTop: false),
-        ),
-        _handle(
-          key: const ValueKey<String>('pane-resize-topLeft'),
-          left: left,
-          top: top,
-          width: width,
-          height: height,
-          cursor: SystemMouseCursors.resizeUpLeft,
-          position: _HandlePosition.topLeft,
-          onDrag: (Offset d) => resize(d, fromLeft: true, fromTop: true),
-        ),
-        _handle(
-          key: const ValueKey<String>('pane-resize-topRight'),
-          left: left,
-          top: top,
-          width: width,
-          height: height,
-          cursor: SystemMouseCursors.resizeUpRight,
-          position: _HandlePosition.topRight,
-          onDrag: (Offset d) => resize(d, fromLeft: false, fromTop: true),
-        ),
-        _handle(
-          key: const ValueKey<String>('pane-resize-bottomLeft'),
-          left: left,
-          top: top,
-          width: width,
-          height: height,
-          cursor: SystemMouseCursors.resizeDownLeft,
-          position: _HandlePosition.bottomLeft,
-          onDrag: (Offset d) => resize(d, fromLeft: true, fromTop: false),
-        ),
-        _handle(
-          key: const ValueKey<String>('pane-resize-bottomRight'),
-          left: left,
-          top: top,
-          width: width,
-          height: height,
-          cursor: SystemMouseCursors.resizeDownRight,
-          position: _HandlePosition.bottomRight,
-          onDrag: (Offset d) => resize(d, fromLeft: false, fromTop: false),
-        ),
+        // ── 四边：单向缩放 ──
+        for (final _Direction d in <_Direction>[
+          _Direction.top,
+          _Direction.bottom,
+          _Direction.left,
+          _Direction.right,
+        ])
+          _handle(
+            direction: d,
+            isCorner: false,
+            left: left,
+            top: top,
+            width: width,
+            height: height,
+            onDrag: resizeSingle,
+          ),
 
-        // 右下角可视提示：明确告诉用户「这里可以缩放」。
+        // ── 四角：等比例缩放 ──
+        for (final _Direction d in <_Direction>[
+          _Direction.topLeft,
+          _Direction.topRight,
+          _Direction.bottomLeft,
+          _Direction.bottomRight,
+        ])
+          _handle(
+            direction: d,
+            isCorner: true,
+            left: left,
+            top: top,
+            width: width,
+            height: height,
+            onDrag: resizeProportional,
+          ),
+
+        // 右下角可视提示：说明「这里可以缩放」。
         Positioned(
           left: left + width - 26,
           top: top + height - 26,
@@ -271,83 +243,105 @@ class _DraggablePaneState extends State<DraggablePane> {
   }
 
   Widget _handle({
-    Key? key,
+    required _Direction direction,
+    required bool isCorner,
     required double left,
     required double top,
     required double width,
     required double height,
-    required MouseCursor cursor,
-    required _HandlePosition position,
-    required ValueChanged<Offset> onDrag,
+    required void Function(Offset, _Direction) onDrag,
   }) {
     const double t = _handleThickness;
-    const double corner = _cornerSize;
+    const double c = _cornerSize;
 
     final double hLeft;
     final double hTop;
     final double hWidth;
     final double hHeight;
 
-    switch (position) {
-      case _HandlePosition.top:
-        hLeft = left + corner;
+    switch (direction) {
+      case _Direction.top:
+        hLeft = left + c;
         hTop = top - t / 2;
-        hWidth = width - corner * 2;
+        hWidth = width - c * 2;
         hHeight = t;
-      case _HandlePosition.bottom:
-        hLeft = left + corner;
+      case _Direction.bottom:
+        hLeft = left + c;
         hTop = top + height - t / 2;
-        hWidth = width - corner * 2;
+        hWidth = width - c * 2;
         hHeight = t;
-      case _HandlePosition.left:
+      case _Direction.left:
         hLeft = left - t / 2;
-        hTop = top + corner;
+        hTop = top + c;
         hWidth = t;
-        hHeight = height - corner * 2;
-      case _HandlePosition.right:
+        hHeight = height - c * 2;
+      case _Direction.right:
         hLeft = left + width - t / 2;
-        hTop = top + corner;
+        hTop = top + c;
         hWidth = t;
-        hHeight = height - corner * 2;
-      case _HandlePosition.topLeft:
+        hHeight = height - c * 2;
+      case _Direction.topLeft:
         hLeft = left - t / 2;
         hTop = top - t / 2;
-        hWidth = corner;
-        hHeight = corner;
-      case _HandlePosition.topRight:
-        hLeft = left + width - corner + t / 2;
+        hWidth = c;
+        hHeight = c;
+      case _Direction.topRight:
+        hLeft = left + width - c + t / 2;
         hTop = top - t / 2;
-        hWidth = corner;
-        hHeight = corner;
-      case _HandlePosition.bottomLeft:
+        hWidth = c;
+        hHeight = c;
+      case _Direction.bottomLeft:
         hLeft = left - t / 2;
-        hTop = top + height - corner + t / 2;
-        hWidth = corner;
-        hHeight = corner;
-      case _HandlePosition.bottomRight:
-        hLeft = left + width - corner + t / 2;
-        hTop = top + height - corner + t / 2;
-        hWidth = corner;
-        hHeight = corner;
+        hTop = top + height - c + t / 2;
+        hWidth = c;
+        hHeight = c;
+      case _Direction.bottomRight:
+        hLeft = left + width - c + t / 2;
+        hTop = top + height - c + t / 2;
+        hWidth = c;
+        hHeight = c;
     }
 
     return Positioned(
-      key: key,
       left: hLeft,
       top: hTop,
       child: MouseRegion(
-        cursor: cursor,
+        cursor: _cursorFor(direction),
         child: GestureDetector(
+          key: ValueKey<String>(
+            'pane-resize-${isCorner ? 'corner-' : ''}${direction.name}',
+          ),
           behavior: HitTestBehavior.opaque,
-          onPanUpdate: (DragUpdateDetails details) => onDrag(details.delta),
+          onPanUpdate: (DragUpdateDetails details) =>
+              onDrag(details.delta, direction),
           child: SizedBox(width: hWidth, height: hHeight),
         ),
       ),
     );
   }
+
+  MouseCursor _cursorFor(_Direction d) {
+    switch (d) {
+      case _Direction.top:
+      case _Direction.bottom:
+        return SystemMouseCursors.resizeUpDown;
+      case _Direction.left:
+      case _Direction.right:
+        return SystemMouseCursors.resizeLeftRight;
+      case _Direction.topLeft:
+        return SystemMouseCursors.resizeUpLeft;
+      case _Direction.topRight:
+        return SystemMouseCursors.resizeUpRight;
+      case _Direction.bottomLeft:
+        return SystemMouseCursors.resizeDownLeft;
+      case _Direction.bottomRight:
+        return SystemMouseCursors.resizeDownRight;
+    }
+  }
 }
 
-enum _HandlePosition {
+/// 缩放方向。
+enum _Direction {
   top,
   bottom,
   left,
@@ -355,5 +349,27 @@ enum _HandlePosition {
   topLeft,
   topRight,
   bottomLeft,
-  bottomRight,
+  bottomRight;
+
+  bool get extendsWidth =>
+      this == left ||
+      this == right ||
+      this == topLeft ||
+      this == topRight ||
+      this == bottomLeft ||
+      this == bottomRight;
+
+  bool get extendsHeight =>
+      this == top ||
+      this == bottom ||
+      this == topLeft ||
+      this == topRight ||
+      this == bottomLeft ||
+      this == bottomRight;
+
+  /// 拉动该方向时窗格左边缘是否需要移动（保持对角固定）。
+  bool get movesLeft => this == left || this == topLeft || this == bottomLeft;
+
+  /// 拉动该方向时窗格上边缘是否需要移动（保持对角固定）。
+  bool get movesTop => this == top || this == topLeft || this == topRight;
 }
