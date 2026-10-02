@@ -1,7 +1,9 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io' show Platform;
 
 import 'package:desktop_multi_window/desktop_multi_window.dart';
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -21,17 +23,17 @@ typedef TranscriptReaderFullPlayback = Future<void> Function();
 typedef TranscriptReaderSentenceTranslation =
     Future<String?> Function(String sentence);
 
-/// 是否把「逐词全文」开成独立的原生窗口。
+/// 是否把「逐词全文」开成**独立的原生窗口**。
 ///
-/// 已改为 **false**，所有平台统一走应用内全屏页。
+/// 结论来自用户的多轮反馈：
+///   - 应用内全屏页：会把播放页整个盖住，看不到视频；
+///   - 页内嵌入/浮动窗格：阅读区太小，且会被播放页内容遮挡。
+/// 用户明确要求「单独的页面」「单独弹出一个窗格」——即与播放器并存的
+/// 独立窗口。
 ///
-/// 原因：开独立窗口时阅读器与播放器是两个并列窗口，用户要来回切换；
-/// 而该页面的实际用途是「暂时替换逐句精听、看完关掉回到播放」，
-/// 用应用内页面（fullscreenDialog）更贴合，也少一层窗口管理。
-///
-/// 桌面端开窗的那套实现（WindowController + 跨窗口进度 IPC）仍保留在
-/// transcript_reader_window.dart 中，但当前分支不再走到。
-bool get supportsTranscriptReaderWindow => false;
+/// 移动端没有多窗口概念，仍走应用内整页（fullscreenDialog）。
+bool get supportsTranscriptReaderWindow =>
+    !kIsWeb && (Platform.isMacOS || Platform.isWindows || Platform.isLinux);
 
 class TranscriptReaderSession {
   final ValueNotifier<TranscriptReaderProgress> progress =

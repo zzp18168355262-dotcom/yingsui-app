@@ -101,4 +101,93 @@ void main() {
     // 标题本身确实渲染了（避免上面的查找落空导致误判）。
     expect(titleRect.height, greaterThan(0));
   });
+
+  testWidgets('头部控件尺寸统一（高度与基准线一致）', (WidgetTester tester) async {
+    // 用户反馈：「这边的 ui 重新调整一下，太丑了，大小不统一」。
+    // 实测原先 Switch 40、定位按钮 40、听全文按钮 26 —— 三种高度、基准线不齐。
+    // Material 默认会给按钮留最小点按区域（compact 下 40），
+    // 仅设 constraints 不够，必须显式设 materialTapTargetSize 为 shrinkWrap。
+    tester.view.physicalSize = const Size(1400, 800);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: <Override>[
+          wordLookupServiceProvider.overrideWithValue(
+            WordLookupService(
+              httpRequestOverride:
+                  ({
+                    required BaseOptions options,
+                    required String method,
+                    required String path,
+                    Map<String, dynamic>? queryParameters,
+                    Object? data,
+                  }) async => Response<dynamic>(
+                    requestOptions: RequestOptions(path: path),
+                    statusCode: 200,
+                    data: <String, dynamic>{
+                      'choices': <dynamic>[
+                        <String, dynamic>{
+                          'message': <String, dynamic>{'content': '译文'},
+                        },
+                      ],
+                    },
+                  ),
+            ),
+          ),
+        ],
+        child: MaterialApp(
+          home: FullTranscriptReaderScreen(
+            snapshot: const TranscriptReaderSnapshot(
+              courseTitle: 'S01',
+              episodeTitle: '第 01 集',
+              lines: PlayerMockState.fallbackLines,
+              meanings: <String, String>{},
+              progress: TranscriptReaderProgress(
+                lineIndex: 0,
+                wordIndex: 0,
+              ),
+            ),
+            progressListenable: ValueNotifier<TranscriptReaderProgress>(
+              const TranscriptReaderProgress(lineIndex: 0, wordIndex: 0),
+            ),
+            onClose: () {},
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    final Rect switchRect = tester.getRect(find.byType(Switch));
+    final Rect listenRect = tester.getRect(
+      find.byKey(const ValueKey<String>('reader-play-full-transcript')),
+    );
+    final Rect locateRect = tester.getRect(
+      find.byKey(const ValueKey<String>('reader-locate-current-word')),
+    );
+
+    // 三者高度必须一致。
+    expect(
+      listenRect.height,
+      closeTo(switchRect.height, 1),
+      reason: '听全文按钮与开关高度应一致',
+    );
+    expect(
+      locateRect.height,
+      closeTo(switchRect.height, 1),
+      reason: '定位按钮与开关高度应一致',
+    );
+    // 基准线（垂直中心）也必须一致。
+    expect(
+      listenRect.center.dy,
+      closeTo(switchRect.center.dy, 1.5),
+      reason: '听全文按钮应与开关在同一条基准线上',
+    );
+    expect(
+      locateRect.center.dy,
+      closeTo(switchRect.center.dy, 1.5),
+      reason: '定位按钮应与开关在同一条基准线上',
+    );
+  });
 }

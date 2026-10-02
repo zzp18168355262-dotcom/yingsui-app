@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show SelectedContent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../settings/presentation/settings_provider.dart';
 import '../../shared/data/word_lookup_service.dart';
 import '../../shared/data/word_pronunciation_service.dart';
@@ -703,6 +704,34 @@ class _FullTranscriptReaderScreenState
   }
 }
 
+/// 头部控件的统一高度。所有按钮/开关都用它，保证基准线与大小一致。
+const double _headerControlHeight = 34;
+
+/// 头部图标按钮的统一约束（正方形）。
+const BoxConstraints _headerIconConstraints = BoxConstraints.tightFor(
+  width: _headerControlHeight,
+  height: _headerControlHeight,
+);
+
+/// 头部图标按钮的统一样式。
+///
+/// 关键点：必须显式设 materialTapTargetSize 为 shrinkWrap。
+/// Material 默认给按钮保留 48（compact 下 40）的最小点按区域，
+/// 仅给 constraints 仍会按那个尺寸布局，
+/// 导致同为 34 的控件实际渲染成 34 与 40 两种高度、基准线不齐。
+final ButtonStyle _headerIconButtonStyle = ButtonStyle(
+  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+  minimumSize: const WidgetStatePropertyAll<Size>(
+    Size(_headerControlHeight, _headerControlHeight),
+  ),
+  fixedSize: const WidgetStatePropertyAll<Size>(
+    Size(_headerControlHeight, _headerControlHeight),
+  ),
+  shape: WidgetStatePropertyAll<OutlinedBorder>(
+    RoundedRectangleBorder(borderRadius: BorderRadius.circular(AppRadius.pill)),
+  ),
+);
+
 class _ReaderHeader extends StatelessWidget {
   const _ReaderHeader({
     required this.courseTitle,
@@ -796,17 +825,23 @@ class _ReaderHeader extends StatelessWidget {
                   '翻译',
                   style: TextStyle(
                     color: AppDesignTokens.textSecondary,
-                    fontSize: 11,
-                    fontWeight: FontWeight.w800,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w700,
                   ),
                 ),
-                const SizedBox(width: 2),
+                const SizedBox(width: 6),
               ],
-              Switch(
-                key: const ValueKey<String>('reader-translation-toggle'),
-                value: showTranslations,
-                onChanged: onTranslationChanged,
-                materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              // 与其他控件同高（_headerControlHeight），基准线才对齐。
+              SizedBox(
+                height: _headerControlHeight,
+                child: FittedBox(
+                  child: Switch(
+                    key: const ValueKey<String>('reader-translation-toggle'),
+                    value: showTranslations,
+                    onChanged: onTranslationChanged,
+                    materialTapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                  ),
+                ),
               ),
             ],
           ),
@@ -815,9 +850,10 @@ class _ReaderHeader extends StatelessWidget {
             IconButton.outlined(
               key: const ValueKey<String>('reader-play-full-transcript'),
               onPressed: onListenFullTranscript,
-              visualDensity: VisualDensity.compact,
+              style: _headerIconButtonStyle,
+              iconSize: 18,
               padding: EdgeInsets.zero,
-              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+              constraints: _headerIconConstraints,
               tooltip: isListeningFullTranscript
                   ? '暂停'
                   : isFullTranscriptPaused
@@ -836,8 +872,16 @@ class _ReaderHeader extends StatelessWidget {
               style: OutlinedButton.styleFrom(
                 visualDensity: VisualDensity.compact,
                 padding: const EdgeInsets.symmetric(horizontal: 12),
-                minimumSize: const Size(0, 34),
+                minimumSize: const Size(0, _headerControlHeight),
+                fixedSize: const Size.fromHeight(_headerControlHeight),
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                textStyle: const TextStyle(
+                  fontSize: 13,
+                  fontWeight: FontWeight.w700,
+                ),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadius.pill),
+                ),
               ),
               icon: Icon(
                 isListeningFullTranscript
@@ -856,9 +900,10 @@ class _ReaderHeader extends StatelessWidget {
           IconButton.outlined(
             key: const ValueKey<String>('reader-locate-current-word'),
             onPressed: onLocateCurrentWord,
-            visualDensity: VisualDensity.compact,
+            style: _headerIconButtonStyle,
+            iconSize: 18,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+            constraints: _headerIconConstraints,
             tooltip: '定位到当前单词',
             icon: const Icon(
               Icons.my_location_rounded,
@@ -868,9 +913,10 @@ class _ReaderHeader extends StatelessWidget {
           const SizedBox(width: 8),
           IconButton.filledTonal(
             onPressed: onClose,
-            visualDensity: VisualDensity.compact,
+            style: _headerIconButtonStyle,
+            iconSize: 18,
             padding: EdgeInsets.zero,
-            constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
+            constraints: _headerIconConstraints,
             tooltip: '关闭逐词全文',
             icon: const Icon(Icons.close_rounded),
           ),

@@ -15,6 +15,7 @@ import '../../library/presentation/library_mock_data.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../phrases/presentation/phrase_book_provider.dart';
 import '../../settings/presentation/settings_provider.dart';
+import '../../shared/data/word_lookup_service.dart';
 import '../../shared/presentation/app_loading_overlay.dart';
 import '../../shared/presentation/pad/pad_scaffold.dart';
 import '../../words/data/offline_word_dictionary.dart';
@@ -35,7 +36,6 @@ import 'player_video_init.dart';
 import 'subtitle_reference_review.dart';
 import 'transcript_reader_session.dart';
 import 'widgets/ai_subtitle_generation_progress_dialog.dart';
-import 'widgets/draggable_pane.dart';
 import 'widgets/player_subtitle_list.dart';
 import 'widgets/player_top_bar.dart';
 import 'widgets/player_transcript_panel.dart';
@@ -68,8 +68,6 @@ class _PadPortraitPlayerScreenState
   final TranscriptReaderSession _transcriptReaderSession =
       TranscriptReaderSession();
 
-  /// 非空表示正在展示「逐词全文」浮动窗格（与视频并存，不覆盖播放页）。
-  TranscriptReaderSnapshot? _transcriptReaderSnapshot;
 
   Player? _videoPlayer;
   VideoController? _videoController;
@@ -612,15 +610,38 @@ class _PadPortraitPlayerScreenState
           dictionary: ref.read(offlineWordDictionaryProvider),
         );
     if (!mounted) return;
-    // 以**浮动窗格**展示逐词全文：与视频并存，不覆盖播放页，
-    // 窗格可拖动、可缩放，阅读区大小由用户自己决定。
-    setState(() => _transcriptReaderSnapshot = snapshot);
+    // 交给 session 决定形态：
+    //   桌面端 → 独立原生窗口（与播放器并存，互不遮挡）
+    //   移动端 → 应用内整页
+    final LearningSettingsState lookupSettings = ref.read(
+      learningSettingsProvider,
+    );
+    final WordLookupService lookupService = ref.read(wordLookupServiceProvider);
+    try {
+      await _transcriptReaderSession.open(
+        context: context,
+        snapshot: snapshot,
+        lookupWord:
+            ({required String rawWord, required String contextSentence}) =>
+                lookupService.lookupWord(
+                  rawWord: rawWord,
+                  contextSentence: contextSentence,
+                  settings: lookupSettings,
+                ),
+        translateSentence: (String sentence) => lookupService.translateSentence(
+          sentence: sentence,
+          settings: lookupSettings,
+        ),
+        playFullTranscript: _handlePlayFullTranscript,
+        toggleLineLoop: (int lineIndex) async {
+          _handleLoopFromLine(lineIndex);
+        },
+      );
+    } catch (_) {
+      _showMessage('无法打开逐词全文，请稍后重试');
+    }
   }
 
-  void _closeTranscriptReader() {
-    if (_transcriptReaderSnapshot == null) return;
-    setState(() => _transcriptReaderSnapshot = null);
-  }
 
   /// 长按画面字幕时就地调整字幕大小。
   ///
@@ -721,9 +742,7 @@ class _PadPortraitPlayerScreenState
       body: AppLoadingOverlay(
         isLoading: _isBootstrapping,
         message: '正在打开课程...',
- child: Stack(
-          children: <Widget>[
-            Column(
+ child: Column(
           children: <Widget>[
             Expanded(
               child: Padding(
@@ -913,24 +932,6 @@ class _PadPortraitPlayerScreenState
                 ),
               ),
             ),
-          ],
-        ),
-            // 逐词全文浮动窗格：与视频并存、可拖动可缩放。
-            if (_transcriptReaderSnapshot != null)
-              DraggablePane(
-                title: '逐词全文',
-                onClose: _closeTranscriptReader,
-                child: FullTranscriptReaderScreen(
-                  embedded: true,
-                  snapshot: _transcriptReaderSnapshot!,
-                  progressListenable: _transcriptReaderSession.progress,
-                  onClose: _closeTranscriptReader,
-                  onPlayFullTranscript: _handlePlayFullTranscript,
-                  onToggleLineLoop: (int lineIndex) async {
-                    _handleLoopFromLine(lineIndex);
-                  },
-                ),
-              ),
           ],
         ),
       ),
