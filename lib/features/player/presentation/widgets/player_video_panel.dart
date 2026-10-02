@@ -171,13 +171,16 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
   double _brightnessLevel = 0.5;
   bool _canChangeSystemBrightness = true;
   OverlayEntry? _subtitleLookupOverlayEntry;
-  late final FocusNode _keyboardFocusNode;
+  /// 页面级键盘处理的焦点节点（见 build 中的 Focus）。
+  final FocusNode _pageFocusNode = FocusNode(
+    debugLabel: 'player-page-keyboard',
+    skipTraversal: true,
+  );
   _PlayerContentFit _contentFit = _PlayerContentFit.wide;
 
   @override
   void initState() {
     super.initState();
-    _keyboardFocusNode = FocusNode(debugLabel: 'player-video-controls');
     _scheduleAutoHide();
     unawaited(_loadSystemBrightnessState());
   }
@@ -199,7 +202,7 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
     _closeSubtitleLookup();
     _controlsTimer?.cancel();
     _gestureHintTimer?.cancel();
-    _keyboardFocusNode.dispose();
+    _pageFocusNode.dispose();
     super.dispose();
   }
 
@@ -376,7 +379,8 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
   }
 
   void _handlePointerDown(PointerDownEvent event) {
-    _keyboardFocusNode.requestFocus();
+    // 点击画面后把焦点交给页面级键盘层（原先指向已废弃的控件级节点）。
+    _pageFocusNode.requestFocus();
     _gestureMode = null;
     _gestureStartLocalPosition = event.localPosition;
     _gestureStartProgress = null;
@@ -385,8 +389,49 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
     _gestureStartBrightness = _brightnessLevel;
   }
 
-  KeyEventResult _handleKeyboardShortcut(FocusNode _, KeyEvent event) {
+  /// 页面级键盘处理。
+  ///
+  /// 为什么需要它：原先只在视频画面控件上监听键盘，而该控件虽然设了
+  /// autofocus，实际焦点常被同一焦点作用域内的其他控件拿走
+  /// （页面里多处用了 autofocus），于是「不先点一下画面，按方向键没反应」。
+  /// 这里提升到页面层级，不依赖任何具体控件取得焦点。
+  ///
+  /// 同时在有文本输入时让路：input 类控件获得焦点时不拦截按键，
+  /// 否则方向键会被吃掉，输入法/候选词无法使用。
+  /// 当前焦点是否位于文本输入控件内。
+  ///
+  /// 判定方式说明（试错记录）：
+  ///   - `primaryFocus.context?.widget is EditableText`：不可靠。
+  ///     实际取得焦点的是 EditableText 所挂的 Focus 节点，
+  ///     其 context.widget 可能是 TextField/InputDecorator 等外层控件。
+  ///   - 沿 `node.parent` 向上查找：同样依赖具体版本里焦点节点的挂载位置。
+  ///   - 最终采用：从主焦点节点的 context 向下在**同一 Focus 子树**里找
+  ///     EditableText。无论 EditableText 挂在焦点节点本身还是其子级，
+  ///     都能命中，且不会误伤页面其它区域的文本框。
+  bool _isTextEditingFocused() {
+    final BuildContext? focusContext = FocusManager.instance.primaryFocus?.context;
+    if (focusContext == null) {
+      return false;
+    }
+    bool found = false;
+    void visitContext(BuildContext context) {
+      if (found) return;
+      if (context.widget is EditableText) {
+        found = true;
+        return;
+      }
+      context.visitChildElements(visitContext);
+    }
+
+    visitContext(focusContext);
+    return found;
+  }
+
+  KeyEventResult _handlePageKey(FocusNode node, KeyEvent event) {
     if (event is KeyUpEvent) {
+      return KeyEventResult.ignored;
+    }
+    if (_isTextEditingFocused()) {
       return KeyEventResult.ignored;
     }
     switch (event.logicalKey) {
@@ -397,11 +442,16 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
         _handleControlTap(widget.onSeekBackward);
       case LogicalKeyboardKey.arrowRight:
         _handleControlTap(widget.onSeekForward);
+      case LogicalKeyboardKey.arrowUp:
+        _handleControlTap(widget.onPreviousLine);
+      case LogicalKeyboardKey.arrowDown:
+        _handleControlTap(widget.onNextLine);
       default:
         return KeyEventResult.ignored;
     }
     return KeyEventResult.handled;
   }
+
 
   void _handlePointerMove(PointerMoveEvent event, Size size) {
     final Offset? start = _gestureStartLocalPosition;
@@ -577,9 +627,9 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
             ? (tinyControls ? 126 : (compactControls ? 138 : 146))
             : 40;
         return Focus(
-          focusNode: _keyboardFocusNode,
+          focusNode: _pageFocusNode,
           autofocus: true,
-          onKeyEvent: _handleKeyboardShortcut,
+          onKeyEvent: _handlePageKey,
           child: Listener(
             behavior: HitTestBehavior.opaque,
             onPointerDown: _handlePointerDown,

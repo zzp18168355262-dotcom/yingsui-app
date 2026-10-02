@@ -553,6 +553,8 @@ void main() {
     int toggles = 0;
     int backward = 0;
     int forward = 0;
+    int previous = 0;
+    int next = 0;
 
     await tester.pumpWidget(
       MaterialApp(
@@ -568,9 +570,9 @@ void main() {
             isMuted: false,
             volumeLevel: 1,
             onTogglePlaying: () => toggles++,
-            onPreviousLine: () {},
+            onPreviousLine: () => previous++,
             onReplayLine: () {},
-            onNextLine: () {},
+            onNextLine: () => next++,
             onSeekBackward: () => backward++,
             onSeekForward: () => forward++,
             activeIndex: 0,
@@ -589,12 +591,18 @@ void main() {
       ),
     );
 
+    // 无需先点击画面：页面级键盘层在挂载时就取得焦点。
     await tester.sendKeyEvent(LogicalKeyboardKey.space);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowLeft);
     await tester.sendKeyEvent(LogicalKeyboardKey.arrowRight);
+    // 上下键：整句跳转（用户反馈缺失的能力）。
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowUp);
+    await tester.sendKeyEvent(LogicalKeyboardKey.arrowDown);
 
     expect(toggles, 1);
     expect(backward, 1);
     expect(forward, 1);
+    expect(previous, 1, reason: '上键应跳到上一句');
+    expect(next, 1, reason: '下键应跳到下一句');
   });
 }
