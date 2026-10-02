@@ -732,6 +732,9 @@ class PadLandscapePlayerScreenState
                       child: Column(
                         children: <Widget>[
                           Expanded(
+                            // 打开全文阅读时把部分高度让给下方的阅读区，
+                            // 两者共享左列；关闭后恢复视频独占。
+                            flex: _transcriptReaderSnapshot != null ? 7 : 1,
                             child: PlayerVideoPanel(
                               line: activeLine,
                               isPlaying: state.isPlaying,
@@ -795,6 +798,25 @@ class PadLandscapePlayerScreenState
                                   : _handleGenerateAiSubtitles,
                             ),
                           ),
+                          // 全文阅读区：位于视频下方（左列），与「字幕区域」
+                          // 分列左右，视频仍然可见。
+                          if (_transcriptReaderSnapshot != null) ...<Widget>[
+                            const SizedBox(height: 12),
+                            Expanded(
+                              flex: 4,
+                              child: FullTranscriptReaderScreen(
+                                embedded: true,
+                                snapshot: _transcriptReaderSnapshot!,
+                                progressListenable:
+                                    _transcriptReaderSession.progress,
+                                onClose: _closeTranscriptReader,
+                                onPlayFullTranscript: _handlePlayFullTranscript,
+                                onToggleLineLoop: (int lineIndex) async {
+                                  _handleLoopFromLine(lineIndex);
+                                },
+                              ),
+                            ),
+                          ],
                         ],
                       ),
                     ),
@@ -817,21 +839,9 @@ class PadLandscapePlayerScreenState
                         child: Column(
                           children: <Widget>[
                             Expanded(
-                              child: _transcriptReaderSnapshot != null
-                                  // 逐词全文：页内展示，视频保持可见。
-                                  ? FullTranscriptReaderScreen(
-                                      embedded: true,
-                                      snapshot: _transcriptReaderSnapshot!,
-                                      progressListenable:
-                                          _transcriptReaderSession.progress,
-                                      onClose: _closeTranscriptReader,
-                                      onPlayFullTranscript:
-                                          _handlePlayFullTranscript,
-                                      onToggleLineLoop: (int lineIndex) async {
-                                        _handleLoopFromLine(lineIndex);
-                                      },
-                                    )
-                                  : state.isShadowing && state.hasLines
+                              // 逐词全文已移到左列（视频下方），
+                              // 右列保持字幕区域（逐句精听 / 跟读面板）。
+                              child: state.isShadowing && state.hasLines
                                   // 跟读模式：面板内联在右侧内容区，不再用弹窗。
                                   // 横屏空间充裕，字幕列表与面板可以并存。
                                   ? Align(
