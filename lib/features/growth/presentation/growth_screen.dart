@@ -357,7 +357,11 @@ class _LevelMembershipCard extends StatelessWidget {
             children: <Widget>[
               Expanded(
                 flex: 6,
-                child: Column(
+                // 内容较多（等级大字 + 标题 + 能力描述 + 进度 + 统计），
+                // 窄屏下文字换行会把总高撑过卡片高度，实测溢出 95px。
+                // 改为可滚动，内容过长时可滑动查看，不再溢出。
+                child: SingleChildScrollView(
+                  child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Text(
@@ -409,7 +413,7 @@ class _LevelMembershipCard extends StatelessWidget {
                         color: Colors.white.withValues(alpha: .84),
                       ),
                     ),
-                    const Spacer(),
+                    const SizedBox(height: 14),
                     Text(
                       isCurrent
                           ? growth.hasReachedTopLevel
@@ -448,6 +452,7 @@ class _LevelMembershipCard extends StatelessWidget {
                     const SizedBox(height: 9),
                     _CardStatistics(growth: growth),
                   ],
+                  ),
                 ),
               ),
               Expanded(
