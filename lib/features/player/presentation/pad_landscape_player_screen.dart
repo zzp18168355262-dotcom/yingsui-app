@@ -1,5 +1,4 @@
 import 'dart:async';
-
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -7,6 +6,7 @@ import 'package:go_router/go_router.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:media_kit_video/media_kit_video.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../../router/app_router.dart';
 import '../../guide/presentation/guide_screen.dart';
 import '../../home/presentation/learning_dashboard_provider.dart';
@@ -830,13 +830,7 @@ class PadLandscapePlayerScreenState
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(24),
                           border: Border.all(color: const Color(0xFFE2E8F0)),
-                          boxShadow: const <BoxShadow>[
-                            BoxShadow(
-                              color: Color(0x120F172A),
-                              blurRadius: 20,
-                              offset: Offset(0, 10),
-                            ),
-                          ],
+                          boxShadow: AppElevation.high,
                         ),
                         child: Column(
                           children: <Widget>[

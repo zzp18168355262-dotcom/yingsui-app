@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../settings/presentation/settings_provider.dart';
 import '../data/word_lookup_service.dart';
 import '../data/word_pronunciation_service.dart';
@@ -212,13 +213,7 @@ class _WordLookupPopupCardState extends ConsumerState<WordLookupPopupCard> {
         color: Colors.white,
         borderRadius: BorderRadius.circular(20),
         border: Border.all(color: const Color(0xFFE1E7E1)),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x1A000000),
-            blurRadius: 18,
-            offset: Offset(0, 10),
-          ),
-        ],
+        boxShadow: AppElevation.high,
       ),
       child: widget.maxHeight == null
           ? content

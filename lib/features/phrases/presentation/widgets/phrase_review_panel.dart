@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../phrase_book_provider.dart';
 
@@ -226,13 +227,7 @@ class _ReviewActionDock extends StatelessWidget {
         border: const Border(
           top: BorderSide(color: AppDesignTokens.borderGray),
         ),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x180E305D),
-            blurRadius: 14,
-            offset: Offset(0, -4),
-          ),
-        ],
+        boxShadow: AppElevation.medium,
       ),
       child: SafeArea(
         top: false,

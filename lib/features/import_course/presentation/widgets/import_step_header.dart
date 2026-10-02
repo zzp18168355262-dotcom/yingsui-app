@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../../../shared/presentation/pad/pad_compact.dart';
 
@@ -76,13 +77,7 @@ class ImportStepHeader extends StatelessWidget {
                                 width: 2,
                               )
                             : null,
-                        boxShadow: const <BoxShadow>[
-                          BoxShadow(
-                            color: Color(0x0F000000),
-                            blurRadius: 10,
-                            offset: Offset(0, 3),
-                          ),
-                        ],
+                        boxShadow: AppElevation.medium,
                       ),
                       child: Center(
                         child: done

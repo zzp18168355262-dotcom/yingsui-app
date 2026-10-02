@@ -1,9 +1,9 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show SelectedContent;
 import 'package:flutter/services.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../../../shared/presentation/word_lookup_popup.dart';
 import '../player_mock_state.dart';
@@ -641,13 +641,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                         : const Color(0xFFE1E7E1),
                     width: active ? 2.5 : 1.5,
                   ),
-                  boxShadow: const <BoxShadow>[
-                    BoxShadow(
-                      color: Color(0x0F000000),
-                      blurRadius: 10,
-                      offset: Offset(0, 5),
-                    ),
-                  ],
+                  boxShadow: AppElevation.medium,
                 ),
                 child: Stack(
                   children: <Widget>[

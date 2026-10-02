@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../shared/presentation/pad/app_design_tokens.dart';
 import '../../shared/presentation/pad/pad_scaffold.dart';
@@ -658,13 +659,7 @@ class _LevelLearningRoute extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x142C3570),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        boxShadow: AppElevation.high,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -701,13 +696,7 @@ class _LevelLearningRoute extends StatelessWidget {
                       gradient: LinearGradient(
                         colors: <Color>[Color(0xFF8070DA), Color(0xFF5B9DDB)],
                       ),
-                      boxShadow: <BoxShadow>[
-                        BoxShadow(
-                          color: Color(0x335D82CE),
-                          blurRadius: 7,
-                          offset: Offset(0, 3),
-                        ),
-                      ],
+                      boxShadow: AppElevation.medium,
                     ),
                     child: Text(
                       '${index + 1}',
@@ -771,13 +760,7 @@ class _MembershipHero extends StatelessWidget {
           ],
           stops: <double>[0, .56, 1],
         ),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x45230A48),
-            blurRadius: 34,
-            offset: Offset(0, 18),
-          ),
-        ],
+        boxShadow: AppElevation.modal,
       ),
       child: Stack(
         children: <Widget>[
@@ -1049,13 +1032,7 @@ class _HowToLearn extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x142C3570),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        boxShadow: AppElevation.high,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -1245,13 +1222,7 @@ class _TodayGrowthValue extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0xFFE3E7F5)),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x12263166),
-            blurRadius: 18,
-            offset: Offset(0, 9),
-          ),
-        ],
+        boxShadow: AppElevation.high,
       ),
       child: Column(
         children: <Widget>[
@@ -1508,13 +1479,7 @@ class _Badges extends StatelessWidget {
             ),
             borderRadius: BorderRadius.circular(24),
             border: Border.all(color: Colors.white),
-            boxShadow: const <BoxShadow>[
-              BoxShadow(
-                color: Color(0x12263166),
-                blurRadius: 18,
-                offset: Offset(0, 9),
-              ),
-            ],
+            boxShadow: AppElevation.high,
           ),
           child: Wrap(
             spacing: 13,

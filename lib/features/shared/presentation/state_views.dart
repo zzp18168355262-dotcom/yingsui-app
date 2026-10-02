@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/theme/app_theme.dart';
+
 class AppLoadingState extends StatelessWidget {
   const AppLoadingState({super.key});
 
@@ -103,13 +105,7 @@ class AppErrorState extends StatelessWidget {
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(28),
-            boxShadow: const <BoxShadow>[
-              BoxShadow(
-                color: Color(0x12000000),
-                blurRadius: 24,
-                offset: Offset(0, 10),
-              ),
-            ],
+            boxShadow: AppElevation.high,
           ),
           child: Padding(
             padding: const EdgeInsets.all(24),

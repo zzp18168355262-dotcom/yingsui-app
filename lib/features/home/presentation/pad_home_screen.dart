@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../../router/app_router.dart';
 import '../../growth/presentation/growth_provider.dart';
 import '../../import_course/presentation/import_course_screen.dart';
@@ -311,13 +312,7 @@ class _MissionProgress extends StatelessWidget {
         ),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: item.color.withValues(alpha: 0.12)),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x1423385B),
-            blurRadius: 18,
-            offset: Offset(0, 8),
-          ),
-        ],
+        boxShadow: AppElevation.high,
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -413,13 +408,7 @@ class _EnglishLevelCard extends StatelessWidget {
             colors: <Color>[Color(0xFFE4F6DD), Color(0xFFE6F0FF)],
           ),
           borderRadius: BorderRadius.circular(28),
-          boxShadow: const <BoxShadow>[
-            BoxShadow(
-              color: Color(0x1A24385B),
-              blurRadius: 28,
-              offset: Offset(0, 12),
-            ),
-          ],
+          boxShadow: AppElevation.modal,
         ),
         child: Row(
           children: <Widget>[

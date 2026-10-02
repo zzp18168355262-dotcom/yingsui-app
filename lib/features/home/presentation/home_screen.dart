@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:gap/gap.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../episodes/data/episode_catalog_provider.dart';
 import '../../episodes/domain/episode.dart';
 import '../../navigation/presentation/navigation_destination.dart';
@@ -124,13 +125,7 @@ class _HomeScreenState extends ConsumerState<HomeScreen> {
                     end: Alignment.bottomRight,
                     colors: <Color>[Color(0xFF101522), Color(0xFF2D4B75)],
                   ),
-                  boxShadow: const <BoxShadow>[
-                    BoxShadow(
-                      color: Color(0x18000000),
-                      blurRadius: 26,
-                      offset: Offset(0, 16),
-                    ),
-                  ],
+                  boxShadow: AppElevation.high,
                 ),
                 child: Padding(
                   padding: const EdgeInsets.all(22),

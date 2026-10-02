@@ -1,10 +1,10 @@
 import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:media_kit/media_kit.dart';
 import 'package:screen_brightness/screen_brightness.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
 import '../../../shared/presentation/word_lookup_popup.dart';
 import '../player_mock_state.dart';
@@ -588,13 +588,7 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
         color: const Color(0xFF111827),
         borderRadius: BorderRadius.circular(24),
         border: Border.all(color: const Color(0x1FFFFFFF)),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x240F172A),
-            blurRadius: 24,
-            offset: Offset(0, 12),
-          ),
-        ],
+        boxShadow: AppElevation.high,
       ),
       child: AspectRatio(aspectRatio: 16 / 9, child: videoStage),
     );

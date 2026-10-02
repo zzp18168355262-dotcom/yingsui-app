@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../../router/app_router.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../shared/presentation/pad/app_design_tokens.dart';
@@ -142,13 +143,7 @@ class ImportCourseModal extends StatelessWidget {
                       color: AppDesignTokens.appWhite.withValues(alpha: 0.98),
                       borderRadius: BorderRadius.circular(40),
                       border: Border.all(color: const Color(0xFFF0ECE6)),
-                      boxShadow: const <BoxShadow>[
-                        BoxShadow(
-                          color: Color(0x26000000),
-                          blurRadius: 42,
-                          offset: Offset(0, 20),
-                        ),
-                      ],
+                      boxShadow: AppElevation.modal,
                     ),
                     child: ClipRRect(
                       borderRadius: BorderRadius.circular(40),

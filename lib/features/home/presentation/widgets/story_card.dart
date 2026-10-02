@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:go_router/go_router.dart';
 
 import '../../../../config/theme/app_theme.dart';
-
 import '../../../../router/app_router.dart';
 import '../../../episodes/domain/episode.dart';
 

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/theme/app_theme.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../shared/presentation/app_shell.dart';
 
@@ -105,13 +106,7 @@ class _FeatureCard extends StatelessWidget {
       decoration: BoxDecoration(
         color: tone,
         borderRadius: BorderRadius.circular(28),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x10000000),
-            blurRadius: 18,
-            offset: Offset(0, 12),
-          ),
-        ],
+        boxShadow: AppElevation.high,
       ),
       child: Padding(
         padding: const EdgeInsets.all(22),

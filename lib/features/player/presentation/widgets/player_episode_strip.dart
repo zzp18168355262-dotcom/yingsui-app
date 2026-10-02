@@ -1,7 +1,7 @@
 import 'dart:ui';
-
 import 'package:flutter/material.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../library/presentation/library_mock_data.dart';
 
 class PlayerEpisodeStrip extends StatefulWidget {
@@ -233,13 +233,7 @@ class _EpisodeCard extends StatelessWidget {
             color: isActive ? const Color(0xFF34D399) : const Color(0xFFE2E8F0),
             width: isActive ? 2 : 1,
           ),
-          boxShadow: const <BoxShadow>[
-            BoxShadow(
-              color: Color(0x0F0F172A),
-              blurRadius: 12,
-              offset: Offset(0, 5),
-            ),
-          ],
+          boxShadow: AppElevation.medium,
         ),
         child: Row(
           children: <Widget>[

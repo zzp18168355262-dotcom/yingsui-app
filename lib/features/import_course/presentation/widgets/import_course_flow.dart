@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../../config/theme/app_theme.dart';
 import '../../../library/presentation/library_catalog_provider.dart';
 import '../../../library/presentation/library_mock_data.dart';
 import '../../../shared/presentation/pad/app_design_tokens.dart';
@@ -897,13 +898,7 @@ class _BottomActionBar extends StatelessWidget {
         color: AppDesignTokens.appWhite.withValues(alpha: 0.98),
         borderRadius: BorderRadius.circular(28),
         border: Border.all(color: const Color(0xFFF0ECE6)),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x12000000),
-            blurRadius: 24,
-            offset: Offset(0, 10),
-          ),
-        ],
+        boxShadow: AppElevation.high,
       ),
       child: Padding(
         padding: EdgeInsets.symmetric(
@@ -950,13 +945,7 @@ class _TaskCard extends StatelessWidget {
         color: AppDesignTokens.appWhite.withValues(alpha: 0.98),
         borderRadius: BorderRadius.circular(32),
         border: Border.all(color: const Color(0xFFF0ECE6)),
-        boxShadow: const <BoxShadow>[
-          BoxShadow(
-            color: Color(0x12000000),
-            blurRadius: 30,
-            offset: Offset(0, 12),
-          ),
-        ],
+        boxShadow: AppElevation.modal,
       ),
       child: child,
     );
