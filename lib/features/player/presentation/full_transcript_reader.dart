@@ -734,9 +734,10 @@ class _ReaderHeader extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      // 内边距收紧：原先头部约占 90px，把阅读区高度挤得很小。
       padding: compact
-          ? const EdgeInsets.fromLTRB(12, 8, 8, 8)
-          : const EdgeInsets.fromLTRB(24, 16, 18, 14),
+          ? const EdgeInsets.fromLTRB(10, 4, 6, 4)
+          : const EdgeInsets.fromLTRB(18, 8, 12, 8),
       decoration: const BoxDecoration(
         color: Colors.white,
         border: Border(bottom: BorderSide(color: AppDesignTokens.borderGray)),
@@ -745,19 +746,19 @@ class _ReaderHeader extends StatelessWidget {
         children: <Widget>[
           if (!compact) ...<Widget>[
             Container(
-              width: 42,
-              height: 42,
+              width: 30,
+              height: 30,
               decoration: BoxDecoration(
                 color: const Color(0xFFECFDF5),
-                borderRadius: BorderRadius.circular(13),
+                borderRadius: BorderRadius.circular(9),
               ),
               child: const Icon(
                 Icons.menu_book_rounded,
                 color: AppDesignTokens.brandGreenDark,
-                size: 22,
+                size: 17,
               ),
             ),
-            const SizedBox(width: 14),
+            const SizedBox(width: 10),
           ],
           Expanded(
             child: Column(
@@ -769,7 +770,7 @@ class _ReaderHeader extends StatelessWidget {
                   overflow: TextOverflow.ellipsis,
                   style: const TextStyle(
                     color: AppDesignTokens.textPrimary,
-                    fontSize: 17,
+                    fontSize: 15,
                     fontWeight: FontWeight.w900,
                   ),
                 ),
@@ -795,11 +796,11 @@ class _ReaderHeader extends StatelessWidget {
                   '翻译',
                   style: TextStyle(
                     color: AppDesignTokens.textSecondary,
-                    fontSize: 12,
+                    fontSize: 11,
                     fontWeight: FontWeight.w800,
                   ),
                 ),
-                const SizedBox(width: 4),
+                const SizedBox(width: 2),
               ],
               Switch(
                 key: const ValueKey<String>('reader-translation-toggle'),
@@ -814,6 +815,9 @@ class _ReaderHeader extends StatelessWidget {
             IconButton.outlined(
               key: const ValueKey<String>('reader-play-full-transcript'),
               onPressed: onListenFullTranscript,
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
               tooltip: isListeningFullTranscript
                   ? '暂停'
                   : isFullTranscriptPaused
@@ -829,6 +833,12 @@ class _ReaderHeader extends StatelessWidget {
             OutlinedButton.icon(
               key: const ValueKey<String>('reader-play-full-transcript'),
               onPressed: onListenFullTranscript,
+              style: OutlinedButton.styleFrom(
+                visualDensity: VisualDensity.compact,
+                padding: const EdgeInsets.symmetric(horizontal: 12),
+                minimumSize: const Size(0, 34),
+                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+              ),
               icon: Icon(
                 isListeningFullTranscript
                     ? Icons.pause_rounded
@@ -846,6 +856,9 @@ class _ReaderHeader extends StatelessWidget {
           IconButton.outlined(
             key: const ValueKey<String>('reader-locate-current-word'),
             onPressed: onLocateCurrentWord,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
             tooltip: '定位到当前单词',
             icon: const Icon(
               Icons.my_location_rounded,
@@ -855,6 +868,9 @@ class _ReaderHeader extends StatelessWidget {
           const SizedBox(width: 8),
           IconButton.filledTonal(
             onPressed: onClose,
+            visualDensity: VisualDensity.compact,
+            padding: EdgeInsets.zero,
+            constraints: const BoxConstraints(minWidth: 34, minHeight: 34),
             tooltip: '关闭逐词全文',
             icon: const Icon(Icons.close_rounded),
           ),
