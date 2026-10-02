@@ -24,6 +24,11 @@ class PlayerSubtitleList extends StatefulWidget {
     this.subtitleWordHighlightBorderWidth = 2.5,
     required this.onTapLine,
     required this.onCollectWord,
+    /// 把「选中的短语/整句」收藏进短语库。
+    ///
+    /// 与 onCollectWord 的区别：那个收藏的是**整句**（把生词记在释义里），
+    /// 这里收藏的是**用户选中的片段本身**，更适合短语积累。
+    this.onCollectPhrase,
     this.onFavoriteWord,
     required this.onBookmarkLine,
     required this.onLoopFromLine,
@@ -57,6 +62,13 @@ class PlayerSubtitleList extends StatefulWidget {
   final double subtitleWordHighlightBorderWidth;
   final ValueChanged<int> onTapLine;
   final ValueChanged<String> onCollectWord;
+
+  /// 收藏选中的短语；为空时不显示该按钮。
+  ///
+  /// 入参为 (短语, 所在整句)。整句同时作为收藏条目的例句上下文。
+  /// 返回 Future 以便界面在收藏期间显示进行中状态。
+  final Future<void> Function(String phrase, String contextSentence)?
+  onCollectPhrase;
   final ValueChanged<String>? onFavoriteWord;
   final ValueChanged<int> onBookmarkLine;
   final ValueChanged<int> onLoopFromLine;
@@ -862,6 +874,12 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                             'selection:$selected',
                             preferAbove: true,
                           ),
+                      onCollect: widget.onCollectPhrase == null
+                          ? null
+                          : () => widget.onCollectPhrase!(
+                              selected,
+                              _contextSentenceForSelection(),
+                            ),
                       onDismiss: () => _selectedTextNotifier.value = '',
                     );
                   },
@@ -1281,16 +1299,43 @@ class _SubtitlePlaceholder extends StatelessWidget {
 ///
 /// 独立成组件是为了让重建范围局限在这一条上：拖选时选中文本持续变化，
 /// 若由列表 State 承载就会每帧重建整个列表，表现为闪烁。
-class _SelectionTranslateBar extends StatelessWidget {
+class _SelectionTranslateBar extends StatefulWidget {
   const _SelectionTranslateBar({
     required this.selectedText,
     required this.onTranslate,
     required this.onDismiss,
+    this.onCollect,
   });
 
   final String selectedText;
   final void Function(BuildContext anchorContext) onTranslate;
   final VoidCallback onDismiss;
+
+  /// 收藏该短语；为空时不显示收藏按钮。
+  final Future<void> Function()? onCollect;
+
+  @override
+  State<_SelectionTranslateBar> createState() => _SelectionTranslateBarState();
+}
+
+class _SelectionTranslateBarState extends State<_SelectionTranslateBar> {
+  /// 收藏进行中（可能需要先取译文），期间禁用按钮避免重复提交。
+  bool _collecting = false;
+
+  Future<void> _handleCollect() async {
+    final Future<void> Function()? collect = widget.onCollect;
+    if (collect == null || _collecting) {
+      return;
+    }
+    setState(() => _collecting = true);
+    try {
+      await collect();
+    } finally {
+      if (mounted) {
+        setState(() => _collecting = false);
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1306,7 +1351,7 @@ class _SelectionTranslateBar extends StatelessWidget {
               children: <Widget>[
                 Expanded(
                   child: Text(
-                    selectedText,
+                    widget.selectedText,
                     maxLines: 1,
                     overflow: TextOverflow.ellipsis,
                     style: const TextStyle(
@@ -1319,7 +1364,7 @@ class _SelectionTranslateBar extends StatelessWidget {
                 const SizedBox(width: 8),
                 FilledButton.icon(
                   key: const ValueKey<String>('subtitle-translate-selection'),
-                  onPressed: () => onTranslate(anchorContext),
+                  onPressed: () => widget.onTranslate(anchorContext),
                   style: FilledButton.styleFrom(
                     visualDensity: VisualDensity.compact,
                     padding: const EdgeInsets.symmetric(horizontal: 12),
@@ -1332,8 +1377,29 @@ class _SelectionTranslateBar extends StatelessWidget {
                   icon: const Icon(Icons.translate_rounded, size: 16),
                   label: const Text('翻译选中'),
                 ),
+                if (widget.onCollect != null) ...<Widget>[
+                  const SizedBox(width: 6),
+                  IconButton.filledTonal(
+                    key: const ValueKey<String>('subtitle-collect-selection'),
+                    onPressed: _collecting ? null : _handleCollect,
+                    tooltip: '收藏到短语库',
+                    visualDensity: VisualDensity.compact,
+                    iconSize: 18,
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints.tightFor(
+                      width: 34,
+                      height: 34,
+                    ),
+                    icon: _collecting
+                        ? const SizedBox.square(
+                            dimension: 16,
+                            child: CircularProgressIndicator(strokeWidth: 2),
+                          )
+                        : const Icon(Icons.bookmark_add_outlined),
+                  ),
+                ],
                 IconButton(
-                  onPressed: onDismiss,
+                  onPressed: widget.onDismiss,
                   tooltip: '取消选择',
                   visualDensity: VisualDensity.compact,
                   iconSize: 18,

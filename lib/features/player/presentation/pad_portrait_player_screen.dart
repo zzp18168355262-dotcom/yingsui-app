@@ -865,6 +865,7 @@ class _PadPortraitPlayerScreenState
                                   onCollectWord: (String word) =>
                                       _handleCollectWord(word, courseContext),
                                   onFavoriteWord: _handleFavoriteWord,
+                                  onCollectPhrase: _handleCollectPhrase,
                                   onBookmarkLine: (int index) =>
                                       _handleBookmarkLine(index, courseContext),
                                   onLoopFromLine: _handleLoopFromLine,
@@ -899,6 +900,7 @@ class _PadPortraitPlayerScreenState
                                   onTapLine: (_) {},
                                   onCollectWord: (_) {},
                                   onBookmarkLine: (_) {},
+                                  onCollectPhrase: _handleCollectPhrase,
                                   onLoopFromLine: (_) {},
                                   onDictationLine: (_) {},
                                   onAiExplain: (_) {},
@@ -1304,6 +1306,73 @@ class _PadPortraitPlayerScreenState
       ref.read(learningActivityProvider.notifier).recordPhraseSaved();
     }
     _showMessage(added ? '成功收藏当前句型到短语库！' : '该例句已经在您的短语库中！');
+  }
+
+  /// 把用户选中的短语收藏进短语库。
+  ///
+  /// 与 [_handleCollectWord] 的区别：那个收藏的是**整句**，
+  /// 把点到的生词记在释义里；这里收藏的是**用户选中的片段本身**，
+  /// 更贴合短语积累的用途。
+  ///
+  /// 之所以先取译文：短语条目在短语库里要能学习，
+  /// 只存英文没有释义意义不大。翻译失败时仍然收藏，
+  /// 只是释义留空，并如实告知用户。
+  Future<void> _handleCollectPhrase(
+    String phrase,
+    String contextSentence,
+  ) async {
+    final PlayerCourseLookupResult courseContext =
+        resolvePlayerCourseForEpisode(
+          courses: ref.read(libraryCatalogProvider),
+          episodeId: widget.episodeId,
+        );
+    final LibraryCourseData? course = courseContext.course;
+    final LibraryEpisodeItem? episode = courseContext.episode;
+    final PlayerSubtitleLine line = state.hasLines
+        ? state.lines[state.activeLineIndex]
+        : _emptySubtitleLine;
+
+    final LearningSettingsState lookupSettings = ref.read(
+      learningSettingsProvider,
+    );
+    final WordLookupService lookupService = ref.read(wordLookupServiceProvider);
+
+    String translation = '';
+    try {
+      translation =
+          await lookupService.translateSentence(
+            sentence: phrase,
+            settings: lookupSettings,
+          ) ??
+          '';
+    } catch (_) {
+      translation = '';
+    }
+    if (!mounted) {
+      return;
+    }
+
+    final bool added = ref
+        .read(phraseBookProvider.notifier)
+        .addPhraseIfMissing(
+          english: phrase,
+          chinese: translation.isEmpty ? '（暂无译文）' : translation,
+          course: course?.title ?? '课程',
+          episode: '第 ${episode?.numberStr ?? '01'} 集',
+          time: line.startTime,
+          courseId: course?.id,
+          episodeId: episode?.id,
+          endTime: _formatTimestamp(line.endMs),
+          note: contextSentence.isEmpty ? null : '出处：$contextSentence',
+        );
+    if (added) {
+      ref.read(learningActivityProvider.notifier).recordPhraseSaved();
+    }
+    _showMessage(
+      added
+          ? '已收藏短语 "$phrase" 到短语库'
+          : '短语 "$phrase" 已在您的短语库中',
+    );
   }
 
   void _handleCollectWord(String word, PlayerCourseLookupResult courseContext) {

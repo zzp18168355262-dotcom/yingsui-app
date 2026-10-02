@@ -16,6 +16,7 @@ class PlayerTranscriptPanel extends StatefulWidget {
     this.subtitleWordHighlightBorderWidth = 2.5,
     required this.onTapLine,
     required this.onCollectWord,
+    this.onCollectPhrase,
     this.onFavoriteWord,
     required this.onBookmarkLine,
     required this.onLoopFromLine,
@@ -41,6 +42,10 @@ class PlayerTranscriptPanel extends StatefulWidget {
   final double subtitleWordHighlightBorderWidth;
   final ValueChanged<int> onTapLine;
   final ValueChanged<String> onCollectWord;
+
+  /// 收藏选中的短语（透传给字幕列表）。
+  final Future<void> Function(String phrase, String contextSentence)?
+  onCollectPhrase;
   final ValueChanged<String>? onFavoriteWord;
   final ValueChanged<int> onBookmarkLine;
   final ValueChanged<int> onLoopFromLine;
@@ -88,6 +93,7 @@ class _PlayerTranscriptPanelState extends State<PlayerTranscriptPanel> {
             subtitleWordHighlightBorderWidth:
                 widget.subtitleWordHighlightBorderWidth,
             onCollectWord: widget.onCollectWord,
+            onCollectPhrase: widget.onCollectPhrase,
             onFavoriteWord: widget.onFavoriteWord,
             onTapLine: widget.onTapLine,
             onBookmarkLine: widget.onBookmarkLine,

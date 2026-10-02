@@ -42,6 +42,10 @@ List<PlayerSubtitleLine> lines() {
 /// 捕获查词入参，用于断言「短语 + 整句上下文」。
 ({String word, String context})? lastLookup;
 
+/// 捕获收藏入参。
+List<({String phrase, String context})> collectedPhrases =
+    <({String phrase, String context})>[];
+
 /// 已配置翻译 API 的设置。
 ///
 /// 必须提供：未配置时 WordLookupService 会直接返回「请先配置翻译 API」，
@@ -103,6 +107,9 @@ Widget page() {
             highlightWords: true,
             onTapLine: (_) {},
             onCollectWord: (_) {},
+            onCollectPhrase: (String phrase, String context) async {
+              collectedPhrases.add((phrase: phrase, context: context));
+            },
             onBookmarkLine: (_) {},
             onLoopFromLine: (_) {},
             onDictationLine: (_) {},
@@ -307,6 +314,94 @@ void main() {
       find.byKey(const ValueKey<String>('subtitle-translate-selection')),
       findsOneWidget,
       reason: '停稳后应显示提示条',
+    );
+  });
+
+  testWidgets('提示条上有收藏按钮，点击收藏所选短语', (WidgetTester tester) async {
+    // 用户要求：选出的短语可以添加到短语库，在「翻译选中」边上加收藏按钮。
+    tester.view.physicalSize = const Size(900, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+    collectedPhrases = <({String phrase, String context})>[];
+
+    await tester.pumpWidget(page());
+    await tester.pumpAndSettle();
+
+    simulateSelection(tester, 'turns me on');
+    await settleSelection(tester);
+
+    final Finder collectButton = find.byKey(
+      const ValueKey<String>('subtitle-collect-selection'),
+    );
+    expect(collectButton, findsOneWidget, reason: '应有收藏按钮');
+
+    await tester.tap(collectButton);
+    await tester.pumpAndSettle();
+
+    expect(collectedPhrases, hasLength(1), reason: '应触发一次收藏');
+    expect(
+      collectedPhrases.first.phrase,
+      'turns me on',
+      reason: '收藏的应是所选短语本身，而不是整句',
+    );
+    expect(
+      collectedPhrases.first.context,
+      'Science just turns me on.',
+      reason: '应带上所在整句作为出处',
+    );
+  });
+
+  testWidgets('未提供收藏回调时不显示收藏按钮', (WidgetTester tester) async {
+    // 某些入口（如全屏播放页的字幕）不提供短语库，此时不该出现按钮。
+    tester.view.physicalSize = const Size(900, 700);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(
+      ProviderScope(
+        overrides: <Override>[
+          learningSettingsProvider.overrideWith(
+            _ConfiguredLearningSettingsNotifier.new,
+          ),
+        ],
+        child: MaterialApp(
+          home: Scaffold(
+            body: SizedBox(
+              height: 520,
+              child: PlayerSubtitleList(
+                lines: lines(),
+                activeIndex: 0,
+                subtitleMode: '双语',
+                currentWordIndex: 0,
+                fontScale: 1,
+                highlightWords: true,
+                onTapLine: (_) {},
+                onCollectWord: (_) {},
+                onBookmarkLine: (_) {},
+                onLoopFromLine: (_) {},
+                onDictationLine: (_) {},
+                onAiExplain: (_) {},
+                onTogglePlaying: () {},
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    simulateSelection(tester, 'turns me on');
+    await settleSelection(tester);
+
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-collect-selection')),
+      findsNothing,
+      reason: '没有收藏回调时不应显示收藏按钮',
+    );
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '翻译按钮仍应存在',
     );
   });
 }
