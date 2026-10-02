@@ -20,6 +20,7 @@ class PlayerVideoPanel extends StatefulWidget {
     this.embeddedSubtitleTracks = const <SubtitleTrack>[],
     this.selectedEmbeddedSubtitleId,
     this.currentWordIndex = 0,
+    this.fontScale = 1,
     this.highlightWords = false,
     this.subtitleWordHighlightStyle = '绿色填充',
     this.subtitleWordHighlightBorderWidth = 2.5,
@@ -47,6 +48,7 @@ class PlayerVideoPanel extends StatefulWidget {
     required this.onVolumeChanged,
     required this.onToggleFullscreen,
     this.onSubtitleLookupOpen,
+    this.onSubtitleSizeAdjust,
     this.onCollectWord,
     this.onFavoriteWord,
     this.onPronounce,
@@ -78,6 +80,17 @@ class PlayerVideoPanel extends StatefulWidget {
   final List<SubtitleTrack> embeddedSubtitleTracks;
   final String? selectedEmbeddedSubtitleId;
   final int currentWordIndex;
+
+  /// 字幕字号倍率（来自「设置 → 字幕字体大小」）。
+  ///
+  /// 视频上的字幕此前是写死字号，设置里的「字幕字体大小」只影响
+  /// 下方字幕列表，用户调了它对画面字幕无效。现在统一由这里驱动。
+  final double fontScale;
+
+  /// 长按字幕时回调：让用户就地调整字幕大小。
+  ///
+  /// 短按已被「点词查词典」占用，故用长按。
+  final VoidCallback? onSubtitleSizeAdjust;
   final bool highlightWords;
   final String subtitleWordHighlightStyle;
   final double subtitleWordHighlightBorderWidth;
@@ -659,7 +672,10 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
                           ? 40
                           : (tinyControls ? 18 : 24),
                       bottom: subtitleBottom,
-                      child: Column(
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onLongPress: widget.onSubtitleSizeAdjust,
+                        child: Column(
                         mainAxisSize: MainAxisSize.min,
                         children: <Widget>[
                           _buildEnglishSubtitle(
@@ -674,9 +690,11 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
                               maxLines: 2,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
-                                fontSize: widget.isFullscreen
-                                    ? (tinyControls ? 15 : 18)
-                                    : (tinyControls ? 14 : 16),
+                                fontSize:
+                                    (widget.isFullscreen
+                                        ? (tinyControls ? 13 : 15)
+                                        : (tinyControls ? 12 : 14)) *
+                                    widget.fontScale,
                                 fontWeight: FontWeight.w700,
                                 height: 1.35,
                                 color: const Color(0xFFF7F7F7),
@@ -691,6 +709,7 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
                             ),
                           ],
                         ],
+                        ),
                       ),
                     ),
                   Center(
@@ -1117,10 +1136,12 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
   }
 
   Widget _buildEnglishSubtitle(String text, {required bool tinyControls}) {
+    // 默认字号整体下调：原先 34/28 会让一句话占三行、遮住大半个画面。
+    final double baseSize = widget.isFullscreen
+        ? (tinyControls ? 19 : 26)
+        : (tinyControls ? 17 : 22);
     final TextStyle style = TextStyle(
-      fontSize: widget.isFullscreen
-          ? (tinyControls ? 24 : 34)
-          : (tinyControls ? 22 : 28),
+      fontSize: baseSize * widget.fontScale,
       fontWeight: FontWeight.w800,
       height: 1.25,
       color: Colors.white,

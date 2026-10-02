@@ -2,15 +2,18 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:media_kit/media_kit.dart';
 
 import '../../library/presentation/library_mock_data.dart';
+import '../../settings/presentation/settings_provider.dart';
 import '../../shared/presentation/pad/app_design_tokens.dart';
 import 'player_mock_state.dart';
 import 'widgets/player_transcript_panel.dart';
 import 'widgets/player_video_panel.dart';
+import 'widgets/subtitle_size_sheet.dart';
 
-class PlayerFullscreenVideoScreen extends StatefulWidget {
+class PlayerFullscreenVideoScreen extends ConsumerStatefulWidget {
   const PlayerFullscreenVideoScreen({
     required this.playerState,
     required this.highlightWords,
@@ -99,12 +102,12 @@ class PlayerFullscreenVideoScreen extends StatefulWidget {
   final String? videoErrorText;
 
   @override
-  State<PlayerFullscreenVideoScreen> createState() =>
+  ConsumerState<PlayerFullscreenVideoScreen> createState() =>
       _PlayerFullscreenVideoScreenState();
 }
 
 class _PlayerFullscreenVideoScreenState
-    extends State<PlayerFullscreenVideoScreen> {
+    extends ConsumerState<PlayerFullscreenVideoScreen> {
   static const double _episodePanelWidth = 280;
   static const double _episodePanelGap = 12;
 
@@ -140,6 +143,21 @@ class _PlayerFullscreenVideoScreenState
     if (mounted) {
       setState(() {});
     }
+  }
+
+  /// 长按画面字幕时就地调整字幕大小。
+  ///
+  /// 写入与「设置 → 字幕字体大小」相同的设置项，
+  /// 保证画面字幕与字幕列表始终一致。
+  Future<void> _handleAdjustSubtitleSize() async {
+    final LearningSettingsState settings = ref.read(learningSettingsProvider);
+    await showSubtitleSizeSheet(
+      context: context,
+      current: settings.fontSize,
+      options: playerFontOptions,
+      onChanged: (String value) =>
+          ref.read(learningSettingsProvider.notifier).setFontSize(value),
+    );
   }
 
   @override
@@ -178,6 +196,8 @@ class _PlayerFullscreenVideoScreenState
               embeddedSubtitleTracks: widget.embeddedSubtitleTracks,
               selectedEmbeddedSubtitleId: widget.selectedEmbeddedSubtitleId,
               currentWordIndex: player.currentWordIndex,
+              fontScale: widget.fontScale,
+              onSubtitleSizeAdjust: _handleAdjustSubtitleSize,
               highlightWords: widget.highlightWords,
               subtitleWordHighlightStyle: widget.subtitleWordHighlightStyle,
               subtitleWordHighlightBorderWidth:

@@ -41,6 +41,7 @@ import 'widgets/player_top_bar.dart';
 import 'widgets/player_transcript_panel.dart';
 import 'widgets/player_video_panel.dart';
 import 'widgets/shadowing_practice_panel.dart';
+import 'widgets/subtitle_size_sheet.dart';
 
 class PadLandscapePlayerScreen extends ConsumerStatefulWidget {
   const PadLandscapePlayerScreen({
@@ -622,6 +623,18 @@ class PadLandscapePlayerScreenState
     setState(() => _transcriptReaderSnapshot = snapshot);
   }
 
+  /// 长按画面字幕时就地调整字幕大小（与竖屏一致）。
+  Future<void> _handleAdjustSubtitleSize() async {
+    final LearningSettingsState settings = ref.read(learningSettingsProvider);
+    await showSubtitleSizeSheet(
+      context: context,
+      current: settings.fontSize,
+      options: playerFontOptions,
+      onChanged: (String value) =>
+          ref.read(learningSettingsProvider.notifier).setFontSize(value),
+    );
+  }
+
   void _closeTranscriptReader() {
     if (_transcriptReaderSnapshot == null) return;
     setState(() => _transcriptReaderSnapshot = null);
@@ -729,6 +742,8 @@ class PadLandscapePlayerScreenState
                               selectedEmbeddedSubtitleId:
                                   _selectedEmbeddedSubtitleId,
                               currentWordIndex: state.currentWordIndex,
+                              fontScale: settings.fontScale,
+                            onSubtitleSizeAdjust: _handleAdjustSubtitleSize,
                               highlightWords: settings.highlightWords,
                               subtitleWordHighlightStyle:
                                   settings.subtitleWordHighlightStyle,

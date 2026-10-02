@@ -40,6 +40,7 @@ import 'widgets/player_top_bar.dart';
 import 'widgets/player_transcript_panel.dart';
 import 'widgets/player_video_panel.dart';
 import 'widgets/shadowing_practice_panel.dart';
+import 'widgets/subtitle_size_sheet.dart';
 
 class PadPortraitPlayerScreen extends ConsumerStatefulWidget {
   const PadPortraitPlayerScreen({
@@ -619,6 +620,21 @@ class _PadPortraitPlayerScreenState
     setState(() => _transcriptReaderSnapshot = snapshot);
   }
 
+  /// 长按画面字幕时就地调整字幕大小。
+  ///
+  /// 直接写入既有设置项（设置 → 字幕字体大小），
+  /// 因此字幕列表与画面字幕会一起变化，不会出现两处不一致。
+  Future<void> _handleAdjustSubtitleSize() async {
+    final LearningSettingsState settings = ref.read(learningSettingsProvider);
+    await showSubtitleSizeSheet(
+      context: context,
+      current: settings.fontSize,
+      options: playerFontOptions,
+      onChanged: (String value) =>
+          ref.read(learningSettingsProvider.notifier).setFontSize(value),
+    );
+  }
+
   void _closeTranscriptReader() {
     if (_transcriptReaderSnapshot == null) return;
     setState(() => _transcriptReaderSnapshot = null);
@@ -727,6 +743,8 @@ class _PadPortraitPlayerScreenState
                         embeddedSubtitleTracks: _embeddedSubtitleTracks,
                         selectedEmbeddedSubtitleId: _selectedEmbeddedSubtitleId,
                         currentWordIndex: state.currentWordIndex,
+                        fontScale: settings.fontScale,
+                        onSubtitleSizeAdjust: _handleAdjustSubtitleSize,
                         highlightWords: settings.highlightWords,
                         subtitleWordHighlightStyle:
                             settings.subtitleWordHighlightStyle,
