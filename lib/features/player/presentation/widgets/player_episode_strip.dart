@@ -23,6 +23,13 @@ class PlayerEpisodeStrip extends StatefulWidget {
 class _PlayerEpisodeStripState extends State<PlayerEpisodeStrip> {
   late final ScrollController _scrollController;
 
+  /// 默认收起。
+  ///
+  /// 用户反馈目录占空间太大：原先「标题行 + 108px 卡片列表」常驻约 150px，
+  /// 而播放过程中切集是低频操作。改为默认只留一行标题，
+  /// 需要切集时展开（或直接点「查看全部」用完整列表）。
+  bool _expanded = false;
+
   @override
   void initState() {
     super.initState();
@@ -59,6 +66,9 @@ class _PlayerEpisodeStripState extends State<PlayerEpisodeStrip> {
     }
 
     return Column(
+      // mainAxisSize.min：按内容高度布局。
+      // 默认的 max 会撑满父级可用高度，导致收起后仍占满整列。
+      mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Row(
@@ -67,8 +77,17 @@ class _PlayerEpisodeStripState extends State<PlayerEpisodeStrip> {
               '课程目录',
               style: TextStyle(
                 color: Color(0xFF172033),
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w800,
+              ),
+            ),
+            const SizedBox(width: 6),
+            Text(
+              '共 ${widget.episodes.length} 集',
+              style: const TextStyle(
+                color: Color(0xFF8A9691),
+                fontSize: 11,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const Spacer(),
@@ -88,9 +107,26 @@ class _PlayerEpisodeStripState extends State<PlayerEpisodeStrip> {
                 ),
               ),
             ),
+            const SizedBox(width: 4),
+            // 展开/收起：默认收起，避免常驻占用播放区高度。
+            IconButton(
+              onPressed: () => setState(() => _expanded = !_expanded),
+              tooltip: _expanded ? '收起课程目录' : '展开课程目录',
+              visualDensity: VisualDensity.compact,
+              padding: EdgeInsets.zero,
+              constraints: const BoxConstraints(minWidth: 30, minHeight: 28),
+              icon: Icon(
+                _expanded
+                    ? Icons.expand_less_rounded
+                    : Icons.expand_more_rounded,
+                size: 20,
+                color: const Color(0xFF004D40),
+              ),
+            ),
           ],
         ),
-        const SizedBox(height: 10),
+        if (_expanded) ...<Widget>[
+        const SizedBox(height: 8),
         SizedBox(
           height: 108,
           child: ScrollConfiguration(
@@ -120,6 +156,7 @@ class _PlayerEpisodeStripState extends State<PlayerEpisodeStrip> {
             ),
           ),
         ),
+        ],
       ],
     );
   }

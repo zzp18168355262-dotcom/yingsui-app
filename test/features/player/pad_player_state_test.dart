@@ -353,6 +353,11 @@ void main() {
       ),
     );
 
+    // 课程目录默认收起（避免常驻占用播放区高度），
+    // 这些用例针对展开后的剧集卡片，所以先展开。
+    await tester.tap(find.byTooltip('展开课程目录'));
+    await tester.pumpAndSettle();
+
     expect(find.text('第一集'), findsOneWidget);
 
     await tester.tap(find.text('查看全部'));
@@ -393,6 +398,10 @@ void main() {
       ),
     );
 
+    // 课程目录默认收起，先展开再验证卡片定位/拖动。
+    await tester.tap(find.byTooltip('展开课程目录'));
+    await tester.pumpAndSettle();
+
     expect(
       tester.state<ScrollableState>(find.byType(Scrollable)).position.pixels,
       greaterThan(0),
@@ -428,6 +437,10 @@ void main() {
         ),
       ),
     );
+
+    // 课程目录默认收起，先展开再验证卡片定位/拖动。
+    await tester.tap(find.byTooltip('展开课程目录'));
+    await tester.pumpAndSettle();
 
     await tester.dragFrom(
       tester.getCenter(find.byType(ListView)),
