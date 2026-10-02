@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/rendering.dart' show SelectedContent;
 import 'package:flutter/services.dart';
 
 import '../../../shared/presentation/pad/app_design_tokens.dart';
@@ -90,6 +91,13 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
 
   /// 当前句一次变化超过这么多句，视为「明显跳转」并恢复跟随。
   static const int _resumeFollowIndexJump = 3;
+
+  /// 用户在字幕上选中的文本（短语或整句）。
+  ///
+  /// 用途：原先只能点单个单词查词，无法处理「不认识的短语」。
+  /// 列表本就包在 SelectionArea 里（可拖选），但选中后毫无反应。
+  /// 这里接住选中结果，给出「翻译选中」入口。
+  String _selectedText = '';
 
   /// 上一帧是否在播放，用于检测「暂停 → 继续播放」的切换。
   late bool _wasPlaying;
@@ -349,8 +357,11 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
     BuildContext anchorContext,
     String rawWord,
     String contextSentence,
-    String tokenId,
-  ) {
+    String tokenId, {
+    /// 入口位于列表底部时（如「翻译选中」条），弹窗应显示在它上方，
+    /// 否则会被屏幕下边缘裁掉。
+    bool preferAbove = false,
+  }) {
     if (_activeDictionaryTokenId == tokenId) {
       _removeDictionaryOverlay();
       return;
@@ -386,8 +397,9 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
     final bool showSide = canShowRight || canShowLeft;
     final bool showAbove =
         !showSide &&
-        availableBelow < popupHeight + viewportPadding &&
-        anchorTopLeft.dy > availableBelow;
+        (preferAbove ||
+            (availableBelow < popupHeight + viewportPadding &&
+                anchorTopLeft.dy > availableBelow));
 
     final double left;
     final double top;
@@ -515,6 +527,16 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
     // 真正表达该意图的是主动拖动列表（见 _handleScrollNotification）。
     final Widget list = SelectionArea(
       key: const ValueKey<String>('subtitle-list-selection-area'),
+      // 注意：这里**不**据此关闭自动跟随。
+      // 早先版本一旦收到选择就停止跟随，导致播放中「概率性不跟了」。
+      // 选中文本是阅读/查词行为，不等于「用户要脱离自动跟随」。
+      onSelectionChanged: (SelectedContent? selection) {
+        final String next = selection?.plainText.trim() ?? '';
+        if (next == _selectedText) {
+          return;
+        }
+        setState(() => _selectedText = next);
+      },
       child: NotificationListener<ScrollNotification>(
         onNotification: _handleScrollNotification,
         child: ListView.separated(
@@ -786,9 +808,89 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
             ],
           ),
         ),
+        // 「翻译选中」入口：选中短语/整句后出现。
+        //
+        // 为什么需要手动点一下：选中即刻自动翻译会带来两个问题——
+        // 划选过程中的中间状态也会触发请求（浪费且抖动），
+        // 以及用户只是想复制文字时被强行弹窗。手动确认更稳。
+        if (_selectedText.isNotEmpty)
+          Padding(
+            padding: const EdgeInsets.fromLTRB(8, 6, 8, 6),
+            child: Builder(
+              builder: (BuildContext chipContext) {
+                return Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        _selectedText,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                          color: AppDesignTokens.textSecondary,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    FilledButton.icon(
+                      key: const ValueKey<String>('subtitle-translate-selection'),
+                      onPressed: () => _toggleDictionaryOverlay(
+                        chipContext,
+                        _selectedText,
+                        _contextSentenceForSelection(),
+                        'selection:$_selectedText',
+                        preferAbove: true,
+                      ),
+                      style: FilledButton.styleFrom(
+                        visualDensity: VisualDensity.compact,
+                        padding: const EdgeInsets.symmetric(horizontal: 12),
+                        minimumSize: const Size(0, 32),
+                        textStyle: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.w700,
+                        ),
+                      ),
+                      icon: const Icon(Icons.translate_rounded, size: 16),
+                      label: const Text('翻译选中'),
+                    ),
+                    IconButton(
+                      onPressed: () => setState(() => _selectedText = ''),
+                      tooltip: '取消选择',
+                      visualDensity: VisualDensity.compact,
+                      iconSize: 18,
+                      padding: EdgeInsets.zero,
+                      constraints: const BoxConstraints.tightFor(
+                        width: 32,
+                        height: 32,
+                      ),
+                      icon: const Icon(Icons.close_rounded),
+                    ),
+                  ],
+                );
+              },
+            ),
+          ),
         Expanded(child: list),
       ],
     );
+  }
+
+  /// 找出选中文本所在的整句，作为翻译/查词的上下文。
+  ///
+  /// 上下文很重要：同一个短语在不同句子里含义可能不同，
+  /// 交给模型判断时带上整句能显著提高准确度。
+  String _contextSentenceForSelection() {
+    final String needle = _selectedText.trim();
+    if (needle.isEmpty) {
+      return '';
+    }
+    for (final PlayerSubtitleLine line in widget.lines) {
+      if (line.english.contains(needle)) {
+        return line.english;
+      }
+    }
+    return needle;
   }
 
   Future<void> _openActions(
@@ -937,12 +1039,18 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
             return Builder(
               builder: (BuildContext wordContext) {
                 return InkWell(
-                  onTap: () => _toggleDictionaryOverlay(
-                    wordContext,
-                    token.value,
-                    text,
-                    tokenId,
-                  ),
+                  onTap: () {
+                    // 点词查词时收起「翻译选中」入口，避免两个浮层并存。
+                    if (_selectedText.isNotEmpty) {
+                      setState(() => _selectedText = '');
+                    }
+                    _toggleDictionaryOverlay(
+                      wordContext,
+                      token.value,
+                      text,
+                      tokenId,
+                    );
+                  },
                   borderRadius: BorderRadius.circular(8),
                   child: Container(
                     padding: const EdgeInsets.symmetric(

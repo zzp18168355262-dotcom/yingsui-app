@@ -558,8 +558,23 @@ class WordLookupService {
     );
   }
 
+  /// 规范化待查询的词条。
+  ///
+  /// 注意：这里必须**保留词内空格**。原先的实现是
+  /// `replaceAll(RegExp(r'[^\w]'), '')` —— 它会删掉所有非字母数字字符，
+  /// 包括空格，于是多词短语被压成一个不存在的词：
+  ///   "turns me on"  →  "turnsmeon"
+  /// 用户想查短语时永远查不到。
+  ///
+  /// 现在：折叠连续空白为单个空格，仅去掉**首尾**标点，保留词内撇号
+  /// 与连字符（don't / well-known 这类词条需要它们）。
   String _normalizeWord(String rawWord) {
-    return rawWord.toLowerCase().replaceAll(RegExp(r'[^\w]'), '').trim();
+    return rawWord
+        .trim()
+        .toLowerCase()
+        .replaceAll(RegExp(r'\s+'), ' ')
+        .replaceAll(RegExp(r'^[^\p{L}\p{N}]+|[^\p{L}\p{N}]+$', unicode: true), '')
+        .trim();
   }
 
   bool _canUseRemoteProvider(LearningSettingsState settings) {
