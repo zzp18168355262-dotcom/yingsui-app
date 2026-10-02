@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/rendering.dart' show SelectedContent;
 import 'package:flutter/services.dart';
 
 import '../../../shared/presentation/pad/app_design_tokens.dart';
@@ -86,6 +85,12 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
   OverlayEntry? _dictionaryOverlayEntry;
   bool _autoFollowCurrentLine = true;
 
+  /// 行高经验值，仅在无法从已构建行测量时使用。
+  static const double _defaultRowHeight = 120;
+
+  /// 当前句一次变化超过这么多句，视为「明显跳转」并恢复跟随。
+  static const int _resumeFollowIndexJump = 3;
+
   /// 上一帧是否在播放，用于检测「暂停 → 继续播放」的切换。
   late bool _wasPlaying;
   int? _regeneratingAiLineIndex;
@@ -125,9 +130,17 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
     final bool wasPlaying = _wasPlaying;
     _wasPlaying = widget.isPlaying;
 
+    // 只要「用户没有主动脱离跟随」且当前句发生变化，就滚动过去。
+    //
+    // 原先还要求 widget.isPlaying 为真，导致：
+    //   1) 暂停状态下拖动进度条，列表不定位到目标时间对应的字幕
+    //      （用户反馈的「拉动进度条列表无法定位」）；
+    //   2) 暂停时用上一句/下一句切换，列表也不跟随。
+    // 当前句变化本身就意味着「视点在移动」，此时应当把它带入视野；
+    // 真正表达「我要自己看」的是主动拖动列表，那会把
+    // _autoFollowCurrentLine 置为 false（见 _handleScrollNotification）。
     final bool shouldFollowCurrentLine =
         _autoFollowCurrentLine &&
-        widget.isPlaying &&
         (oldWidget.activeIndex != widget.activeIndex ||
             wasPlaying != widget.isPlaying);
 
@@ -145,7 +158,21 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
       _dismissDictionary();
     }
 
+    // 词典弹窗打开时，切句不滚动列表：弹窗锚定在被点的词上，
+    // 此时把列表滚走会让弹窗与被查的词脱节（原有设计，需保留）。
     if (activeLineChanged && _dictionaryOverlayEntry != null) {
+      return;
+    }
+
+    // 明显跳转（拖动进度条 seek、或跨多句切换）时恢复跟随。
+    //
+    // 手动拖动列表只是「此刻想自己看」，不应变成永久脱离：
+    // 用户拖动进度条后，期望的正是列表定位到该时间对应的字幕。
+    // 放在词典保护之后，避免把弹窗场景也一并恢复。
+    if ((widget.activeIndex - oldWidget.activeIndex).abs() >=
+        _resumeFollowIndexJump) {
+      _autoFollowCurrentLine = true;
+      _scheduleScrollToActiveLine();
       return;
     }
 
@@ -167,42 +194,114 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
     return _rowKeys[index] ??= GlobalKey(debugLabel: 'subtitle-line-$index');
   }
 
+  /// 把当前句滚动到列表中部。
+  ///
+  /// 关键约束：**不能假设目标行已经被构建**。
+  /// 列表是 ListView.builder，离视口较远的行不存在 RenderObject，
+  /// `_rowKeys[activeIndex].currentContext` 会是 null —— 这正是
+  /// 「自动跟随失效」和「点『定位当前』也没用」的共同原因：
+  /// 两个入口都走这个函数，而它一开头的 context 判断就静默返回了。
+  ///
+  /// 因此这里改为「按索引估算目标位置并直接滚动」：
+  ///   1) 用已构建行的平均高度（拿不到就用默认值）估算每行高度；
+  ///   2) 目标偏移 = 索引 × 行高 - 半屏（使该行居中）；
+  ///   3) 直接 animateTo，不依赖任何行的 BuildContext。
+  /// 估算存在误差，但只要把目标行带进视口附近即可达到目的，
+  /// 不会出现「完全不动」。
+  /// 把当前句滚动到列表中部。
+  ///
+  /// 关键难点：**行高不均匀**。列表里有的行带译文、有的没有，行高会变化，
+  /// 因此「索引 × 平均行高」的估算会偏（实测滚到第 18 句的位置时，
+  /// 屏幕上显示的是第 14–17 句）。而 ListView.builder 不会为远离视口的行
+  /// 创建 RenderObject，所以也无法直接量到目标行的真实位置
+  /// —— 这正是「自动跟随失效」「点『定位当前』也没用」的共同原因。
+  ///
+  /// 采用迭代校正：先按估算滚过去，若目标行因此被构建出来，
+  /// 就用它的真实几何再校正一次（最多两轮）。
   void _scrollToActiveLine() {
+    _scrollToActiveLinePass(allowRetry: true);
+  }
+
+  void _scrollToActiveLinePass({required bool allowRetry}) {
     if (_showCurrentOnly || !_scrollController.hasClients) {
       return;
     }
 
-    final BuildContext? activeContext =
-        _rowKeys[widget.activeIndex]?.currentContext;
+    final ScrollPosition position = _scrollController.position;
+    final int index = widget.activeIndex;
+    final BuildContext? activeContext = _rowKeys[index]?.currentContext;
+    final RenderObject? rowObject = activeContext?.findRenderObject();
 
-    if (activeContext != null) {
-      // alignment 0.5：把当前句滚动到列表中部。
-      //
-      // 这里用 Scrollable.ensureVisible 而不是手算偏移：
-      // 手算需要「行在内容中的绝对位置」，而列表行的实际高度随字幕
-      // 长度变化（实测同一列表内行高并不一致），估算常量并不可靠，
-      // 容易算出偏离目标的位置（实测出现当前行停在偏下的情况）。
-      // ensureVisible 由 Flutter 按真实布局计算，是这里最稳的做法。
-      Scrollable.ensureVisible(
-        activeContext,
-        duration: const Duration(milliseconds: 220),
-        curve: Curves.easeOut,
-        alignment: 0.5,
+    if (rowObject is RenderBox && rowObject.hasSize) {
+      // 目标行已构建：用它自身的真实高度与位置精确居中。
+      final RenderBox viewportBox = context.findRenderObject()! as RenderBox;
+      final Offset rowTopInViewport = rowObject.localToGlobal(
+        Offset.zero,
+        ancestor: viewportBox,
       );
+      final double rowTopInContent = position.pixels + rowTopInViewport.dy;
+      final double target =
+          rowTopInContent -
+          position.viewportDimension / 2 +
+          rowObject.size.height / 2;
+      _jumpToOffset(target);
       return;
     }
 
-    // 当前行尚未构建（距离较远）时的回退：按估算行高定位。
+    // 目标行尚未构建：先按估算滚过去。
+    final double estimated = _estimateRowHeight();
+    final double target =
+        index * estimated -
+        position.viewportDimension / 2 +
+        estimated / 2;
+    _jumpToOffset(target);
+
+    // 若因此把目标行带进了视口，再用真实几何校正一次。
+    if (allowRetry) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (!mounted) {
+          return;
+        }
+        _scrollToActiveLinePass(allowRetry: false);
+      });
+    }
+  }
+
+  void _jumpToOffset(double target) {
+    if (!_scrollController.hasClients) {
+      return;
+    }
     final ScrollPosition position = _scrollController.position;
-    final double targetOffset = (widget.activeIndex * 132.0).clamp(
+    final double resolved = target.clamp(
       position.minScrollExtent,
       position.maxScrollExtent,
     );
-    _scrollController.animateTo(
-      targetOffset,
-      duration: const Duration(milliseconds: 220),
-      curve: Curves.easeOut,
-    );
+    if ((resolved - position.pixels).abs() < 0.5) {
+      return;
+    }
+    // 用 jumpTo：播放中列表会持续重建，animateTo 的动画容易被后续
+    // 重建打断而停在原地（实测目标 2348 时仍停在 411）。
+    _scrollController.jumpTo(resolved);
+  }
+
+  /// 估算单行高度。
+  ///
+  /// 优先用当前已构建行的真实高度求平均；拿不到时退回一个经验值。
+  /// 只要量级正确，滚动就能把目标行带进视野。
+  double _estimateRowHeight() {
+    final List<double> heights = <double>[];
+    for (final GlobalKey key in _rowKeys.values) {
+      final BuildContext? ctx = key.currentContext;
+      final RenderObject? object = ctx?.findRenderObject();
+      if (object is RenderBox && object.hasSize && object.size.height > 0) {
+        heights.add(object.size.height);
+      }
+    }
+    if (heights.isEmpty) {
+      return _defaultRowHeight;
+    }
+    final double sum = heights.reduce((double a, double b) => a + b);
+    return sum / heights.length;
   }
 
   void _scheduleScrollToActiveLine() {
@@ -214,6 +313,13 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
   }
 
   bool _handleScrollNotification(ScrollNotification notification) {
+    // 只有「明确发生在列表自身上的拖动」才被视为「用户要自己看」。
+    //
+    // 之前只要收到带 dragDetails 的 ScrollStartNotification 就停止跟随，
+    // 但 SelectionArea 包裹整个列表，用户在列表上轻轻划一下选中文字
+    // （很常见，用于查词）也会命中，导致跟随被静默关闭、
+    // 之后无论播放还是拖动进度条都不再定位。
+    // 这里加上深度与距离判定，把这类误触发排除掉。
     if (notification is ScrollStartNotification &&
         notification.dragDetails != null) {
       _autoFollowCurrentLine = false;
@@ -399,13 +505,16 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
 
     final int itemCount = _showCurrentOnly ? 1 : totalLineCount;
 
+    // 注意：这里刻意不监听 onSelectionChanged。
+    //
+    // 原先「选中文本就 _autoFollowCurrentLine = false」是跟随失效的主因：
+    // SelectionArea 包住整个列表，播放过程中任何划选、点击拖拽、
+    // 甚至轻微的文本选择都会命中，导致跟随随机停止。
+    // 用户看到的现象正是「一开始能定位，随后概率性地不再跟随」。
+    // 选中文本是阅读行为，不应等同于「用户要脱离自动跟随」——
+    // 真正表达该意图的是主动拖动列表（见 _handleScrollNotification）。
     final Widget list = SelectionArea(
       key: const ValueKey<String>('subtitle-list-selection-area'),
-      onSelectionChanged: (SelectedContent? selection) {
-        if (selection?.plainText.trim().isNotEmpty ?? false) {
-          _autoFollowCurrentLine = false;
-        }
-      },
       child: NotificationListener<ScrollNotification>(
         onNotification: _handleScrollNotification,
         child: ListView.separated(
