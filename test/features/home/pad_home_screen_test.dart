@@ -60,7 +60,9 @@ void main() {
     );
     await tester.pumpAndSettle();
 
-    expect(find.text('晚上好 Mark 👋'), findsOneWidget);
+    // 问候语按时段变化，且不再包含硬编码人名。
+    expect(find.textContaining('👋'), findsOneWidget);
+    expect(find.textContaining('Mark'), findsNothing);
     expect(find.text('继续你的英语成长旅程'), findsOneWidget);
     expect(find.text('今日挑战'), findsOneWidget);
     expect(find.text('英语成长'), findsWidgets);

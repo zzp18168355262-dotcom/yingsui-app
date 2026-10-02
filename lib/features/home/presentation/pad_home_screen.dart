@@ -14,6 +14,7 @@ import '../../shared/presentation/app_loading_overlay.dart';
 import '../../shared/presentation/pad/app_design_tokens.dart';
 import '../../shared/presentation/pad/pad_scaffold.dart';
 import '../../shared/presentation/pad/pad_top_bar.dart';
+import 'home_greeting.dart';
 import 'learning_dashboard_provider.dart';
 import 'widgets/pad_home_hero.dart';
 
@@ -140,20 +141,20 @@ class _GreetingHeader extends StatelessWidget {
   Widget build(BuildContext context) {
     return Row(
       children: <Widget>[
-        const Expanded(
+        Expanded(
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: <Widget>[
               Text(
-                '晚上好 Mark 👋',
-                style: TextStyle(
+                '${greetingForHour(DateTime.now().hour)} 👋',
+                style: const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w900,
                   color: AppDesignTokens.textPrimary,
                 ),
               ),
-              SizedBox(height: 6),
-              Text(
+              const SizedBox(height: 6),
+              const Text(
                 '继续你的英语成长旅程',
                 style: TextStyle(
                   fontSize: 15,
