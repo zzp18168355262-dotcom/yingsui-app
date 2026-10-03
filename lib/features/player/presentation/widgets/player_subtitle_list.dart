@@ -644,7 +644,14 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                 _autoFollowCurrentLine = true;
                 widget.onTapLine(originalIndex);
               },
-              onLongPress: () => _openActions(context, line, originalIndex),
+              // 行级长按**故意不挂**：长按留给词块做「划选短语」。
+              //
+              // 原先这里挂了 _openActions（更多操作菜单），与词块的
+              // onLongPressStart 争抢同一手势。结果是长按能选中起点那个词，
+              // 但后续 onLongPressMoveUpdate 收不到，**只能选到单个单词**，
+              // 无法划出短语（用户反馈）。
+              // 更多操作的入口仍然保留：行内的「⋯」按钮（more_horiz）调用
+              // 同一个 _openActions，功能没有丢失。
               borderRadius: BorderRadius.circular(AppRadius.xl),
               child: Ink(
                 padding: const EdgeInsets.all(12),
