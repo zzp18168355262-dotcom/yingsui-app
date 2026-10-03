@@ -32,10 +32,21 @@ class AsrSubtitleCache {
   const AsrSubtitleCache({
     this.appSupportDirectory = getApplicationSupportDirectory,
     this.downloadsDirectory = getDownloadsDirectory,
+    this.appDocumentsDirectory = getApplicationDocumentsDirectory,
   });
 
   final Future<Directory> Function() appSupportDirectory;
   final Future<Directory?> Function() downloadsDirectory;
+
+  /// 移动端导出目录。
+  ///
+  /// 为什么需要它：`getDownloadsDirectory()` 在 **iOS 上返回 null**，
+  /// 原实现会回退到 appSupportDirectory() —— 那是 App 私有沙盒目录，
+  /// 用户无法通过系统「文件」App 找到；而界面却提示
+  /// 「已导出到 Downloads/…」，等于功能对 iOS 用户不可用。
+  /// 改用文档目录并配合 Info.plist 的文件共享声明，用户即可在
+  /// 「文件 → 我的 iPhone → 英语角」里看到导出的字幕。
+  final Future<Directory> Function() appDocumentsDirectory;
 
   Future<File> cacheFileFor({
     required String episodeId,
@@ -265,9 +276,14 @@ class AsrSubtitleCache {
   }
 
   Future<Directory> _exportDirectory() async {
+    // 桌面端：系统下载目录（用户熟悉的位置）。
+    // 移动端：getDownloadsDirectory() 返回 null（iOS）或无权限（Android），
+    //         退回 App 文档目录，并依赖 Info.plist 的 UIFileSharingEnabled
+    //         让用户能在系统「文件」App 中看到。
     final Directory? downloads = await downloadsDirectory();
+    final Directory base = downloads ?? await appDocumentsDirectory();
     final Directory targetDir = Directory(
-      '${(downloads ?? await appSupportDirectory()).path}'
+      '${base.path}'
       '${Platform.pathSeparator}English Corner'
       '${Platform.pathSeparator}AI Subtitles',
     )..createSync(recursive: true);

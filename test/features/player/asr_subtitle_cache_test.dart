@@ -363,4 +363,57 @@ void main() {
 
     expect(await cache.listEntries(), isEmpty);
   });
+  test('下载目录不可用时（iOS）导出回退到文档目录', () async {
+    // iOS 的 getDownloadsDirectory() 返回 null。原实现在这种情况下
+    // 回退到 appSupportDirectory()，那是 App 私有的沙盒目录，
+    // 用户无法通过系统「文件」App 找到，但界面却提示「已导出到 Downloads」。
+    // 现改为回退到**文档目录**，并配合 Info.plist 的
+    // UIFileSharingEnabled 让用户能看到导出结果。
+    final Directory supportDir = Directory.systemTemp.createTempSync(
+      'asr-support-',
+    );
+    final Directory docsDir = Directory.systemTemp.createTempSync('asr-docs-');
+    addTearDown(() {
+      supportDir.deleteSync(recursive: true);
+      docsDir.deleteSync(recursive: true);
+    });
+
+    final AsrSubtitleCache cache = AsrSubtitleCache(
+      appSupportDirectory: () async => supportDir,
+      // 模拟 iOS：拿不到下载目录。
+      downloadsDirectory: () async => null,
+      appDocumentsDirectory: () async => docsDir,
+    );
+
+    final File cacheFile = await cache.cacheFileFor(
+      episodeId: 'ep-1',
+      videoPath: '/tmp/Video.mp4',
+    );
+    cacheFile.parent.createSync(recursive: true);
+    cacheFile.writeAsStringSync('{}');
+
+    final File exported = await cache.exportEntry(
+      AiSubtitleCacheEntry(
+        episodeId: 'ep-1',
+        cacheFile: cacheFile,
+        lineCount: 0,
+        provider: 'test',
+        model: 'test',
+        generatedAt: DateTime.now(),
+        sizeBytes: cacheFile.lengthSync(),
+        videoPath: '/tmp/Video.mp4',
+      ),
+    );
+
+    expect(
+      exported.path.startsWith(docsDir.path),
+      isTrue,
+      reason: '下载目录不可用时应导出到文档目录（用户可见），而不是私有沙盒',
+    );
+    expect(
+      exported.path.startsWith(supportDir.path),
+      isFalse,
+      reason: '不应落到用户找不到的私有支持目录',
+    );
+  });
 }

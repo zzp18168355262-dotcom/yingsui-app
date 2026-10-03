@@ -68,5 +68,12 @@
 		<string>UIInterfaceOrientationLandscapeLeft</string>
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
+	<!-- 允许用户通过系统「文件」App 访问 App 文档目录。
+	     用途：AI 字幕「导出」功能在 iOS 上写入文档目录，
+	     未声明这两项时用户根本看不到导出结果。 -->
+	<key>UIFileSharingEnabled</key>
+	<true/>
+	<key>LSSupportsOpeningDocumentsInPlace</key>
+	<true/>
 </dict>
 </plist>
