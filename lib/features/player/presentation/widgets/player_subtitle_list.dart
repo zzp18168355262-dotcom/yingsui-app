@@ -151,10 +151,15 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
   /// 于是拖动时的命中判定永远失败 —— 实测只能选中起点那一个词。
   final Map<String, GlobalKey> _tokenKeyCache = <String, GlobalKey>{};
 
-  GlobalKey _tokenKeyFor(int lineIndex, int tokenIndex) =>
+  /// 取（或建）词块的持久化 key。
+  ///
+  /// [scope] 区分同一行里的两条文本流：双语模式下英文行与中文行都渲染词块，
+  /// 若共用 `lineIndex-tokenIndex` 会产生**重复 GlobalKey**
+  /// （Flutter 抛 "Duplicate GlobalKeys detected" 并截断子树）。
+  GlobalKey _tokenKeyFor(int lineIndex, int tokenIndex, String scope) =>
       _tokenKeyCache.putIfAbsent(
-        '$lineIndex-$tokenIndex',
-        () => GlobalKey(debugLabel: 'token-$lineIndex-$tokenIndex'),
+        '$scope-$lineIndex-$tokenIndex',
+        () => GlobalKey(debugLabel: 'token-$scope-$lineIndex-$tokenIndex'),
       );
 
   String get _selectedText => _selectedTextNotifier.value;
@@ -777,20 +782,22 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                         ),
                         const SizedBox(height: 8),
                         if (widget.subtitleMode == '单中')
-                          Text(
+                          // 中文同样切成词块 —— 原先这里是普通 Text，
+                          // 单中模式下整句没有任何可选区域，
+                          // 用户无法「选中句子里的短语看翻译」。
+                          _buildWordLine(
                             line.chinese,
-                            style: TextStyle(
-                              fontSize: chineseFontSize,
-                              fontWeight: active
-                                  ? FontWeight.w600
-                                  : FontWeight.w600,
-                              color: active
-                                  ? const Color(0xFF191C1E)
-                                  : inactiveZhTextColor.withValues(
-                                      alpha: textOpacity,
-                                    ),
-                              height: 1.35,
-                            ),
+                            null,
+                            active,
+                            originalIndex,
+                            lookupOnTap: false,
+                            scope: 'zh',
+                            fontSize: chineseFontSize,
+                            textColor: active
+                                ? const Color(0xFF191C1E)
+                                : inactiveZhTextColor.withValues(
+                                    alpha: textOpacity,
+                                  ),
                           )
                         else
                           _buildWordLine(
@@ -801,20 +808,29 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                             active,
                             originalIndex,
                           ),
-                        if (widget.subtitleMode != '单英') ...<Widget>[
+                        // 只有「双语」模式再补一行中文译文。
+                        //
+                        // 原判断是「非单英」，导致单中模式下中文被渲染两次
+                        // （上面 if 分支一次、这里又一次），两处共用同一套
+                        // 词块 GlobalKey，Flutter 抛 "Duplicate GlobalKeys"
+                        // 并截断子树 —— 中文因此完全选不中。
+                        if (widget.subtitleMode == '双语') ...<Widget>[
                           const _SelectableLineBreak(),
                           const SizedBox(height: 4),
-                          Text(
+                          // 双语模式下的中文行同样可划选短语。
+                          _buildWordLine(
                             line.chinese,
-                            style: TextStyle(
-                              fontSize: subtitleFontSize,
-                              color: active
-                                  ? const Color(0xFF708077)
-                                  : inactiveZhTextColor.withValues(
-                                      alpha: textOpacity,
-                                    ),
-                              height: 1.45,
-                            ),
+                            null,
+                            active,
+                            originalIndex,
+                            lookupOnTap: false,
+                            scope: 'zh',
+                            fontSize: subtitleFontSize,
+                            textColor: active
+                                ? const Color(0xFF708077)
+                                : inactiveZhTextColor.withValues(
+                                    alpha: textOpacity,
+                                  ),
                           ),
                         ],
                         const _SelectableLineBreak(),
@@ -1203,24 +1219,83 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
     });
   }
 
-  List<String> _tokensOf(String text) =>
-      text.split(' ').where((String w) => w.isNotEmpty).toList(growable: false);
+  /// 连续中文、或连续非中文非空白的片段。
+  static final RegExp _cjkRunPattern = RegExp(
+    r'[\u4e00-\u9fff\u3400-\u4dbf]+|[^\s\u4e00-\u9fff\u3400-\u4dbf]+',
+  );
+
+  /// 把一行文本切成可选词块。
+  ///
+  /// 英文按空白切；**中文没有空格**，按 2 字滑窗切
+  /// （「科学让我欲火焚身」→ 科学 / 学让 / 让我 / …）。
+  ///
+  /// 用户反馈「逐句精听里想选句子中的短语看翻译」选不了：
+  /// 原先只有英文走词块渲染，中文在任何模式下都是普通 Text，
+  /// 整句没有任何可选区域。
+  ///
+  /// 必须先按空白切段再切块 —— 中文句子里也可能带空格
+  /// （如「第 18 句中文内容」）；若直接整句滑窗，空格也会成为词块，
+  /// 既污染选中结果，也会破坏「按整句文本查找」的既有逻辑。
+  List<String> _tokensOf(String text) {
+    final List<String> tokens = <String>[];
+
+    void addRun(String run) {
+      if (run.isEmpty) {
+        return;
+      }
+      final bool isCjk = RegExp(
+        r'^[\u4e00-\u9fff\u3400-\u4dbf]+$',
+      ).hasMatch(run);
+      if (!isCjk) {
+        tokens.add(run);
+        return;
+      }
+      if (run.length <= 2) {
+        tokens.add(run);
+        return;
+      }
+      for (int i = 0; i < run.length - 1; i += 1) {
+        tokens.add(run.substring(i, i + 2));
+      }
+    }
+
+    for (final String segment in text.split(RegExp(r'\s+'))) {
+      if (segment.isEmpty) {
+        continue;
+      }
+      for (final RegExpMatch match in _cjkRunPattern.allMatches(segment)) {
+        addRun(match.group(0)!);
+      }
+    }
+    return tokens;
+  }
 
   Widget _buildWordLine(
     String text,
     int? highlightIndex,
     bool active,
-    int lineIndex,
-  ) {
-    final List<_WordToken> tokens = text
-        .split(' ')
-        .where((String rawWord) => rawWord.isNotEmpty)
+    int lineIndex, {
+    /// 中文行只用于划选短语，不做逐词查词（离线词典是英汉词典）。
+    bool lookupOnTap = true,
+
+    /// 覆盖字号（未乘 fontScale 的基准值）。中文行原有自己的字号，
+    /// 改为词块渲染后需要传进来，否则中英文字号会不一致。
+    double? fontSize,
+
+    /// 覆盖文字颜色。
+    Color? textColor,
+
+    /// 词块 key 的作用域。同一行渲染英文与中文两条文本流时必须不同。
+    String scope = 'en',
+  }) {
+    final List<_WordToken> tokens = _tokensOf(text)
         .map((String rawWord) => _WordToken(value: rawWord))
         .toList(growable: false);
 
     // 为本行每个词块取（持久化的）key，拖动时据此在屏幕坐标上做命中判定。
     final List<GlobalKey> tokenKeys = <GlobalKey>[
-      for (int i = 0; i < tokens.length; i++) _tokenKeyFor(lineIndex, i),
+      for (int i = 0; i < tokens.length; i++)
+        _tokenKeyFor(lineIndex, i, scope),
     ];
 
     return Wrap(
@@ -1352,13 +1427,15 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                         Text(
                           token.value,
                           style: TextStyle(
-                            fontSize: active
-                                ? _activeFontSize * widget.fontScale
-                                : (_activeFontSize * widget.fontScale) - 2,
+                            fontSize: fontSize == null
+                                ? (active
+                                      ? _activeFontSize * widget.fontScale
+                                      : (_activeFontSize * widget.fontScale) - 2)
+                                : fontSize * widget.fontScale,
                             fontWeight: highlighted
                                 ? FontWeight.w600
                                 : FontWeight.w600,
-                            color: AppDesignTokens.textPrimary,
+                            color: textColor ?? AppDesignTokens.textPrimary,
                             decoration:
                                 SubtitleWordHighlightStyle.textDecoration(
                                   widget.subtitleWordHighlightStyle,

@@ -83,7 +83,11 @@ class _ConfiguredLearningSettingsNotifier extends LearningSettingsNotifier {
   }
 }
 
-Widget page({int activeIndex = 0, List<PlayerSubtitleLine>? subtitleLines}) {
+Widget page({
+  int activeIndex = 0,
+  List<PlayerSubtitleLine>? subtitleLines,
+  String subtitleMode = '双语',
+}) {
   return ProviderScope(
     overrides: <Override>[
       learningSettingsProvider.overrideWith(
@@ -122,7 +126,7 @@ Widget page({int activeIndex = 0, List<PlayerSubtitleLine>? subtitleLines}) {
           child: PlayerSubtitleList(
             lines: subtitleLines ?? lines(),
             activeIndex: activeIndex,
-            subtitleMode: '双语',
+            subtitleMode: subtitleMode,
             currentWordIndex: 0,
             fontScale: 1,
             highlightWords: true,
@@ -736,6 +740,67 @@ void main() {
       scrollable.position.pixels,
       before,
       reason: '横向划词不应把列表滚动掉',
+    );
+  });
+  testWidgets('单中模式下长按中文也能选短语（原先中文完全不可选）', (
+    WidgetTester tester,
+  ) async {
+    // 用户反馈：「逐句精听的情况下，想选择句子里的短语看翻译」选不了。
+    //
+    // 根因：英文走 _buildWordLine（每个词块挂手势，可选），
+    // 而**中文在任何模式下都是普通 Text**；单中模式下连英文也只是
+    // 普通 Text —— 于是整句都没有可选区域。
+    tester.view.physicalSize = const Size(760, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page(subtitleMode: '单中'));
+    await tester.pumpAndSettle();
+
+    // 中文句子应当被切成可选词块。
+    // 这里用「科学」与「让」两个词做长按拖动。
+    final Rect startRect = tester.getRect(find.text('科学').first);
+    final Rect endRect = tester.getRect(find.text('让我').first);
+
+    final TestGesture gesture = await tester.startGesture(startRect.center);
+    await tester.pump(const Duration(milliseconds: 700));
+    await gesture.moveTo(endRect.center);
+    await tester.pump(const Duration(milliseconds: 120));
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '单中模式下也应当能选中中文短语并出现提示条',
+    );
+  });
+
+  testWidgets('双语模式下长按中文短语也能选中', (WidgetTester tester) async {
+    tester.view.physicalSize = const Size(760, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page());
+    await tester.pumpAndSettle();
+
+    // 中文按 2 字滑窗分词：没人 / 人说 / 说我们 / 我们 / 们社 / …
+    final Rect startRect = tester.getRect(find.text('没人').first);
+    final Rect endRect = tester.getRect(find.text('人说').first);
+
+    final TestGesture gesture = await tester.startGesture(startRect.center);
+    await tester.pump(const Duration(milliseconds: 700));
+    await gesture.moveTo(endRect.center);
+    await tester.pump(const Duration(milliseconds: 120));
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '双语模式下的中文行也应可选择',
     );
   });
 }
