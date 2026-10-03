@@ -1126,10 +1126,14 @@ class PadLandscapePlayerScreenState
         ValueNotifier<AsrSubtitleProgress>(
           const AsrSubtitleProgress(completedChunks: 0, totalChunks: 0),
         );
-    final Future<void>? progressDialogFuture = showProgressDialog
+    final AiSubtitleProgressDialogHandle? progressDialogHandle =
+        showProgressDialog
         ? showAiSubtitleGenerationProgressDialog(
             context: context,
             progress: dialogProgress,
+            // 让对话框上的「取消生成」真正中止任务，
+            // 而不是只关掉界面让后台继续跑。
+            onCancel: () => _aiSubtitleCancellationToken?.cancel(),
           )
         : null;
     final AsrSubtitleCancellationToken cancellationToken =
@@ -1228,9 +1232,17 @@ class PadLandscapePlayerScreenState
       if (identical(_aiSubtitleCancellationToken, cancellationToken)) {
         _aiSubtitleCancellationToken = null;
       }
-      if (progressDialogFuture != null && mounted) {
-        Navigator.of(context, rootNavigator: true).pop();
-        await progressDialogFuture;
+      // 关闭进度对话框。
+      //
+      // 关键点（此前会导致「卡在灰白遮罩」）：
+      //  1. 不能盲用 rootNavigator.pop() —— 若此时栈顶不是该对话框，
+      //     会误弹掉别的路由；
+      //  2. 不能只靠 await progressDialogFuture —— 它只在对话框真正
+      //     出栈后才完成，一旦上面的 pop 没作用就会永远等下去；
+      //  3. dialogProgress 必须在对话框不再监听它之后才 dispose。
+      // 用 dialogRoute 精确关闭，并在关闭后再等一次（带 try 保护）。
+      if (progressDialogHandle != null) {
+        await progressDialogHandle.close();
       }
       dialogProgress.dispose();
       if (mounted) {

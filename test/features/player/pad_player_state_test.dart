@@ -705,9 +705,20 @@ void main() {
     expect(find.text('正在生成词级同步字幕 1/2'), findsOneWidget);
     expect(find.text('Recognized preview.'), findsOneWidget);
 
+    // 点遮罩外部应当**关闭**对话框。
+    //
+    // 这里原先断言「仍然显示」，即刻意做成不可关闭；
+    // 结合 barrierDismissible: false + canPop: false + 无取消按钮，
+    // 一旦调用方没能成功 pop，用户就被永久困在灰白遮罩后面
+    // （用户实测反馈「有时候会卡住」）。现在改为可关闭并断言关闭。
     await tester.tapAt(const Offset(4, 4));
     await tester.pump();
-    expect(find.text('正在生成 AI 词级字幕'), findsOneWidget);
+    await tester.pump(const Duration(milliseconds: 300));
+    expect(
+      find.text('正在生成 AI 词级字幕'),
+      findsNothing,
+      reason: '对话框必须可关闭，避免用户卡在遮罩后面',
+    );
   });
 
   testWidgets('video subtitle word is boxed when highlighting is enabled', (
