@@ -38,7 +38,6 @@ Future<void> pumpList(WidgetTester tester) async {
             subtitleMode: '双语',
             currentWordIndex: 0,
             fontScale: 1,
-            highlightWords: false,
             onTapLine: (_) {},
             onCollectWord: (_) {},
             onCollectPhrase: (String phrase, String sentence) async {},
