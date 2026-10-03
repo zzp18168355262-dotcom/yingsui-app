@@ -98,6 +98,14 @@ class _PadPortraitPlayerScreenState
   String? _aiSubtitlePreviewText;
   String? _aiSubtitleErrorText;
   bool _usingAiSubtitles = false;
+
+  /// 手机上的「逐词全文」以内联方式**替换逐句精听面板**（而不是整页盖住播放页）。
+  ///
+  /// 用户明确要求：点全文阅读后，阅读页应当顶替逐句精听的位置，
+  /// 视频保持可见。桌面端仍走独立原生窗口（见 TranscriptReaderSession）。
+  bool _inlineTranscriptReaderOpen = false;
+  TranscriptReaderSnapshot? _inlineTranscriptReaderSnapshot;
+  ValueNotifier<TranscriptReaderProgress>? _inlineTranscriptReaderProgress;
   List<SubtitleTrack> _embeddedSubtitleTracks = const <SubtitleTrack>[];
   String? _selectedEmbeddedSubtitleId;
   List<PlayerSubtitleLine> _referenceSubtitleLines =
@@ -587,11 +595,31 @@ class _PadPortraitPlayerScreenState
 
   void _syncTranscriptReader() {
     if (!state.hasLines) return;
+    final int? loopingLineIndex = state.isLooping ? state.activeLineIndex : null;
     _transcriptReaderSession.updateProgress(
       lineIndex: state.activeLineIndex,
       wordIndex: state.currentWordIndex,
-      loopingLineIndex: state.isLooping ? state.activeLineIndex : null,
+      loopingLineIndex: loopingLineIndex,
     );
+    // 内联形态（手机）没有桌面窗口那条通道，必须在这里同步进度，
+    // 否则阅读器不会跟随播放高亮当前句/词。
+    final ValueNotifier<TranscriptReaderProgress>? inline =
+        _inlineTranscriptReaderProgress;
+    if (inline == null || !_inlineTranscriptReaderOpen) {
+      return;
+    }
+    final TranscriptReaderProgress next = TranscriptReaderProgress(
+      lineIndex: state.activeLineIndex,
+      wordIndex: state.currentWordIndex,
+      loopingLineIndex: loopingLineIndex,
+    );
+    final TranscriptReaderProgress current = inline.value;
+    if (current.lineIndex == next.lineIndex &&
+        current.wordIndex == next.wordIndex &&
+        current.loopingLineIndex == next.loopingLineIndex) {
+      return;
+    }
+    inline.value = next;
   }
 
   Future<void> _handleOpenTranscriptReader({
@@ -610,9 +638,20 @@ class _PadPortraitPlayerScreenState
           dictionary: ref.read(offlineWordDictionaryProvider),
         );
     if (!mounted) return;
-    // 交给 session 决定形态：
-    //   桌面端 → 独立原生窗口（与播放器并存，互不遮挡）
-    //   移动端 → 应用内整页
+    // 形态选择（用户明确要求）：
+    //   桌面端 → 独立原生窗口（与播放器并存）
+    //   移动端 → **内联替换逐句精听面板**，视频保持可见
+    //            （原先 push 整页会把播放页整个盖住，用户看不到视频）
+    if (!supportsTranscriptReaderWindow) {
+      _inlineTranscriptReaderProgress?.dispose();
+      setState(() {
+        _inlineTranscriptReaderOpen = true;
+        _inlineTranscriptReaderSnapshot = snapshot;
+        _inlineTranscriptReaderProgress =
+            ValueNotifier<TranscriptReaderProgress>(snapshot.progress);
+      });
+      return;
+    }
     final LearningSettingsState lookupSettings = ref.read(
       learningSettingsProvider,
     );
@@ -642,6 +681,34 @@ class _PadPortraitPlayerScreenState
     }
   }
 
+
+  /// 内联形态的「逐词全文」面板。
+  ///
+  /// 直接用 FullTranscriptReaderScreen 的 embedded 模式：
+  /// 它不套 Scaffold，作为面板放进内容区，正好**顶替逐句精听的位置**，
+  /// 视频保持可见（用户明确要求）。
+  Widget _buildInlineTranscriptReader(LearningSettingsState settings) {
+    final TranscriptReaderSnapshot? snapshot = _inlineTranscriptReaderSnapshot;
+    final ValueNotifier<TranscriptReaderProgress>? progress =
+        _inlineTranscriptReaderProgress;
+    if (snapshot == null || progress == null) {
+      return const SizedBox.shrink();
+    }
+    // 阅读器内部的单词查词与整句翻译直接读 wordLookupServiceProvider，
+    // 无需外部注入回调（那些回调是给桌面独立窗口用的）。
+    return FullTranscriptReaderScreen(
+      embedded: true,
+      snapshot: snapshot,
+      progressListenable: progress,
+      onClose: () {
+        setState(() => _inlineTranscriptReaderOpen = false);
+      },
+      onPlayFullTranscript: _handlePlayFullTranscript,
+      onToggleLineLoop: (int lineIndex) async {
+        _handleLoopFromLine(lineIndex);
+      },
+    );
+  }
 
   /// 长按画面字幕时就地调整字幕大小。
   ///
@@ -832,7 +899,10 @@ class _PadPortraitPlayerScreenState
                             borderRadius: BorderRadius.circular(AppRadius.xl),
                             border: Border.all(color: const Color(0xFFE2E8F0)),
                           ),
-                          child: state.isShadowing && state.hasLines
+                          child: _inlineTranscriptReaderOpen
+                    // 全文阅读：**顶替**逐句精听面板，视频保持可见。
+                    ? _buildInlineTranscriptReader(settings)
+                    : state.isShadowing && state.hasLines
                               // 跟读模式：面板内联在下方内容区，而不是弹窗盖住画面。
                               // 这样字幕与视频全程可见 —— 跟读时需要看着字幕读。
                               ? Align(
