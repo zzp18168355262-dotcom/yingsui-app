@@ -291,6 +291,14 @@ class PhraseBookNotifier extends Notifier<List<PhraseEntry>> {
     unawaited(_persist());
   }
 
+  /// 清空整个短语库（供「清除应用数据」使用）。
+  Future<void> clearAll() async {
+    state = const <PhraseEntry>[];
+    if (Hive.isBoxOpen('prefs')) {
+      await Hive.box<String>('prefs').delete(_phraseBookStorageKey);
+    }
+  }
+
   void deletePhrase(String id) {
     state = state.where((PhraseEntry item) => item.id != id).toList();
     unawaited(_persist());

@@ -488,6 +488,17 @@ class WordBookNotifier extends Notifier<List<WordEntry>> {
     return true;
   }
 
+  /// 清空整个生词本。
+  ///
+  /// 供设置页的「清除应用数据」使用。此前该入口只重置了设置项，
+  /// 并没有删除生词记录，但界面提示「数据已重置」—— 属于假功能。
+  Future<void> clearAll() async {
+    state = const <WordEntry>[];
+    if (Hive.isBoxOpen('prefs')) {
+      await Hive.box<String>('prefs').delete(_wordBookStorageKey);
+    }
+  }
+
   bool deleteWord(String rawWord) {
     final String word = normalizeWord(rawWord);
     final List<WordEntry> next = state

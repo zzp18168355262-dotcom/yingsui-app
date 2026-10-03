@@ -86,6 +86,16 @@ class LearningActivityNotifier extends Notifier<LearningActivityState> {
     );
   }
 
+  /// 清空全部学习记录（供「清除应用数据」使用）。
+  Future<void> clearAll() async {
+    state = const LearningActivityState(
+      records: <String, LearningDailyRecord>{},
+    );
+    if (Hive.isBoxOpen('prefs')) {
+      await Hive.box<String>('prefs').delete(_learningActivityStorageKey);
+    }
+  }
+
   void recordPlayDuration({required Duration duration, DateTime? occurredAt}) {
     if (duration <= Duration.zero) {
       return;

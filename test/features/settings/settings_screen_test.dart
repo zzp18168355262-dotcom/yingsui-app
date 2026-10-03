@@ -27,7 +27,9 @@ void main() {
     expect(find.text('默认字幕模式'), findsOneWidget);
     expect(find.text('单词高亮样式'), findsOneWidget);
     expect(find.text('单词高亮边框粗细'), findsOneWidget);
-    expect(find.text('每日打卡提醒'), findsOneWidget);
+    // 提醒功能尚未实现，已改为如实标注「即将推出」（原先是个
+    // 能拨动但永远不发出提醒的假开关）。
+    expect(find.text('每日打卡提醒（即将推出）'), findsOneWidget);
     expect(find.text('词典来源'), findsNothing);
 
     await _scrollToTranslationSettings(tester);

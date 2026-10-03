@@ -135,6 +135,28 @@ void main() {
     expect(notifier.deleteWord('puddle'), isTrue);
     expect(container.read(wordBookProvider), isEmpty);
   });
+  test('clearAll 清空生词本', () async {
+    // 「清除应用数据」此前只重置设置项、没有删生词记录（假功能），
+    // 新增 clearAll 后必须真的清空。
+    final ProviderContainer container = _wordBookContainer();
+    addTearDown(container.dispose);
+    final WordBookNotifier notifier = container.read(wordBookProvider.notifier);
+
+    await notifier.recordLine(
+      english: 'Hello world',
+      episodeId: 'ep-1',
+      course: '课程',
+      episode: '第 1 集',
+      time: '00:01',
+      lineKey: '1-2',
+      chinese: '你好世界',
+    );
+    expect(notifier.state, isNotEmpty, reason: '应已记录生词');
+
+    await notifier.clearAll();
+    expect(notifier.state, isEmpty, reason: 'clearAll 后生词本应为空');
+  });
+
 }
 
 ProviderContainer _wordBookContainer() => ProviderContainer(

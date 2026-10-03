@@ -6,11 +6,14 @@ import '../../../config/theme/app_colors.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../flavors/app_flavor.dart';
 import '../../../utils/url_utils.dart';
+import '../../home/presentation/learning_dashboard_provider.dart';
 import '../../navigation/presentation/navigation_destination.dart';
+import '../../phrases/presentation/phrase_book_provider.dart';
 import '../../shared/data/word_pronunciation_service.dart';
 import '../../shared/presentation/pad/pad_compact.dart';
 import '../../shared/presentation/pad/pad_scaffold.dart';
 import '../../shared/presentation/pad/pad_top_bar.dart';
+import '../../words/presentation/word_book_provider.dart';
 import 'ai_subtitle_management_screen.dart';
 import 'app_update_provider.dart';
 import 'settings_provider.dart';
@@ -182,15 +185,16 @@ class SettingsScreen extends ConsumerWidget {
                     .read(learningSettingsProvider.notifier)
                     .setSubtitleWordHighlightBorderWidth(value),
               ),
-              _SwitchRow(
-                title: '每日打卡提醒',
-                description: '接收温和的提示以保持您的学习连续记录。',
-                value: settings.reminder,
-                onChanged: (bool value) {
-                  ref
-                      .read(learningSettingsProvider.notifier)
-                      .setReminder(value: value);
-                },
+              // 提醒功能尚未实现：全项目没有任何通知调度代码，
+              // 也没有引入通知依赖（flutter_local_notifications 等）。
+              // 此前它只是一个能拨动、但**永远不会发出提醒**的开关（假功能）。
+              // 与其让用户误以为已开启，不如如实标注「即将推出」，
+              // 与「云端备份与多设备同步」的处理保持一致。
+              const _ActionRow(
+                title: '每日打卡提醒（即将推出）',
+                description: '在固定时间提醒你保持学习连续记录。',
+                // onTap 为空即「不可点」，与云端备份那项的处理一致。
+                onTap: null,
               ),
               _TtsEngineRow(
                 selectedEngine: settings.ttsEngine,
@@ -717,8 +721,14 @@ class SettingsScreen extends ConsumerWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('确认清除缓存'),
-          content: const Text('确定要清除缓存和重置所有学习数据吗？这会清空您的生词本。'),
+          title: const Text('确认清除数据'),
+          content: const Text(
+              '将清空以下内容，且无法恢复：\n\n'
+              '· 生词本\n'
+              '· 短语库\n'
+              '· 学习记录与连续天数\n'
+              '· 全部设置项（含翻译 API 配置）',
+            ),
           actions: <Widget>[
             TextButton(
               onPressed: () => Navigator.of(context).pop(false),
@@ -738,8 +748,19 @@ class SettingsScreen extends ConsumerWidget {
     if (!context.mounted) {
       return;
     }
+    // 真正清除各类用户数据。
+    //
+    // 此前这里只调用了 settings 的 resetToDefaults()，
+    // 即**只重置了设置项**，生词本 / 短语库 / 学习记录都原封不动，
+    // 但界面提示「数据已重置」—— 属于假功能。
+    await ref.read(wordBookProvider.notifier).clearAll();
+    await ref.read(phraseBookProvider.notifier).clearAll();
+    await ref.read(learningActivityProvider.notifier).clearAll();
     ref.read(learningSettingsProvider.notifier).resetToDefaults();
-    _showMessage(context, '缓存清除成功，数据已重置！');
+    if (!context.mounted) {
+      return;
+    }
+    _showMessage(context, '已清除：生词本、短语库、学习记录与设置项均已重置。');
   }
 
   void _handleUpdateAction(WidgetRef ref, AppUpdateState state) {
