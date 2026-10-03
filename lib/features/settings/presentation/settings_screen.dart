@@ -898,54 +898,49 @@ class _TtsEngineRow extends StatelessWidget {
     final String value = hasSelected ? selectedEngine : '';
 
     return _SettingsRowFrame(
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: _TitleBlock(
-              title: 'TTS 语音引擎',
-              description: isLoading
-                  ? '正在读取设备语音引擎。'
-                  : '默认跟随系统；系统未设置时自动使用设备可用引擎。',
-            ),
+      child: _RowLayout(
+        title: _TitleBlock(
+          title: 'TTS 语音引擎',
+          description: isLoading
+              ? '正在读取设备语音引擎。'
+              : '默认跟随系统；系统未设置时自动使用设备可用引擎。',
+        ),
+        trailing: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(color: const Color(0xFFB9CDBE)),
           ),
-          const SizedBox(width: 16),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              border: Border.all(color: const Color(0xFFB9CDBE)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: value,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: Color(0xFF53625A),
-                  ),
-                  items: <DropdownMenuItem<String>>[
-                    DropdownMenuItem<String>(
-                      value: '',
-                      child: Text(_systemDefaultLabel(engines)),
-                    ),
-                    for (final TtsEngineOption engine in engines)
-                      DropdownMenuItem<String>(
-                        value: engine.id,
-                        child: Text(
-                          engine.isDefault
-                              ? '${engine.label}（当前系统）'
-                              : engine.label,
-                        ),
-                      ),
-                  ],
-                  onChanged: isLoading ? null : onChanged,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: value,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xFF53625A),
                 ),
+                items: <DropdownMenuItem<String>>[
+                  DropdownMenuItem<String>(
+                    value: '',
+                    child: Text(_systemDefaultLabel(engines)),
+                  ),
+                  for (final TtsEngineOption engine in engines)
+                    DropdownMenuItem<String>(
+                      value: engine.id,
+                      child: Text(
+                        engine.isDefault
+                            ? '${engine.label}（当前系统）'
+                            : engine.label,
+                      ),
+                    ),
+                ],
+                onChanged: isLoading ? null : onChanged,
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1230,6 +1225,51 @@ class _InputRow extends StatelessWidget {
   }
 }
 
+/// 设置项的统一布局：宽屏左右排、窄屏上下叠。
+///
+/// 为什么需要它：设置行原本一律是 `Expanded(标题) + SizedBox + 控件`。
+/// 其中下拉框里的文字（例如「系统默认（未设置，自动使用 系统语音引擎）」）
+/// **不会收缩**，在 360dp 手机上会把左侧标题挤到极窄，
+/// 「TTS 语音引擎」与描述被迫逐字竖排，整页看起来是乱的。
+///
+/// 窄屏改为纵向堆叠：标题与描述占满一行，控件另起一行并与左边缘对齐。
+class _RowLayout extends StatelessWidget {
+  const _RowLayout({required this.title, required this.trailing});
+
+  /// 左侧（窄屏时在上方）的标题与描述。
+  final Widget title;
+
+  /// 右侧（窄屏时在下方）的控件。
+  final Widget trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (BuildContext context, BoxConstraints constraints) {
+        // 低于此宽度改为纵向堆叠。
+        if (constraints.maxWidth < 560) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              title,
+              const SizedBox(height: 10),
+              // 占满整行：控件左对齐会显得松散，铺满更像系统设置页。
+              trailing,
+            ],
+          );
+        }
+        return Row(
+          children: <Widget>[
+            Expanded(child: title),
+            const SizedBox(width: 16),
+            trailing,
+          ],
+        );
+      },
+    );
+  }
+}
+
 class _SelectRow extends StatelessWidget {
   const _SelectRow({
     required this.title,
@@ -1250,42 +1290,37 @@ class _SelectRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SettingsRowFrame(
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: _TitleBlock(title: title, description: description),
+      child: _RowLayout(
+        title: _TitleBlock(title: title, description: description),
+        trailing: DecoratedBox(
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(AppRadius.md),
+            border: Border.all(color: const Color(0xFFB9CDBE)),
           ),
-          const SizedBox(width: 16),
-          DecoratedBox(
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(AppRadius.md),
-              border: Border.all(color: const Color(0xFFB9CDBE)),
-            ),
-            child: Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 14),
-              child: DropdownButtonHideUnderline(
-                child: DropdownButton<String>(
-                  value: value,
-                  borderRadius: BorderRadius.circular(AppRadius.md),
-                  icon: const Icon(
-                    Icons.keyboard_arrow_down_rounded,
-                    color: Color(0xFF53625A),
-                  ),
-                  items: options
-                      .map((String item) {
-                        return DropdownMenuItem<String>(
-                          value: item,
-                          child: Text(optionLabel?.call(item) ?? item),
-                        );
-                      })
-                      .toList(growable: false),
-                  onChanged: onChanged,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14),
+            child: DropdownButtonHideUnderline(
+              child: DropdownButton<String>(
+                value: value,
+                borderRadius: BorderRadius.circular(AppRadius.md),
+                icon: const Icon(
+                  Icons.keyboard_arrow_down_rounded,
+                  color: Color(0xFF53625A),
                 ),
+                items: options
+                    .map((String item) {
+                      return DropdownMenuItem<String>(
+                        value: item,
+                        child: Text(optionLabel?.call(item) ?? item),
+                      );
+                    })
+                    .toList(growable: false),
+                onChanged: onChanged,
               ),
             ),
           ),
-        ],
+        ),
       ),
     );
   }
@@ -1307,35 +1342,30 @@ class _SwitchRow extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return _SettingsRowFrame(
-      child: Row(
-        children: <Widget>[
-          Expanded(
-            child: _TitleBlock(title: title, description: description),
+      child: _RowLayout(
+        title: _TitleBlock(title: title, description: description),
+        trailing: SwitchTheme(
+          data: SwitchThemeData(
+            trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((
+              Set<WidgetState> states,
+            ) {
+              if (states.contains(WidgetState.selected)) {
+                return const Color(0xFF00695C);
+              }
+              return Colors.transparent;
+            }),
+            trackColor: WidgetStateProperty.resolveWith<Color>((
+              Set<WidgetState> states,
+            ) {
+              if (states.contains(WidgetState.selected)) {
+                return const Color(0xFF00695C);
+              }
+              return const Color(0xFFE4E8E4);
+            }),
+            thumbColor: WidgetStateProperty.all<Color>(Colors.white),
           ),
-          const SizedBox(width: 16),
-          SwitchTheme(
-            data: SwitchThemeData(
-              trackOutlineColor: WidgetStateProperty.resolveWith<Color?>((
-                Set<WidgetState> states,
-              ) {
-                if (states.contains(WidgetState.selected)) {
-                  return const Color(0xFF00695C);
-                }
-                return Colors.transparent;
-              }),
-              trackColor: WidgetStateProperty.resolveWith<Color>((
-                Set<WidgetState> states,
-              ) {
-                if (states.contains(WidgetState.selected)) {
-                  return const Color(0xFF00695C);
-                }
-                return const Color(0xFFE4E8E4);
-              }),
-              thumbColor: WidgetStateProperty.all<Color>(Colors.white),
-            ),
-            child: Switch(value: value, onChanged: onChanged),
-          ),
-        ],
+          child: Switch(value: value, onChanged: onChanged),
+        ),
       ),
     );
   }

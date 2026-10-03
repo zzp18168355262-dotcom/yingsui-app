@@ -218,8 +218,11 @@ void main() {
   for (final (String name, String route) in pages) {
     testWidgets('截取 $name', (WidgetTester tester) async {
       // 手机竖屏（iPhone 标准尺寸的 2 倍像素）。
-      tester.view.physicalSize = const Size(780, 1688);
-      tester.view.devicePixelRatio = 2;
+      // 用户实测的安卓机尺寸：1080x2400 @3x → 360x800 逻辑像素。
+      // 原先用 390dp，比真机宽，漏掉了最窄档的排版问题
+      // （如「词汇储备」逐字竖排、TTS 行标题被压成一列字）。
+      tester.view.physicalSize = const Size(1080, 2400);
+      tester.view.devicePixelRatio = 3;
       addTearDown(tester.view.reset);
 
       await tester.pumpWidget(_wrap(route));

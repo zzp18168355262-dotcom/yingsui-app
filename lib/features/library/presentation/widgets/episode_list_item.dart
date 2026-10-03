@@ -54,14 +54,25 @@ class EpisodeListItem extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
               child: Center(
-                child: Text(
-                  item.numberStr,
-                  style: TextStyle(
-                    fontSize: 24,
-                    fontWeight: FontWeight.w700,
-                    color: selected
-                        ? Colors.white
-                        : AppDesignTokens.primaryBlueDark,
+                // 编号可能是很长的导入 ID（例如微信导出的 1791012859374，
+                // 13 位）。原先固定 24px 字号塞进 64×64 方框，
+                // 长编号会溢出并被压成竖排。
+                // 这里按长度收敛字号，并用 FittedBox 兜底缩放。
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 4),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      item.numberStr,
+                      maxLines: 1,
+                      style: TextStyle(
+                        fontSize: item.numberStr.length > 4 ? 14 : 24,
+                        fontWeight: FontWeight.w700,
+                        color: selected
+                            ? Colors.white
+                            : AppDesignTokens.primaryBlueDark,
+                      ),
+                    ),
                   ),
                 ),
               ),
