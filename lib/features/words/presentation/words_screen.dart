@@ -3,6 +3,7 @@ import 'package:alphabet_list_view/alphabet_list_view.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../../config/theme/app_design_system.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../shared/presentation/pad/app_design_tokens.dart';
@@ -298,11 +299,11 @@ class _Metric extends StatelessWidget {
       children: <Widget>[
         Text(
           value,
-          style: const TextStyle(
+          style: scaleTextStyle(context, const TextStyle(
             fontSize: 26,
             fontWeight: FontWeight.w700,
             color: Colors.white,
-          ),
+          )),
         ),
         const SizedBox(height: 4),
         Text(

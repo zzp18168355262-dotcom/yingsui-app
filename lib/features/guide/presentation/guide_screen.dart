@@ -18,14 +18,26 @@ class GuideScreen extends StatelessWidget {
   static Future<void> showLearningGuideDialog(BuildContext context) =>
       showDialog<void>(
         context: context,
-        builder: (BuildContext dialogContext) => Dialog(
+        builder: (BuildContext dialogContext) {
+          // 手机窄屏必须减少留白，否则正文只剩一百多 dp，标题被迫折成三行。
+          //
+          // Flutter 的 Dialog 默认 insetPadding 左右各 40dp；
+          // 叠加本页外层 24+24 与内容卡 28+28 后，
+          // 360dp 手机上留给正文的宽度仅约 176dp。
+          final double screenWidth = MediaQuery.sizeOf(dialogContext).width;
+          final bool phone = screenWidth < 600;
+          return Dialog(
+          insetPadding: EdgeInsets.symmetric(
+            horizontal: phone ? 12 : 40,
+            vertical: 24,
+          ),
           clipBehavior: Clip.antiAlias,
           child: ConstrainedBox(
             constraints: const BoxConstraints(maxWidth: 1080, maxHeight: 760),
             child: Column(
               children: <Widget>[
                 Padding(
-                  padding: const EdgeInsets.fromLTRB(24, 16, 12, 8),
+                  padding: EdgeInsets.fromLTRB(phone ? 16 : 24, 16, phone ? 8 : 12, 8),
                   child: Row(
                     children: <Widget>[
                       const Expanded(
@@ -48,7 +60,7 @@ class GuideScreen extends StatelessWidget {
                 const Divider(height: 1),
                 Expanded(
                   child: ListView(
-                    padding: const EdgeInsets.fromLTRB(24, 24, 24, 40),
+                    padding: EdgeInsets.fromLTRB(phone ? 16 : 24, phone ? 16 : 24, phone ? 16 : 24, 40),
                     children: <Widget>[
                       HowToLearnContent(
                         onStart: () {
@@ -65,7 +77,8 @@ class GuideScreen extends StatelessWidget {
               ],
             ),
           ),
-        ),
+          );
+        },
       );
 
   @override

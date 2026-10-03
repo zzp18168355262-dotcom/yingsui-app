@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../config/theme/app_design_system.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../library/presentation/library_catalog_provider.dart';
 import '../../player/presentation/player_course_lookup.dart';
@@ -277,10 +278,10 @@ class _WordHeader extends StatelessWidget {
             children: <Widget>[
               Text(
                 entry.word,
-                style: const TextStyle(
+                style: scaleTextStyle(context, const TextStyle(
                   fontSize: 30,
                   fontWeight: FontWeight.w700,
-                ),
+                )),
               ),
               if (loading)
                 const Padding(

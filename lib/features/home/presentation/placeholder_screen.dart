@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../../config/theme/app_design_system.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../shared/presentation/app_shell.dart';
@@ -19,12 +20,12 @@ class PlaceholderScreen extends StatelessWidget {
         children: <Widget>[
           Text(
             destination.title,
-            style: const TextStyle(
+            style: scaleTextStyle(context, const TextStyle(
               fontSize: 34,
               fontWeight: FontWeight.w700,
               height: 1.05,
               color: Color(0xFF050505),
-            ),
+            )),
           ),
           const SizedBox(height: 12),
           Text(

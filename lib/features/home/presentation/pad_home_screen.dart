@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../../config/theme/app_design_system.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../../router/app_router.dart';
 import '../../growth/presentation/growth_provider.dart';
@@ -148,11 +149,11 @@ class _GreetingHeader extends StatelessWidget {
             children: <Widget>[
               Text(
                 '${greetingForHour(DateTime.now().hour)} 👋',
-                style: const TextStyle(
+                style: scaleTextStyle(context, const TextStyle(
                   fontSize: 26,
                   fontWeight: FontWeight.w700,
                   color: AppDesignTokens.textPrimary,
-                ),
+                )),
               ),
               const SizedBox(height: 6),
               const Text(

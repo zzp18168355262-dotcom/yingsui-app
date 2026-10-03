@@ -66,6 +66,47 @@ class AppSpacing {
 ///   · body             → w600（正文，需清晰但不喧宾夺主）
 ///   · label / caption  → w500（辅助信息，最轻）
 /// 此前 w900 与 w800 各上百处，属于滥用，已在本令牌中彻底移除。
+/// 按可用宽度缩放字号。
+///
+/// 为什么需要：不少页面把大标题写死成 30–46px。这些值在平板/桌面上合适，
+/// 但在 360dp 手机上会占据大半行宽，标题被折成两三行、头重脚轻，
+/// 整体比例失衡（用户反馈「字体大小和 UI 设计都有问题，整体是变形的」）。
+///
+/// 规则：以 420dp 为界，窄屏按 [narrowScale] 缩放，并保证不小于 [minSize]。
+/// 用法：
+/// ```dart
+/// fontSize: responsiveFontSize(context, 30),
+/// ```
+double responsiveFontSize(
+  BuildContext context,
+  double size, {
+  double narrowScale = 0.76,
+  double minSize = 13,
+  double breakpoint = 420,
+}) {
+  final double width = MediaQuery.sizeOf(context).width;
+  if (width >= breakpoint) {
+    return size;
+  }
+  final double scaled = size * narrowScale;
+  return scaled < minSize ? minSize : scaled;
+}
+
+/// 在样式基础上按屏幕宽度缩放字号。
+///
+/// 比直接写 `fontSize: responsiveFontSize(...)` 更省事：
+/// ```dart
+/// style: scaleTextStyle(context, const TextStyle(fontSize: 42, ...)),
+/// ```
+/// `const` 的样式会被自动解包，因此调用处仍可保留 const 的写法。
+TextStyle scaleTextStyle(BuildContext context, TextStyle style) {
+  final double? size = style.fontSize;
+  if (size == null) {
+    return style;
+  }
+  return style.copyWith(fontSize: responsiveFontSize(context, size));
+}
+
 class AppTypography {
   AppTypography._();
 

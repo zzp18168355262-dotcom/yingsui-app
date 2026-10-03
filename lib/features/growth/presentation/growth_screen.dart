@@ -3,6 +3,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 
+import '../../../config/theme/app_design_system.dart';
 import '../../../config/theme/app_theme.dart';
 import '../../navigation/presentation/navigation_destination.dart';
 import '../../shared/presentation/pad/app_design_tokens.dart';
@@ -377,12 +378,12 @@ class _LevelMembershipCard extends StatelessWidget {
                     const SizedBox(height: 8),
                     Text(
                       'Lv. ${profile.level}',
-                      style: const TextStyle(
+                      style: scaleTextStyle(context, const TextStyle(
                         fontSize: 42,
                         height: .95,
                         fontWeight: FontWeight.w700,
                         color: Colors.white,
-                      ),
+                      )),
                     ),
                     const SizedBox(height: 6),
                     Text(
@@ -838,12 +839,12 @@ class _HeroDetails extends StatelessWidget {
       const SizedBox(height: 12),
       Text(
         'Lv.${growth.level}',
-        style: const TextStyle(
+        style: scaleTextStyle(context, const TextStyle(
           fontSize: 46,
           height: .9,
           fontWeight: FontWeight.w700,
           color: Colors.white,
-        ),
+        )),
       ),
       const SizedBox(height: 10),
       Text(

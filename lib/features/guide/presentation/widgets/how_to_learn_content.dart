@@ -62,8 +62,16 @@ class _LearningHero extends StatelessWidget {
   final VoidCallback onPlayMethod;
 
   @override
-  Widget build(BuildContext context) => Container(
-    padding: const EdgeInsets.all(28),
+  Widget build(BuildContext context) => LayoutBuilder(
+    builder: (BuildContext context, BoxConstraints outer) {
+      // 手机窄屏收字号与内边距。
+      //
+      // 原先固定 28 内边距 + 30px 标题，而手机上内容卡只有约 250dp 宽，
+      // 标题被折成三行、头重脚轻（用户反馈「字体大小和 UI 设计有问题」）。
+      // 30 → 22px 后标题两行可容纳；内边距 28 → 18 让正文更舒展。
+      final bool narrow = outer.maxWidth < 420;
+      return Container(
+    padding: EdgeInsets.all(narrow ? 18 : 28),
     decoration: _cardDecoration(
       color: AppDesignTokens.appWhite,
       shadow: AppDesignTokens.toyCardShadow,
@@ -74,21 +82,21 @@ class _LearningHero extends StatelessWidget {
         final Widget copy = Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            const Text(
+            Text(
               '每天 20 分钟，用一部剧练会真实英语',
               style: TextStyle(
                 color: AppDesignTokens.textPrimary,
-                fontSize: 30,
-                height: 1.18,
+                fontSize: narrow ? 22 : 30,
+                height: 1.25,
                 fontWeight: FontWeight.w700,
               ),
             ),
             const SizedBox(height: 12),
-            const Text(
+            Text(
               '先看懂剧情，再听清表达，最后开口模仿。\n不要求一次全部听懂，只需要比昨天多听懂一点。',
               style: TextStyle(
                 color: AppDesignTokens.textSecondary,
-                fontSize: 16,
+                fontSize: narrow ? 14 : 16,
                 height: 1.5,
               ),
             ),
@@ -130,6 +138,8 @@ class _LearningHero extends StatelessWidget {
         );
       },
     ),
+  );
+    },
   );
 }
 
