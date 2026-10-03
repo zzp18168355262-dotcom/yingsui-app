@@ -607,6 +607,13 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
         final bool compactControls = constraints.maxWidth < 900;
         final bool tinyControls =
             constraints.maxWidth < 720 || constraints.maxHeight < 430;
+        // 手机竖屏这类「窄且矮」的场合：视频只有约 200dp 高，而控制栏叠在画面
+        // 之上。尾部控件原本有 8 个，在约 194dp 的可用宽度里放不下，
+        // 会换行成 2–3 行（实测高约 71dp）把画面盖住。
+        // 这里在手机上隐藏次要控件：画面比例、静音、单句循环
+        // （音量可用硬件键，画面比例可在全屏调整），
+        // 只保留跟读/字幕相关的核心操作，使控制栏保持单行。
+        final bool phoneLayout = constraints.maxWidth < 620;
         final Size gestureSize = Size(
           constraints.maxWidth,
           constraints.maxHeight,
@@ -1009,7 +1016,8 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
                                       fullscreen: widget.isFullscreen,
                                     ),
                                   ),
-                                  PopupMenuButton<_PlayerContentFit>(
+                                  if (!phoneLayout)
+                                    PopupMenuButton<_PlayerContentFit>(
                                     tooltip: '画面比例',
                                     onSelected: (_PlayerContentFit value) {
                                       setState(() {
@@ -1040,7 +1048,8 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
                                       fullscreen: widget.isFullscreen,
                                     ),
                                   ),
-                                  _RoundActionButton(
+                                  if (!phoneLayout)
+                                    _RoundActionButton(
                                     icon: widget.isMuted
                                         ? Icons.volume_off_rounded
                                         : Icons.volume_up_rounded,
@@ -1052,7 +1061,8 @@ class _PlayerVideoPanelState extends State<PlayerVideoPanel> {
                                     onPressed: () =>
                                         _handleControlTap(widget.onToggleMuted),
                                   ),
-                                  _RoundActionButton(
+                                  if (!phoneLayout)
+                                    _RoundActionButton(
                                     icon: Icons.repeat_one_rounded,
                                     tooltip: '单句循环',
                                     active: widget.isLooping,
@@ -1573,14 +1583,22 @@ class _ControlDock extends StatelessWidget {
           ),
           SizedBox(height: tiny ? 8 : 10),
           if (compact)
+            // 窄屏：左侧固定、右侧换行兜底。
+            //
+            // `mainAxisSize: MainAxisSize.min` 不能省：Row 默认是 max，
+            // 左侧这一组会**吃光整行宽度**，把右侧 Wrap 挤到只剩几十 dp。
+            // 表现为按钮被压成约 23dp 并竖着堆成 3 行，控制栏高度涨到约 69dp；
+            // 叠在只有约 200dp 高的 16:9 视频上，就把画面盖住了
+            // （用户反馈的「上面的页面把视频全部挡住了」）。
             Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
-                Row(children: leadingButtons),
-                Flexible(
+                Row(mainAxisSize: MainAxisSize.min, children: leadingButtons),
+                const SizedBox(width: 6),
+                Expanded(
                   child: Wrap(
                     alignment: WrapAlignment.end,
+                    crossAxisAlignment: WrapCrossAlignment.center,
                     runSpacing: 6,
                     children: trailingButtons,
                   ),
@@ -1623,12 +1641,19 @@ class _RoundActionButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Padding(
-      padding: EdgeInsets.only(right: tiny ? 4 : (compact ? 6 : 8)),
+      // 窄屏把按钮与间距都压到最小。
+      //
+      // 为什么：控制栏叠在视频上，而 16:9 的视频在 360dp 手机上只有约
+      // 200dp 高。9 个按钮按 40dp + 6dp 间距需要约 500dp，
+      // 而可用宽度只有约 324dp → Wrap 换行成 2–3 行，
+      // 控制栏高度超过视频高度，**整块画面被盖住**。
+      // 收到 30dp + 2dp 后总宽约 306dp，可单行放下。
+      padding: EdgeInsets.only(right: tiny ? 2 : (compact ? 6 : 8)),
       child: Tooltip(
         message: tooltip,
         child: SizedBox(
-          width: tiny ? 34 : (compact ? 40 : 48),
-          height: tiny ? 34 : (compact ? 40 : 48),
+          width: tiny ? 30 : (compact ? 40 : 48),
+          height: tiny ? 30 : (compact ? 40 : 48),
           child: FilledButton(
             onPressed: onPressed,
             style: FilledButton.styleFrom(
@@ -1645,7 +1670,7 @@ class _RoundActionButton extends StatelessWidget {
                 borderRadius: BorderRadius.circular(AppRadius.xl),
               ),
             ),
-            child: Icon(icon, size: tiny ? 16 : (compact ? 18 : 22)),
+            child: Icon(icon, size: tiny ? 15 : (compact ? 18 : 22)),
           ),
         ),
       ),
