@@ -7,6 +7,7 @@ import '../../../../config/theme/app_colors.dart';
 import '../../../../config/theme/app_theme.dart';
 import '../player_mock_state.dart';
 import '../shadowing_recorder.dart';
+import 'selectable_phrase_line.dart';
 
 /// 跟读练习面板。
 ///
@@ -27,6 +28,8 @@ class ShadowingPracticePanel extends ConsumerStatefulWidget {
     this.onNextLine,
     this.lines = const <PlayerSubtitleLine>[],
     this.onSelectLine,
+    this.onTranslatePhrase,
+    this.onCollectPhrase,
     this.compact = false,
   });
 
@@ -63,6 +66,14 @@ class ShadowingPracticePanel extends ConsumerStatefulWidget {
 
   /// 点选某一句字幕：宿主负责跳转播放位置。
   final ValueChanged<int>? onSelectLine;
+
+  /// 划选短语后点「翻译选中」。跟读面板同样需要这个能力：
+  /// 播放页在跟读时用本面板**替换**了字幕列表，若不支持，
+  /// 用户就无法在跟读时选短语查词（用户反馈过）。
+  final void Function(String phrase, String contextSentence)? onTranslatePhrase;
+
+  /// 收藏短语到短语库。
+  final void Function(String phrase, String contextSentence)? onCollectPhrase;
 
   final bool compact;
 
@@ -259,6 +270,8 @@ class _ShadowingPracticePanelState
               english: widget.english!.trim(),
               chinese: widget.chinese?.trim() ?? '',
               showChinese: widget.subtitleMode != '隐藏',
+              onTranslatePhrase: widget.onTranslatePhrase,
+              onCollectPhrase: widget.onCollectPhrase,
               lineIndex: widget.lineIndex,
               totalLines: widget.totalLines,
               palette: palette,
@@ -532,6 +545,8 @@ class _CurrentLineBlock extends StatelessWidget {
     required this.showChinese,
     required this.palette,
     required this.onTap,
+    this.onTranslatePhrase,
+    this.onCollectPhrase,
     this.lineIndex,
     this.totalLines,
     this.onPreviousLine,
@@ -540,6 +555,8 @@ class _CurrentLineBlock extends StatelessWidget {
 
   final String english;
   final String chinese;
+  final void Function(String phrase, String contextSentence)? onTranslatePhrase;
+  final void Function(String phrase, String contextSentence)? onCollectPhrase;
   final bool showChinese;
   final AppPalette palette;
   final VoidCallback onTap;
@@ -637,24 +654,37 @@ class _CurrentLineBlock extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: <Widget>[
-                  Text(
-                    english,
-                    style: TextStyle(
-                      fontSize: 15,
-                      height: 1.35,
-                      fontWeight: FontWeight.w700,
-                      color: palette.textPrimary,
-                    ),
+                  // 英文/中文都用可划选组件渲染：
+                  // 跟读时用户同样需要「长按划过相邻词选短语 → 翻译」。
+                  SelectablePhraseLine(
+                    text: english,
+                    scope: 'shadow-en',
+                    fontSize: 15,
+                    height: 1.35,
+                    textColor: palette.textPrimary,
+                    onTranslate: (String phrase, String sentence) =>
+                        onTranslatePhrase?.call(phrase, sentence),
+                    onCollect: onCollectPhrase == null
+                        ? null
+                        : (String phrase, String sentence) async =>
+                              onCollectPhrase!(phrase, sentence),
                   ),
                   if (hasChinese) ...<Widget>[
                     const SizedBox(height: 5),
-                    Text(
-                      chinese,
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        height: 1.35,
-                        color: palette.textSecondary,
-                      ),
+                    SelectablePhraseLine(
+                      text: chinese,
+                      scope: 'shadow-zh',
+                      fontSize: 12.5,
+                      height: 1.35,
+                      textColor: palette.textSecondary,
+                      // 中文不做逐词查词（离线词典是英汉词典）。
+                      lookupOnTap: false,
+                      onTranslate: (String phrase, String sentence) =>
+                          onTranslatePhrase?.call(phrase, sentence),
+                      onCollect: onCollectPhrase == null
+                          ? null
+                          : (String phrase, String sentence) async =>
+                                onCollectPhrase!(phrase, sentence),
                     ),
                   ],
                   const SizedBox(height: 5),

@@ -53,8 +53,11 @@ void main() {
       await tester.pump();
 
       expect(find.text('跟读这一句'), findsOneWidget);
-      expect(find.text('Let me make sure I understand.'), findsOneWidget);
-      expect(find.text('让我确认一下我理解得对不对。'), findsOneWidget);
+      // 英文与中文现在都渲染成**可选词块**（跟读时也能划选短语查词），
+      // 因此不能再按整句文本查找，改用各自的词块。
+      expect(find.text('Let'), findsOneWidget);
+      expect(find.text('understand.'), findsOneWidget);
+      expect(find.text('让我'), findsOneWidget);
     });
 
     testWidgets('字幕模式为「隐藏」时不显示译文', (WidgetTester tester) async {
@@ -73,8 +76,9 @@ void main() {
       );
       await tester.pump();
 
-      expect(find.text('Let me make sure I understand.'), findsOneWidget);
-      expect(find.text('让我确认一下我理解得对不对。'), findsNothing);
+      expect(find.text('Let'), findsOneWidget);
+      // 「隐藏」模式下译文整块不渲染，其词块自然也不存在。
+      expect(find.text('让我'), findsNothing);
     });
 
     testWidgets('未传句子时不显示该区块（避免出现空卡片）', (WidgetTester tester) async {

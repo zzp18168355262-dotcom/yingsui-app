@@ -18,6 +18,7 @@ import '../../settings/presentation/settings_provider.dart';
 import '../../shared/data/word_lookup_service.dart';
 import '../../shared/presentation/app_loading_overlay.dart';
 import '../../shared/presentation/pad/pad_scaffold.dart';
+import '../../shared/presentation/word_lookup_popup.dart';
 import '../../words/data/offline_word_dictionary.dart';
 import '../../words/presentation/word_book_provider.dart';
 import 'asr_subtitle_cache.dart';
@@ -920,6 +921,9 @@ class _PadPortraitPlayerScreenState
                                       onNextLine: _handleNextLine,
                                       lines: state.lines,
                                       onSelectLine: _goToLine,
+                                      // 跟读时同样能划选短语查词。
+                                      onTranslatePhrase: _handleTranslatePhrase,
+                                      onCollectPhrase: _handleCollectPhrase,
                                       onPlayOriginal: () =>
                                           _goToLine(state.activeLineIndex),
                                       onStopOriginal: () =>
@@ -1407,6 +1411,44 @@ class _PadPortraitPlayerScreenState
   /// 之所以先取译文：短语条目在短语库里要能学习，
   /// 只存英文没有释义意义不大。翻译失败时仍然收藏，
   /// 只是释义留空，并如实告知用户。
+  /// 跟读面板里划选短语后点「翻译选中」。
+  ///
+  /// 用底部弹窗承载已有的 WordLookupPopupCard —— 播放页没有
+  /// 字幕列表那套「锚点浮层」（那套逻辑与列表内部状态耦合较深），
+  /// 底部弹窗是更可靠且同样易用的形态，尤其适合手机。
+  Future<void> _handleTranslatePhrase(
+    String phrase,
+    String contextSentence,
+  ) async {
+    final String trimmed = phrase.trim();
+    if (trimmed.isEmpty) {
+      return;
+    }
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      showDragHandle: true,
+      builder: (BuildContext sheetContext) => SafeArea(
+        child: ConstrainedBox(
+          constraints: BoxConstraints(
+            maxHeight: MediaQuery.sizeOf(sheetContext).height * 0.7,
+          ),
+          child: SingleChildScrollView(
+            child: WordLookupPopupCard(
+              rawWord: trimmed,
+              contextSentence: contextSentence,
+              onClose: () => Navigator.of(sheetContext).pop(),
+              onPronounce: _stopVideo,
+              onCollect: () => unawaited(
+                _handleCollectPhrase(trimmed, contextSentence),
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
   Future<void> _handleCollectPhrase(
     String phrase,
     String contextSentence,
