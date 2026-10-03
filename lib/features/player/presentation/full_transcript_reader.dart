@@ -792,10 +792,15 @@ class _ReaderHeader extends StatelessWidget {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: <Widget>[
+                // 主标题：单行 + 省略 + 禁止换行。
+                // 导入的剧集名常是超长 ID（如 1791012859374）；
+                // 原先副标题没有行数限制，窄屏上会被压成「一个字一行」。
+                // 另外 courseTitle 在自选课程里可能为空，此时用剧集名兜底。
                 Text(
-                  courseTitle,
+                  courseTitle.isEmpty ? episodeTitle : courseTitle,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
+                  softWrap: false,
                   style: const TextStyle(
                     color: AppDesignTokens.textPrimary,
                     fontSize: 15,
@@ -806,6 +811,9 @@ class _ReaderHeader extends StatelessWidget {
                   const SizedBox(height: 2),
                   Text(
                     '$episodeTitle · 逐词全文',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                    softWrap: false,
                     style: const TextStyle(
                       color: AppDesignTokens.textSecondary,
                       fontSize: 12,

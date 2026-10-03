@@ -20,6 +20,22 @@ class OfflineWordDefinition {
   final String partOfSpeech;
 }
 
+/// ECDICT 的释义里用**字面反斜杠 + n**（`\n`）分隔不同义项，
+/// 而不是真正的换行符。直接显示会看到「…\n[计] …」这样的字符，
+/// 用户反馈过「释义里出现 \n」。这里还原为真实换行，并把其余位置
+/// 连续空白（含全角空格）收敛，避免排版出现空洞。
+/// 供测试调用的包装（保持内部函数私有）。
+String normalizeDefinitionForTest(String raw) => _normalizeTranslation(raw);
+
+String _normalizeTranslation(String raw) {
+  return raw
+      .replaceAll(r'\n', '\n')
+      .replaceAll(RegExp(r'\n{3,}'), '\n\n')
+      .replaceAll(RegExp(r'[ \t]+'), ' ')
+      .replaceAll(RegExp(r' *\n *'), '\n')
+      .trim();
+}
+
 class OfflineWordDictionary {
   Future<Map<String, OfflineWordDefinition>>? _entriesFuture;
 
@@ -41,7 +57,7 @@ class OfflineWordDictionary {
       return MapEntry<String, OfflineWordDefinition>(
         word,
         OfflineWordDefinition(
-          translation: fields[0] as String,
+          translation: _normalizeTranslation(fields[0] as String),
           phonetic: fields[1] as String,
           partOfSpeech: fields[2] as String,
         ),
