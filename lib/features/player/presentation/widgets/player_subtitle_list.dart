@@ -131,6 +131,17 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
   /// 这里改为显式手势：长按起点词 → 划过相邻词 → 直接得到短语。
   int? _dragStartTokenIndex;
   int? _dragEndTokenIndex;
+
+  /// 拖选起点所在的行（列表里的 originalIndex）。
+  ///
+  /// 必须记住行号：手势**不能**只挂在当前播放句上。
+  /// 列表默认显示全部句子，用户在「第二行」上选短语时那一行并不是
+  /// 当前播放句，若用 widget.activeIndex 去取原文，要么手势根本没挂上
+  /// （用户反馈的「第二行选择不了」），要么拼接出错误句子里的词。
+  int? _dragLineIndex;
+  String _dragLineText = '';
+
+  /// 拖选起点所在行的词块 key，用于按屏幕坐标做命中判定。
   List<GlobalKey> _activeTokenKeys = const <GlobalKey>[];
 
   /// 词块 key 的持久缓存：'行号-词序号' → GlobalKey。
@@ -1050,19 +1061,100 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
   }
 
   /// 开始拖选短语：记录起点词，并把当前选中设为该词。
+  ///
+  /// tokenKeys 必须由调用方传入（该行自己的 key 列表）——
+  /// 拖动过程中用它做命中判定，所以起点行不一定是当前播放句。
   void _beginPhraseDrag(
+    int lineIndex,
     int tokenIndex,
     String lineText,
     List<GlobalKey> tokenKeys,
   ) {
     setState(() {
+      _dragLineIndex = lineIndex;
+      _dragLineText = lineText;
       _dragStartTokenIndex = tokenIndex;
       _dragEndTokenIndex = tokenIndex;
       _activeTokenKeys = tokenKeys;
     });
+    // 取消系统文本选择那条去抖链路。
+    //
+    // SelectionArea 的 onSelectionChanged 会延迟 160ms 写同一个
+    // notifier；不取消的话，它可能在用户已经划过几个词之后到达，
+    // 把我们刚选好的短语覆盖成系统那一份（表现为「选中结果乱跳」）。
+    _selectionDebounce?.cancel();
     _selectedTextNotifier.value = _tokensOf(lineText)
         .sublist(tokenIndex, tokenIndex + 1)
         .join(' ');
+  }
+
+  /// 「按下即拖」路径的待定状态。
+  ///
+  /// 为什么需要它：横向拖动识别器在**没有任何竞争者**时，会由手势竞技场
+  /// 在抬手时直接判给它（列表内容不足一屏时，Scrollable 根本不会注册
+  /// 纵向拖动识别器）。于是一次纯纵向拖动也会走到 onHorizontalDragStart，
+  /// 结果是「只想滚列表却选中了一个词」。
+  /// 因此这里先挂起，等指针真的横向移开一段距离再落实为选择。
+  int? _pendingDragLineIndex;
+  int? _pendingDragTokenIndex;
+  String _pendingDragText = '';
+  List<GlobalKey> _pendingDragKeys = const <GlobalKey>[];
+  double? _pendingDragStartX;
+
+  /// 横向至少要移开这么多像素，才认定用户在「划词」而不是在滚列表。
+  static const double _dragCommitDistance = 24;
+
+  void _beginPendingPhraseDrag(
+    int lineIndex,
+    int tokenIndex,
+    String lineText,
+    List<GlobalKey> tokenKeys,
+    Offset startPosition,
+  ) {
+    _pendingDragLineIndex = lineIndex;
+    _pendingDragTokenIndex = tokenIndex;
+    _pendingDragText = lineText;
+    _pendingDragKeys = tokenKeys;
+    _pendingDragStartX = startPosition.dx;
+  }
+
+  void _updatePendingPhraseDrag(Offset globalPosition) {
+    final int? lineIndex = _pendingDragLineIndex;
+    final int? tokenIndex = _pendingDragTokenIndex;
+    final double? startX = _pendingDragStartX;
+    if (lineIndex == null || tokenIndex == null || startX == null) {
+      // 已经落实过（或压根没有待定状态），走常规更新。
+      _updatePhraseDrag(globalPosition);
+      return;
+    }
+    if ((globalPosition.dx - startX).abs() < _dragCommitDistance) {
+      return;
+    }
+    final String text = _pendingDragText;
+    final List<GlobalKey> keys = _pendingDragKeys;
+    _clearPendingPhraseDrag();
+    _beginPhraseDrag(lineIndex, tokenIndex, text, keys);
+    _updatePhraseDrag(globalPosition);
+  }
+
+  void _clearPendingPhraseDrag() {
+    _pendingDragLineIndex = null;
+    _pendingDragTokenIndex = null;
+    _pendingDragText = '';
+    _pendingDragKeys = const <GlobalKey>[];
+    _pendingDragStartX = null;
+  }
+
+  /// 横向拖动结束：落实过就正常收尾，没落实就只清掉待定状态。
+  void _endPendingPhraseDrag() {
+    if (_pendingDragLineIndex != null) {
+      _clearPendingPhraseDrag();
+      return;
+    }
+    if (_dragStartTokenIndex == null) {
+      return;
+    }
+    _endPhraseDrag();
   }
 
   /// 拖动过程中按指针位置更新结束词。
@@ -1096,7 +1188,7 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
     setState(() => _dragEndTokenIndex = hit);
     final int lo = start < hit ? start : hit;
     final int hi = start < hit ? hit : start;
-    final List<String> tokens = _tokensOf(_lineTextOfActiveDrag());
+    final List<String> tokens = _tokensOf(_dragLineText);
     if (hi < tokens.length) {
       _selectedTextNotifier.value = tokens.sublist(lo, hi + 1).join(' ');
     }
@@ -1104,18 +1196,11 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
 
   void _endPhraseDrag() {
     setState(() {
+      _dragLineIndex = null;
+      _dragLineText = '';
       _dragStartTokenIndex = null;
       _dragEndTokenIndex = null;
     });
-  }
-
-  /// 拖选期间用于拼接短语的原文（取当前句）。
-  String _lineTextOfActiveDrag() {
-    final int index = widget.activeIndex;
-    if (index < 0 || index >= widget.lines.length) {
-      return '';
-    }
-    return widget.lines[index].english;
   }
 
   List<String> _tokensOf(String text) =>
@@ -1137,10 +1222,6 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
     final List<GlobalKey> tokenKeys = <GlobalKey>[
       for (int i = 0; i < tokens.length; i++) _tokenKeyFor(lineIndex, i),
     ];
-    final bool isActiveLine = lineIndex == widget.activeIndex;
-    if (isActiveLine) {
-      _activeTokenKeys = tokenKeys;
-    }
 
     return Wrap(
       spacing: 4,
@@ -1172,7 +1253,9 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                       ? _dragStartTokenIndex!
                       : (_dragEndTokenIndex ?? _dragStartTokenIndex!));
             final bool inDragRange =
-                isActiveLine && index >= dragLo && index <= dragHi;
+                lineIndex == _dragLineIndex &&
+                index >= dragLo &&
+                index <= dragHi;
 
             return Builder(
               key: tokenKeys[index],
@@ -1186,19 +1269,43 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                 //
                 // 长按必须放在 GestureDetector：InkWell 不支持
                 // onLongPressMoveUpdate，而拖动过程中需要持续收到位置。
+                //
+                // 每一行都挂手势，**不再只挂当前播放句**：
+                // 列表默认显示全部句子，用户会在任意一行上选短语，
+                // 只在当前句上挂就等于「第二行选择不了」。
+                // 起点行号由 _beginPhraseDrag 记住，拼接短语用它而
+                // 不是 widget.activeIndex。
+                //
+                // 同时挂「长按拖动」和「横向拖动」两条路径，缺一不可：
+                //   - 手指（iOS/Android）：长按再划，避免与列表纵向滚动打架；
+                //   - 鼠标（macOS/Windows/Linux）：用户是**按下就拖**，
+                //     不会先在原地停 500ms，长按识别器会因为超过 touch slop
+                //     直接判失败 —— 这正是「mac 版本选不中」的真正原因。
+                // 横向拖动识别器与列表的纵向滚动在手势竞技场里按方向裁决，
+                // 谁的方向占优谁赢，互不影响；单击仍然走 onTap 查词。
                 return GestureDetector(
                   behavior: HitTestBehavior.deferToChild,
-                  onLongPressStart: isActiveLine
-                      ? (LongPressStartDetails _) =>
-                          _beginPhraseDrag(index, text, tokenKeys)
-                      : null,
-                  onLongPressMoveUpdate: isActiveLine
-                      ? (LongPressMoveUpdateDetails details) =>
-                          _updatePhraseDrag(details.globalPosition)
-                      : null,
-                  onLongPressEnd: isActiveLine
-                      ? (LongPressEndDetails _) => _endPhraseDrag()
-                      : null,
+                  onLongPressStart: (LongPressStartDetails _) =>
+                      _beginPhraseDrag(lineIndex, index, text, tokenKeys),
+                  onLongPressMoveUpdate: (LongPressMoveUpdateDetails details) =>
+                      _updatePhraseDrag(details.globalPosition),
+                  onLongPressEnd: (LongPressEndDetails _) => _endPhraseDrag(),
+                  // 手势被系统取消（例如播放页被切走、指针被抢占）时也要收尾，
+                  // 否则 _dragLineIndex 会残留，那一行的高亮一直不退。
+                  onLongPressCancel: _endPhraseDrag,
+                  onHorizontalDragStart: (DragStartDetails details) =>
+                      _beginPendingPhraseDrag(
+                        lineIndex,
+                        index,
+                        text,
+                        tokenKeys,
+                        details.globalPosition,
+                      ),
+                  onHorizontalDragUpdate: (DragUpdateDetails details) =>
+                      _updatePendingPhraseDrag(details.globalPosition),
+                  onHorizontalDragEnd: (DragEndDetails _) =>
+                      _endPendingPhraseDrag(),
+                  onHorizontalDragCancel: _endPendingPhraseDrag,
                   child: InkWell(
                   onTap: () {
                     // 点词查词时收起「翻译选中」入口，避免两个浮层并存。

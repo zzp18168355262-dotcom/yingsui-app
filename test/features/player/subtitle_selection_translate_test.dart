@@ -8,6 +8,7 @@
 /// 以所在整句为上下文弹出词义/翻译卡片。
 library;
 
+import 'package:flutter/gestures.dart' show PointerDeviceKind;
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart' show SelectedContent;
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -42,6 +43,23 @@ List<PlayerSubtitleLine> lines() {
   ];
 }
 
+/// 足够多的句子，让列表**真的可以滚动**。
+///
+/// 这一点很关键：列表内容不足一屏时 Scrollable 根本不会注册纵向拖动
+/// 识别器，手势竞技场的裁决结果与真实使用场景不同。
+List<PlayerSubtitleLine> manyLines() {
+  return <PlayerSubtitleLine>[
+    for (int i = 0; i < 24; i++)
+      PlayerSubtitleLine(
+        startTime: '00:${(i * 3).toString().padLeft(2, '0')}',
+        english: 'Row number $i keeps the list scrollable for the test.',
+        chinese: '第 $i 行，用来把列表撑到可以滚动。',
+        startMs: i * 3000,
+        endMs: i * 3000 + 2500,
+      ),
+  ];
+}
+
 /// 捕获查词入参，用于断言「短语 + 整句上下文」。
 ({String word, String context})? lastLookup;
 
@@ -65,7 +83,7 @@ class _ConfiguredLearningSettingsNotifier extends LearningSettingsNotifier {
   }
 }
 
-Widget page() {
+Widget page({int activeIndex = 0, List<PlayerSubtitleLine>? subtitleLines}) {
   return ProviderScope(
     overrides: <Override>[
       learningSettingsProvider.overrideWith(
@@ -102,8 +120,8 @@ Widget page() {
         body: SizedBox(
           height: 520,
           child: PlayerSubtitleList(
-            lines: lines(),
-            activeIndex: 0,
+            lines: subtitleLines ?? lines(),
+            activeIndex: activeIndex,
             subtitleMode: '双语',
             currentWordIndex: 0,
             fontScale: 1,
@@ -483,6 +501,241 @@ void main() {
       find.byKey(const ValueKey<String>('subtitle-collect-selection')),
       findsOneWidget,
       reason: '收藏按钮也应出现',
+    );
+  });
+
+  testWidgets('非当前句（列表里的第二行）也能长按划过选中短语', (WidgetTester tester) async {
+    // 用户反馈（0.3.4 之后）：逐句精读里选择短语时，
+    //「第二行的翻译选择不了」。
+    //
+    // 根因：手势只在**当前播放句**上挂载 ——
+    //   onLongPressStart: isActiveLine ? ... : null
+    // 列表默认显示全部句子（showCurrentOnly = false），
+    // 于是除当前句以外的每一行（用户眼里的「第二行」）长按毫无反应。
+    tester.view.physicalSize = const Size(760, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    // 当前播放句是第一行；用户在第二行上做短语选择。
+    await tester.pumpWidget(page());
+    await tester.pumpAndSettle();
+
+    final Rect startRect = tester.getRect(find.text('selection').first);
+    final Rect endRect = tester.getRect(find.text('test.').first);
+
+    final TestGesture gesture = await tester.startGesture(startRect.center);
+    await tester.pump(const Duration(milliseconds: 700));
+    await gesture.moveTo(endRect.center);
+    await tester.pump(const Duration(milliseconds: 120));
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '非当前句上也应能选短语并出现提示条',
+    );
+    expect(
+      find.text('selection test.'),
+      findsWidgets,
+      reason: '应选中第二行里的短语',
+    );
+  });
+
+  testWidgets('非当前句上选中的短语，翻译上下文用的是该句而不是当前播放句', (
+    WidgetTester tester,
+  ) async {
+    // 与上一条同源：允许在任意行选择之后，
+    // 「翻译选中」带的上下文必须是所选短语所在的句子，
+    // 否则同一个短语会被放到错误的语境里解释。
+    tester.view.physicalSize = const Size(760, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page(activeIndex: 1));
+    await tester.pumpAndSettle();
+
+    final Rect startRect = tester.getRect(find.text('saying').first);
+    final Rect endRect = tester.getRect(find.text('neighborhood').first);
+
+    final TestGesture gesture = await tester.startGesture(startRect.center);
+    await tester.pump(const Duration(milliseconds: 700));
+    await gesture.moveTo(endRect.center);
+    await tester.pump(const Duration(milliseconds: 120));
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    await tester.tap(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+    );
+    await tester.pumpAndSettle();
+
+    expect(lastLookup?.word, 'saying our neighborhood');
+    expect(
+      lastLookup?.context,
+      contains('Garden of Eden'),
+      reason: '上下文必须是短语所在的第一行，而不是当前播放的第二行',
+    );
+  });
+
+  testWidgets('macOS：鼠标长按并划过（第二行）同样能选中短语', (WidgetTester tester) async {
+    // 桌面端用的是鼠标，不是手指。这里用 PointerDeviceKind.mouse
+    // 走一遍同样的手势，确认 macOS 上这条路径真的通
+    // —— 用户报的正是「mac 版本」选不中第二行。
+    tester.view.physicalSize = const Size(760, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page());
+    await tester.pumpAndSettle();
+
+    final Rect startRect = tester.getRect(find.text('selection').first);
+    final Rect endRect = tester.getRect(find.text('test.').first);
+
+    final TestGesture gesture = await tester.startGesture(
+      startRect.center,
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pump(const Duration(milliseconds: 700));
+    await gesture.moveTo(endRect.center);
+    await tester.pump(const Duration(milliseconds: 120));
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '鼠标长按拖动后也应出现提示条',
+    );
+    expect(find.text('selection test.'), findsWidgets);
+  });
+
+  testWidgets('macOS：鼠标「按下即拖」（不先按住 0.5 秒）也应能选中短语', (
+    WidgetTester tester,
+  ) async {
+    // 真实鼠标操作是「按下 → 立刻横向拖」，不会先在原地停 0.5 秒。
+    // 长按手势在这种情况下会因为超过 touch slop 而被判失败。
+    tester.view.physicalSize = const Size(760, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page());
+    await tester.pumpAndSettle();
+
+    final Rect startRect = tester.getRect(find.text('selection').first);
+    final Rect endRect = tester.getRect(find.text('test.').first);
+
+    final TestGesture gesture = await tester.startGesture(
+      startRect.center,
+      kind: PointerDeviceKind.mouse,
+    );
+    // 只过一帧就开始拖，模拟「按下即拖」。
+    await tester.pump(const Duration(milliseconds: 16));
+    final Offset delta = endRect.center - startRect.center;
+    for (int i = 1; i <= 6; i++) {
+      await gesture.moveTo(startRect.center + delta * (i / 6));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '鼠标按下即拖（桌面式选择）也应出现提示条',
+    );
+    expect(find.text('selection test.'), findsWidgets);
+  });
+
+  testWidgets('macOS：在可滚动的列表上纵向拖动是滚动，横向拖动才是划词', (
+    WidgetTester tester,
+  ) async {
+    // 加了横向拖动识别器之后必须确认没把列表滚动抢掉：
+    // 手势竞技场按方向裁决，纵向拖动应归 ListView。
+    //
+    // 注意列表必须**真的能滚**（内容超过一屏）。列表装得下时
+    // Scrollable 压根不注册纵向拖动识别器，测不出真实行为。
+    tester.view.physicalSize = const Size(760, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page(subtitleLines: manyLines()));
+    await tester.pumpAndSettle();
+
+    final ScrollableState scrollable = tester.state<ScrollableState>(
+      find.byType(Scrollable).first,
+    );
+    final double before = scrollable.position.pixels;
+
+    final Rect startRect = tester.getRect(find.text('Row').first);
+    // 用触摸指针：Flutter 的 MaterialScrollBehavior 默认不把鼠标算进
+    // dragDevices（桌面用滚轮滚动），鼠标拖动本来就不该滚动列表。
+    final TestGesture gesture = await tester.startGesture(startRect.center);
+    await tester.pump(const Duration(milliseconds: 16));
+    // 纯纵向拖动。
+    for (int i = 1; i <= 6; i++) {
+      await gesture.moveTo(startRect.center + Offset(0, -12.0 * i));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(
+      scrollable.position.pixels,
+      isNot(before),
+      reason: '纵向拖动应该滚动列表，而不是被横向拖动识别器抢走',
+    );
+  });
+
+  testWidgets('macOS：可滚动的长列表上，横向划过同样能选中短语', (
+    WidgetTester tester,
+  ) async {
+    // 真实使用场景就是长列表（很多句字幕）。在**能滚动**的前提下，
+    // 横向拖动要能赢下手势竞技场，否则用户还是选不中。
+    tester.view.physicalSize = const Size(760, 900);
+    tester.view.devicePixelRatio = 1;
+    addTearDown(tester.view.reset);
+
+    await tester.pumpWidget(page(subtitleLines: manyLines()));
+    await tester.pumpAndSettle();
+
+    final ScrollableState scrollable = tester.state<ScrollableState>(
+      find.byType(Scrollable).first,
+    );
+    final double before = scrollable.position.pixels;
+
+    final Rect startRect = tester.getRect(find.text('scrollable').first);
+    final Rect endRect = tester.getRect(find.text('for').first);
+
+    final TestGesture gesture = await tester.startGesture(
+      startRect.center,
+      kind: PointerDeviceKind.mouse,
+    );
+    await tester.pump(const Duration(milliseconds: 16));
+    final Offset delta = endRect.center - startRect.center;
+    for (int i = 1; i <= 6; i++) {
+      await gesture.moveTo(startRect.center + delta * (i / 6));
+      await tester.pump(const Duration(milliseconds: 16));
+    }
+    await gesture.up();
+    await tester.pump(const Duration(milliseconds: 300));
+    await tester.pumpAndSettle();
+
+    expect(
+      find.byKey(const ValueKey<String>('subtitle-translate-selection')),
+      findsOneWidget,
+      reason: '长列表上横向划过也应出现提示条',
+    );
+    expect(find.text('scrollable for'), findsWidgets);
+    expect(
+      scrollable.position.pixels,
+      before,
+      reason: '横向划词不应把列表滚动掉',
     );
   });
 }

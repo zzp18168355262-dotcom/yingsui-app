@@ -69,10 +69,10 @@ cat > "$PROPS" <<EOF
 storePassword=$STORE_PASS
 keyPassword=$STORE_PASS
 keyAlias=$KEY_ALIAS
-# 注意：Gradle 的 file() 是相对 android/app 模块目录解析的，
-# 因此必须用 ../ 指回 android/ 下的密钥库。
-# 写成 android/xxx.jks 会变成 android/app/android/xxx.jks 而找不到文件。
-storeFile=../$KEYSTORE
+# storeFile 由 Gradle 的 file() 相对 **android/app** 模块目录解析。
+# 密钥库位于 android/ 下，因此这里必须是 ../ 加**文件名**
+# （不能带 android/ 前缀，否则会解析成 android/app/android/xxx.jks）。
+storeFile=../${KEYSTORE##*/}
 EOF
 
 echo
