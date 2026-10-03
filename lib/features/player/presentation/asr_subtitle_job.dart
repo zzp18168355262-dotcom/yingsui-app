@@ -23,6 +23,47 @@ typedef AsrSentenceTranslator =
       required LearningSettingsState settings,
     });
 
+/// 把 ASR 服务商返回的英文错误，翻译成用户能照着做的中文提示。
+///
+/// 为什么需要：原始报错形如
+///   `HTTP 400 {code: Arrearage, message: Access denied, please make sure
+///    your account is in good standing. ...}`
+/// 用户看到这段话完全不知道该怎么办 —— 实际情况是**阿里云账号欠费**，
+/// 充值即可。识别常见错误码后给出明确指引。
+///
+/// 未被识别的情况原样返回，避免掩盖真实原因。
+String friendlyAsrError(String raw) {
+  final String lower = raw.toLowerCase();
+  if (lower.contains('arrearage') || lower.contains('good standing')) {
+    return '阿里云账号欠费或服务未开通，请在阿里云控制台充值后重试。'
+        '原始信息：$raw';
+  }
+  if (lower.contains('invalid_api_key') ||
+      lower.contains('incorrect api key') ||
+      lower.contains('authentication') ||
+      lower.contains('401')) {
+    return 'API Key 无效或已过期，请在设置里的 AI 字幕项重新填写。原始信息：$raw';
+  }
+  if (lower.contains('model_not_found') || lower.contains('model not exist')) {
+    return '所选模型不可用或未开通，请检查设置里的模型名称。原始信息：$raw';
+  }
+  if (lower.contains('throttl') ||
+      lower.contains('rate limit') ||
+      lower.contains('429')) {
+    return '调用过于频繁被限流，请稍等几分钟后重试。';
+  }
+  if (lower.contains('timeout') || lower.contains('timed out')) {
+    return '请求超时，请检查网络后重试；视频较长时也可能需要更久。';
+  }
+  if (lower.contains('no audio track')) {
+    return '这个视频里没有音频轨道，无法识别。请换有声音的视频。';
+  }
+  if (lower.contains('source file does not exist')) {
+    return '找不到视频文件，可能已被移动或删除。请重新导入后再试。';
+  }
+  return raw;
+}
+
 class AsrSubtitleGenerationException implements Exception {
   const AsrSubtitleGenerationException(this.message);
 
@@ -1954,10 +1995,13 @@ class AsrSubtitleJobRunner {
   }
 
   String _errorMessage(Object error) {
-    if (error is StateError) return error.message;
-    if (error is AsrSubtitleGenerationException) return error.message;
-    return error.toString();
+    if (error is StateError) return friendlyAsrError(error.message);
+    if (error is AsrSubtitleGenerationException) {
+      return friendlyAsrError(error.message);
+    }
+    return friendlyAsrError(error.toString());
   }
+
 
   /// 判断错误是否表示「这段音频里没有语音」。
   ///
