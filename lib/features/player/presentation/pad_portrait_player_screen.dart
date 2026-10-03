@@ -673,6 +673,14 @@ class _PadPortraitPlayerScreenState
     final PlayerSubtitleLine activeLine = state.hasLines
         ? state.visibleLine ?? _emptySubtitleLine
         : _emptySubtitleLine;
+    // 跟读面板要展示的是「正在跟读的那一句」，与视频当前时间无关。
+    //
+    // visibleLine 只在视频时间落在该句区间内时才返回句子，否则为 null。
+    // 跟读时用户常常暂停、或停在句间间隙，此时 activeLine 变成空对象，
+    // 面板里的「当前句」整块消失（用户截图里的表现）。
+    final PlayerSubtitleLine shadowingLine = state.hasLines
+        ? state.activeLine
+        : _emptySubtitleLine;
     final LibraryCourseData? course = courseContext.course;
     final LibraryEpisodeItem? episode = courseContext.episode;
     final LearningSettingsState settings = ref.watch(learningSettingsProvider);
@@ -832,9 +840,9 @@ class _PadPortraitPlayerScreenState
                                   child: SingleChildScrollView(
                                     child: ShadowingPracticePanel(
                                       lineKey:
-                                          '${activeLine.startMs}#${state.activeLineIndex}',
-                                      english: activeLine.english,
-                                      chinese: activeLine.chinese,
+                                          '${shadowingLine.startMs}#${state.activeLineIndex}',
+                                      english: shadowingLine.english,
+                                      chinese: shadowingLine.chinese,
                                       subtitleMode: state.subtitleMode,
                                       lineIndex: state.activeLineIndex,
                                       totalLines: state.lines.length,
