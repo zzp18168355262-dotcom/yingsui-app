@@ -785,19 +785,24 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                           // 中文同样切成词块 —— 原先这里是普通 Text，
                           // 单中模式下整句没有任何可选区域，
                           // 用户无法「选中句子里的短语看翻译」。
-                          _buildWordLine(
-                            line.chinese,
-                            null,
-                            active,
-                            originalIndex,
-                            lookupOnTap: false,
-                            scope: 'zh',
-                            fontSize: chineseFontSize,
-                            textColor: active
-                                ? const Color(0xFF191C1E)
-                                : inactiveZhTextColor.withValues(
-                                    alpha: textOpacity,
-                                  ),
+                          KeyedSubtree(
+                            key: ValueKey<String>(
+                              'subtitle-zh-$originalIndex',
+                            ),
+                            child: _buildWordLine(
+                              line.chinese,
+                              null,
+                              active,
+                              originalIndex,
+                              lookupOnTap: false,
+                              scope: 'zh',
+                              fontSize: chineseFontSize,
+                              textColor: active
+                                  ? const Color(0xFF191C1E)
+                                  : inactiveZhTextColor.withValues(
+                                      alpha: textOpacity,
+                                    ),
+                            ),
                           )
                         else
                           _buildWordLine(
@@ -818,19 +823,24 @@ class _PlayerSubtitleListState extends State<PlayerSubtitleList> {
                           const _SelectableLineBreak(),
                           const SizedBox(height: 4),
                           // 双语模式下的中文行同样可划选短语。
-                          _buildWordLine(
-                            line.chinese,
-                            null,
-                            active,
-                            originalIndex,
-                            lookupOnTap: false,
-                            scope: 'zh',
-                            fontSize: subtitleFontSize,
-                            textColor: active
-                                ? const Color(0xFF708077)
-                                : inactiveZhTextColor.withValues(
-                                    alpha: textOpacity,
-                                  ),
+                          KeyedSubtree(
+                            key: ValueKey<String>(
+                              'subtitle-zh-$originalIndex',
+                            ),
+                            child: _buildWordLine(
+                              line.chinese,
+                              null,
+                              active,
+                              originalIndex,
+                              lookupOnTap: false,
+                              scope: 'zh',
+                              fontSize: subtitleFontSize,
+                              textColor: active
+                                  ? const Color(0xFF708077)
+                                  : inactiveZhTextColor.withValues(
+                                      alpha: textOpacity,
+                                    ),
+                            ),
                           ),
                         ],
                         const _SelectableLineBreak(),

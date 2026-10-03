@@ -77,17 +77,20 @@ void main() {
     await tester.pumpAndSettle();
 
     // 修复前：因为 isPlaying 为 false，不触发跟随，第 18 句根本不在视口内。
-    expect(find.text('第 18 句中文内容'), findsOneWidget);
+    // 中文已改为可选词块（逐句精听里可划选短语），
+    // 因此不能再按整句文本查找，改用该行的稳定 key。
+    final Finder row18 = find.byKey(
+      const ValueKey<String>('subtitle-zh-18'),
+      skipOffstage: false,
+    );
+    expect(row18, findsOneWidget);
     // 断言「在视口内」而非「精确居中」：列表行高随字幕长度变化，
     // 滚动过程中内容尺寸也会变化，精确居中不可靠；
     // 真正要保证的是当前句可靠可见。
     final Rect listRect = tester.getRect(find.byType(ListView));
     final Rect rowRect = tester.getRect(
       find
-          .ancestor(
-            of: find.text('第 18 句中文内容'),
-            matching: find.byType(InkWell),
-          )
+          .ancestor(of: row18, matching: find.byType(InkWell))
           .first,
     );
     expect(
@@ -129,7 +132,10 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('第 22 句中文内容'),
+      find.byKey(
+        const ValueKey<String>('subtitle-zh-22'),
+        skipOffstage: false,
+      ),
       findsOneWidget,
       reason: '选中文本后仍应继续跟随当前句',
     );

@@ -345,7 +345,11 @@ void main() {
 
     expect(find.byType(Divider), findsWidgets);
 
-    final Finder targetLine = find.text('一个他们最终可以休息的地方。');
+
+    // 中文已改为可选词块（逐句精听里可划选短语），不能再按整句文本查找。
+    // 目标句是第 3 句「一个他们最终可以休息的地方。」，
+    // 「休息」是它独有的词块，用它定位这一行。
+    final Finder targetLine = find.text('休息');
     final Finder listFinder = find.byType(ListView);
     final TestGesture gesture = await tester.startGesture(
       tester.getCenter(listFinder),
@@ -379,7 +383,8 @@ void main() {
       ..setActiveIndex(1);
     await tester.pumpAndSettle();
 
-    final Finder nextTargetLine = find.text('他们寻找一个远离喧嚣的安静避难所。');
+    // 中文已改为词块；「避难」是该句独有词块。
+    final Finder nextTargetLine = find.text('避难');
     final double afterResumeCenter =
         tester.getCenter(nextTargetLine).dy - tester.getCenter(listFinder).dy;
     expect(afterResumeCenter.abs(), lessThan(afterReleaseCenter.abs()));
@@ -429,7 +434,8 @@ void main() {
     await tester.pumpAndSettle();
 
     // fallbackLines 共 4 句，索引 3 即这一句。
-    final Finder targetLine = find.text('一个纯粹专注和平静的地方。');
+    // 中文已改为词块；「纯粹」是该句独有词块。
+    final Finder targetLine = find.text('纯粹');
     expect(targetLine, findsOneWidget);
     final double center =
         tester.getCenter(targetLine).dy - tester.getCenter(listFinder).dy;
