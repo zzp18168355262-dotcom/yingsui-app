@@ -79,6 +79,18 @@ for t in "${TARGETS[@]}"; do
       flutter build web --release
       summary+=("Web      build/web")
       ;;
+    windows)
+      # Windows 桌面端**不能跨平台编译**：Flutter 只允许在 Windows 主机上
+      # 构建（在 macOS 上会直接报 "build windows" only supported on
+      # Windows hosts）。这里给出明确指引，而不是让它落到「未知平台」。
+      echo
+      echo "========== Windows ==========" >&2
+      echo "Windows 包只能在 Windows 上构建，本脚本无法代劳。" >&2
+      echo "请在 Windows 仓库根目录执行：" >&2
+      echo "    .\\scripts\\build-windows.ps1" >&2
+      echo "详见 WINDOWS-BUILD.md" >&2
+      exit 1
+      ;;
     *)
       echo "未知平台：${t}（可选：macos android ios web）" >&2
       exit 1

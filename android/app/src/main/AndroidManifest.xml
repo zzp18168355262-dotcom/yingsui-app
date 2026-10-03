@@ -57,5 +57,18 @@
         <intent>
             <action android:name="android.intent.action.TTS_SERVICE"/>
         </intent>
+        <!-- 应用内自更新：下载 APK 后用 open_filex 交给系统安装器。
+             Android 11+ 有「软件包可见性」限制，未在此声明的 Intent
+             无法被解析，表现为点「安装」没有任何反应。
+             注意 open_filex 自身 manifest 并未声明该 queries，
+             必须由宿主 App 声明。 -->
+        <intent>
+            <action android:name="android.intent.action.VIEW"/>
+            <data android:mimeType="application/vnd.android.package-archive"/>
+        </intent>
+        <intent>
+            <action android:name="android.intent.action.INSTALL_PACKAGE"/>
+            <data android:mimeType="application/vnd.android.package-archive"/>
+        </intent>
     </queries>
 </manifest>
