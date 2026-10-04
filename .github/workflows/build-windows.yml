@@ -89,7 +89,7 @@ jobs:
           if (-not (Test-Path $bundled)) { exit 1 }
           & $bundled -version | Select-Object -First 1
 
-      - name: Package
+      - name: Package portable zip
         shell: pwsh
         run: |
           $pubspec = Get-Content pubspec.yaml -Raw
@@ -104,8 +104,79 @@ jobs:
             -DestinationPath "release-assets/EnglishCorner-$version-windows-x64.zip"
           Get-ChildItem release-assets | Format-Table Name, Length
 
+      # 先把"绿色版"交上去：后面编安装包万一失败，这个产物仍然能下载
       - uses: actions/upload-artifact@v4
         with:
-          name: windows-x64
-          path: release-assets/*
+          name: windows-x64-portable
+          path: release-assets/EnglishCorner-*-windows-x64.zip
           if-no-files-found: error
+
+      # ---- 安装包（Inno Setup）----
+      # 目标产物：EnglishCorner-<版本>-windows-x64-setup.exe
+      # 双击即可安装，带开始菜单/桌面快捷方式与卸载程序。
+      - name: Build installer (Inno Setup)
+        shell: pwsh
+        run: |
+          choco install innosetup -y --no-progress | Out-Null
+
+          $iscc = "${env:ProgramFiles(x86)}\Inno Setup 6\ISCC.exe"
+          if (-not (Test-Path $iscc)) {
+            $found = Get-ChildItem "${env:ProgramFiles(x86)}\Inno Setup*\ISCC.exe" -ErrorAction SilentlyContinue |
+                     Select-Object -First 1
+            if ($found) { $iscc = $found.FullName }
+          }
+          if (-not (Test-Path $iscc)) { throw "装完 Inno Setup 仍找不到 ISCC.exe" }
+          Write-Host "ISCC：$iscc"
+
+          $pubspec = Get-Content pubspec.yaml -Raw
+          if ($pubspec -match '(?m)^version:\s*([0-9]+\.[0-9]+\.[0-9]+)') {
+            $version = $Matches[1]
+          } else {
+            throw "在 pubspec.yaml 里读不到版本号"
+          }
+
+          $releaseDir = (Resolve-Path "build/windows/x64/runner/Release").Path
+          $outDir = (Resolve-Path "release-assets").Path
+
+          $isccArgs = @(
+            "/DMyAppVersion=$version",
+            "/DSourceDir=$releaseDir",
+            "/O$outDir"
+          )
+
+          # 只有自带简体中文语言包时才启用中文安装界面：语言包必须与
+          # Inno Setup 版本严格对应，塞错版本会直接编译失败。
+          $cn = "${env:ProgramFiles(x86)}\Inno Setup 6\Languages\ChineseSimplified.isl"
+          if (Test-Path $cn) {
+            $isccArgs += "/DUseChinese=1"
+            Write-Host "自带简体中文语言包 → 安装界面用中文"
+          } else {
+            Write-Host "未找到自带简体中文语言包 → 安装界面退回英文"
+          }
+
+          $isccArgs += "installer\windows.iss"
+
+          # 输出同时落盘：万一编译失败，这个日志会作为 artifact 上传，
+          # 方便把具体报错拿出来看（仓库所有者才看得到 CI 日志）。
+          & $iscc @isccArgs 2>&1 | Tee-Object -FilePath installer-build.log
+          # 先把退出码取出来再判断：$LASTEXITCODE 会被后续命令覆盖
+          $code = $LASTEXITCODE
+          if ($code -ne 0) { exit $code }
+
+          Get-ChildItem release-assets | Format-Table Name, Length
+
+      - name: Upload installer
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64-installer
+          path: release-assets/EnglishCorner-*-windows-x64-setup.exe
+          if-no-files-found: error
+
+      # 安装包编译失败时，把 ISCC 的输出捞出来，便于定位
+      - name: Upload installer build log on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: installer-build-log
+          path: installer-build.log
+          if-no-files-found: ignore
