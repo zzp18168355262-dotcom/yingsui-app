@@ -174,3 +174,32 @@ ffmpeg\ffmpeg.exe           ← 本脚本补进去的内置音频组件
 - [ ] 版本号已在 `pubspec.yaml` 提升
 - [ ] 解压 zip 后**双击 yingsui.exe 实测能启动**，并试一次 AI 字幕
 - [ ] 应用图标已是最终版（`python3 tool/brand/generate_icons.py --concept C --out .`）
+
+---
+
+## 八、附：不用脚本的手动步骤（脚本出问题时的退路）
+
+`build-windows.ps1` 是在 macOS 上写的，**没有在 Windows 上实测过**
+（本机没有 PowerShell，也没有 Windows）。它做的事很简单，真出问题的话
+把下面四条逐条执行，效果完全一样：
+
+```powershell
+# 1) 拉依赖
+flutter pub get
+
+# 2) 构建
+flutter build windows --release
+
+# 3) 把内置 ffmpeg 补进发布目录（路径必须正好是 Release\ffmpeg\ffmpeg.exe）
+Copy-Item build\ffmpeg-bundle\windows-x64 build\windows\x64\runner\Release\ffmpeg -Recurse
+
+# 4) 看一眼产物
+dir build\windows\x64\runner\Release
+```
+
+应该能看到 `yingsui.exe`、若干 `.dll`、`data\`、`ffmpeg\`。确认无误后，
+把 `Release\` 里的**全部内容**（不是 Release 文件夹本身）压成一个 zip
+就是成品。
+
+`build-windows.ps1` 相比上面这几条，多的只是：读版本号自动命名 zip、
+实测一次 `ffmpeg.exe -version`、算 SHA256 并打印分发提醒。

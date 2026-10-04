@@ -1,0 +1,111 @@
+name: Build Windows (manual)
+
+# 只构建 Windows x64，手动触发。
+#
+# 为什么不直接复用 release.yaml：
+#   那个 workflow 只在推 v* tag 时运行，而且它的 publish job 依赖
+#   android / linux / macos / windows 四个 job **全部成功**。
+#   当目标只是"拿一个 Windows 包"时，被其它平台拖累的代价太大
+#   （Linux 要 libmpv、macOS 要额外签名步骤，任一环节挂了就白等）。
+#   这里只做一件事：产出一个可以直接分发的 windows-x64.zip。
+#
+# 用法：
+#   仓库页面 → Actions → Build Windows (manual) → Run workflow
+#   跑完在该次运行的 Artifacts 区域下载 windows-x64
+
+on:
+  # 手动触发：仓库页面 → Actions → Build Windows (manual) → Run workflow
+  workflow_dispatch:
+  # 推到 main 也自动构建一次，省得每次都要去点按钮。
+  # 这里只编 Windows，不会牵动 Android / iOS / Linux / macOS。
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  windows:
+    name: Build Windows x64
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: 3.44.4
+          channel: stable
+          cache: true
+
+      # ---- 内置 ffmpeg：AI 字幕必需，flutter build 不会自动打包 ----
+      - name: Cache subtitle FFmpeg
+        id: ffmpeg-cache
+        uses: actions/cache@v4
+        with:
+          path: build/ffmpeg-bundle/windows-x64
+          key: ffmpeg-8.1.2-windows-x64-${{ hashFiles('tool/ffmpeg/build_ffmpeg.sh') }}
+
+      - uses: msys2/setup-msys2@v2
+        if: steps.ffmpeg-cache.outputs.cache-hit != 'true'
+        with:
+          install: make diffutils nasm mingw-w64-x86_64-gcc
+          msystem: MINGW64
+
+      - name: Build subtitle FFmpeg
+        if: steps.ffmpeg-cache.outputs.cache-hit != 'true'
+        shell: msys2 {0}
+        run: bash tool/ffmpeg/build_ffmpeg.sh windows-x64 build/ffmpeg-bundle/windows-x64
+
+      # 冒烟测试：确认编出来的 ffmpeg 真能做「抽音频 + 切段 + 读回字幕」，
+      # 而不是等到用户在应用里点 AI 字幕才发现是坏的。
+      - name: Smoke test subtitle FFmpeg
+        shell: pwsh
+        run: |
+          $ffmpeg = "build/ffmpeg-bundle/windows-x64/ffmpeg.exe"
+          $smoke = "build/ffmpeg-smoke"
+          New-Item -ItemType Directory -Force $smoke | Out-Null
+          & $ffmpeg -y -f lavfi -i "sine=frequency=1000:duration=2" -c:a pcm_s16le "$smoke/input.wav"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & $ffmpeg -y -i "$smoke/input.wav" -vn -ac 1 -ar 16000 -b:a 24k -f segment -segment_time 1 -reset_timestamps 1 "$smoke/chunk_%05d.m4a"
+          if ($LASTEXITCODE -ne 0 -or -not (Test-Path "$smoke/chunk_00000.m4a")) { exit 1 }
+          & $ffmpeg -y -i "$smoke/input.wav" -i tool/ffmpeg/smoke.srt -c:a aac -c:s mov_text -f ipod "$smoke/embedded.mp4"
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          $subtitle = & $ffmpeg -v error -i "$smoke/embedded.mp4" -map 0:s:0 -f srt -
+          if ($LASTEXITCODE -ne 0 -or ($subtitle -join "`n") -notmatch "Hello from the subtitle smoke test") { exit 1 }
+
+      - run: flutter pub get
+
+      - name: Build Windows release
+        run: flutter build windows --release
+
+      # 应用按 <exe 所在目录>\ffmpeg\ffmpeg.exe 查找内置音频组件
+      # （见 lib/features/player/presentation/desktop_ffmpeg.dart）。
+      - name: Bundle subtitle FFmpeg
+        shell: pwsh
+        run: |
+          Copy-Item build/ffmpeg-bundle/windows-x64 build/windows/x64/runner/Release/ffmpeg -Recurse
+          $bundled = "build/windows/x64/runner/Release/ffmpeg/ffmpeg.exe"
+          if (-not (Test-Path $bundled)) { exit 1 }
+          & $bundled -version | Select-Object -First 1
+
+      - name: Package
+        shell: pwsh
+        run: |
+          $pubspec = Get-Content pubspec.yaml -Raw
+          if ($pubspec -match '(?m)^version:\s*([0-9]+\.[0-9]+\.[0-9]+)') {
+            $version = $Matches[1]
+          } else {
+            throw "在 pubspec.yaml 里读不到版本号"
+          }
+          New-Item -ItemType Directory -Force release-assets | Out-Null
+          # 必须整包压缩：exe 依赖同目录的 DLL、data\ 和 ffmpeg\
+          Compress-Archive -Path build/windows/x64/runner/Release/* `
+            -DestinationPath "release-assets/EnglishCorner-$version-windows-x64.zip"
+          Get-ChildItem release-assets | Format-Table Name, Length
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: release-assets/*
+          if-no-files-found: error
