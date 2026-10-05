@@ -27,7 +27,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE instance, _In_opt_ HINSTANCE prev,
   FlutterWindow window(project);
   Win32Window::Point origin(10, 10);
   Win32Window::Size size(1280, 720);
-  if (!window.Create(L"yingsui", origin, size)) {
+  // 窗口标题（Windows 标题栏和任务栏上显示的文字）。
+  //
+  // 原先写的是 L"yingsui"，用户看到的是拼音；这里改成品牌名。
+  // 中文用 \uXXXX 转义而不是直接写汉字：C++ 源码的编码取决于编辑器
+  // 和编译器的 /utf-8 设置，直接写汉字在别的机器上可能变成乱码，
+  // 转义写法与源码编码无关，任何情况下都对。
+  //   \u82F1 = 英   \u8bed = 语   \u89D2 = 角
+  if (!window.Create(L"\u82F1\u8bed\u89d2 English Corner", origin, size)) {
     return EXIT_FAILURE;
   }
   window.SetQuitOnClose(true);
