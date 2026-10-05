@@ -22,7 +22,10 @@ on:
     branches: [main]
 
 permissions:
-  contents: read
+  # 需要 write 才能在最后把文件挂到 GitHub Release 上。
+  # 这是"公开、不用登录就能下载"的唯一途径：
+  # Actions 的 artifact 下载一律要求登录 GitHub。
+  contents: write
 
 jobs:
   windows:
@@ -180,3 +183,51 @@ jobs:
           name: installer-build-log
           path: installer-build.log
           if-no-files-found: ignore
+
+      # ---- 挂到 Release，拿到"不用登录也能下载"的公开直链 ----
+      #
+      # 为什么要这一步：Actions 的 artifact 下载**强制要求登录 GitHub**，
+      # 没法直接发给别人。Release 的附件是公开的，可以直接分享。
+      #
+      # 标签用 windows-v<版本> 而不是 v<版本>：
+      # 后者会触发 release.yaml（五个平台全量构建 + 自己的 publish），
+      # 两边抢同一个 Release 会打架。
+      #
+      # continue-on-error：仓库若把 Workflow permissions 限制成只读，
+      # 这一步会失败，但**不影响上面的 artifact**，所以不让它把整个构建变红。
+      - name: Publish release (public download links)
+        continue-on-error: true
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $pubspec = Get-Content pubspec.yaml -Raw
+          if ($pubspec -match '(?m)^version:\s*([0-9]+\.[0-9]+\.[0-9]+)') {
+            $version = $Matches[1]
+          } else {
+            throw "在 pubspec.yaml 里读不到版本号"
+          }
+          $tag = "windows-v$version"
+
+          $assets = @(
+            "release-assets/EnglishCorner-$version-windows-x64-setup.exe",
+            "release-assets/EnglishCorner-$version-windows-x64.zip"
+          )
+          foreach ($a in $assets) {
+            if (-not (Test-Path $a)) { throw "缺少附件：$a" }
+          }
+
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Release $tag 已存在，更新附件"
+            gh release upload $tag @assets --clobber
+          } else {
+            gh release create $tag `
+              --title "英语角 English Corner $version (Windows)" `
+              --notes-file installer/release-notes-windows.md `
+              --target main `
+              @assets
+          }
+          $code = $LASTEXITCODE
+          if ($code -ne 0) { throw "发布 Release 失败（退出码 $code）" }
+          Write-Host "公开下载页：https://github.com/$env:GITHUB_REPOSITORY/releases/tag/$tag"
